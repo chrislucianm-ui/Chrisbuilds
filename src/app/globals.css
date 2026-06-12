@@ -1,0 +1,144 @@
+@import "tailwindcss";
+
+@theme {
+  --font-orbitron: var(--font-orbitron);
+  --color-primary-pink: #d9006c;
+  --color-primary-orange: #e05300;
+  --color-primary-blue: #004dc2;
+  --color-primary-purple: #6c00d9;
+  --color-primary-cyan: #00a0c2;
+  --color-bright-sky: #cbe3fc;
+  --color-bright-lavender: #e5d1fa;
+  
+  --animate-float: float 8s ease-in-out infinite;
+  --animate-drift: drift 60s linear infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-10px) rotate(0.4deg); }
+}
+
+@keyframes drift {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-100%); }
+}
+
+/* Custom Scrollbar (Bright theme) */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.18);
+}
+
+/* Body & Base Styles (Bright Theme) */
+html, body {
+  background-color: #cbe3fc;
+  color: #1e293b; /* Slate dark text for excellent readability */
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+  font-family: var(--font-geist-sans), sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Bright Sky Gradient Canvas */
+.fluid-bg-transition {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background: linear-gradient(135deg, #cbe3fc, #e5d1fa, #ffd3e8, #cbe3fc);
+  background-size: 400% 400%;
+  animation: liquid-gradient 25s ease infinite;
+}
+
+@keyframes liquid-gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Cloud particles wrapper */
+.cloud-drift-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 1000 1000' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='blur'%3E%3CfeGaussianBlur stdDeviation='80'/%3E%3C/filter%3E%3Ccircle cx='100' cy='100' r='180' fill='%23ffffff' filter='url(%23blur)' opacity='0.75'/%3E%3Ccircle cx='900' cy='800' r='200' fill='%23ffffff' filter='url(%23blur)' opacity='0.75'/%3E%3Ccircle cx='400' cy='500' r='150' fill='%23ffffff' filter='url(%23blur)' opacity='0.6'/%3E%3C/svg%3E");
+  background-size: cover;
+  pointer-events: none;
+}
+
+/* Dream-like Frosted Panels */
+.liquid-glass {
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 
+    0 10px 30px rgba(12, 12, 18, 0.04), 
+    inset 0 1px 2px rgba(255, 255, 255, 0.4);
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.liquid-glass:hover {
+  border-color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.6);
+  box-shadow: 
+    0 15px 40px rgba(12, 12, 18, 0.08), 
+    inset 0 1px 2px rgba(255, 255, 255, 0.5);
+}
+
+/* Matte buttons matching pastel sky theme */
+.btn-vibrant {
+  position: relative;
+  background: #ffffff;
+  color: #1e293b;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.btn-vibrant:hover {
+  background: #f8fafc;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+}
+
+.btn-vibrant-outline {
+  background: transparent;
+  color: #1e293b;
+  border: 1px solid rgba(30, 41, 59, 0.15);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-vibrant-outline:hover {
+  border-color: #1e293b;
+  background: rgba(30, 41, 59, 0.02);
+  transform: translateY(-2px);
+}
+
+/* Text overlays style */
+.tracking-premium {
+  letter-spacing: -0.03em;
+}
+
+.text-gradient-pink-orange {
+  background: linear-gradient(90deg, #d9006c, #e05300);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-cyan-purple {
+  background: linear-gradient(90deg, #00a0c2, #6c00d9);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
