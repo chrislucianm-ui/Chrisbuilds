@@ -52,6 +52,17 @@ export default function Home() {
   }, [loadingComplete]);
 
   useEffect(() => {
+    if (!loadingComplete) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [loadingComplete]);
+
+  useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       setMousePos({ x: e.clientX, y: e.clientY });
     };
