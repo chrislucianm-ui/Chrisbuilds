@@ -22,214 +22,190 @@ export default function HeroBackgroundCanvas() {
 
     // 1. Scene, Camera, Renderer
     const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x000000, 0.05);
+    scene.fog = new THREE.FogExp2(0x000000, 0.04);
 
     const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 100);
-    camera.position.set(0, 0, 10);
+    camera.position.set(0, 0, 12);
 
     const renderer = new THREE.WebGLRenderer({
       canvas,
-      antialias: !isMobile,
+      antialias: false, // Turn off anti-alias for stars to make them sharper and save performance
       alpha: false,
       powerPreference: "high-performance",
     });
     renderer.setSize(width, height);
-    renderer.setPixelRatio(isMobile ? 1.0 : Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(isMobile ? 1.0 : Math.min(window.devicePixelRatio, 1.5));
     renderer.setClearColor(0x000000, 1.0);
 
-    // 2. Lights (Subtle highlights for chrome fragments and silver rings)
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.08);
+    // 2. Ambient Lights (Extremely soft)
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.02);
     scene.add(ambientLight);
 
-    // Soft white light sources catching specular highlights
-    const dirLight1 = new THREE.DirectionalLight(0xffffff, 1.8);
-    dirLight1.position.set(5, 10, 7);
-    scene.add(dirLight1);
+    // Faint point light at the center to create a subtle central glow behind the text
+    const glowLight = new THREE.PointLight(0xffffff, 0.8, 20);
+    glowLight.position.set(0, 0, 0);
+    scene.add(glowLight);
 
-    const dirLight2 = new THREE.DirectionalLight(0xffffff, 0.8);
-    dirLight2.position.set(-5, -5, 2);
-    scene.add(dirLight2);
-
-    // 3. Multi-Layered Space Stars & Dust
-    const starsGroup = new THREE.Group();
-    scene.add(starsGroup);
-
-    // Helper to generate circular blurred point texture
-    const createCircleTexture = (opacity = 1.0) => {
+    // 3. Helper to create high-resolution blurred point textures
+    const createStarTexture = (opacity = 1.0) => {
       const size = 16;
-      const pointCanvas = document.createElement("canvas");
-      pointCanvas.width = size;
-      pointCanvas.height = size;
-      const ctx = pointCanvas.getContext("2d");
+      const starCanvas = document.createElement("canvas");
+      starCanvas.width = size;
+      starCanvas.height = size;
+      const ctx = starCanvas.getContext("2d");
       if (ctx) {
         const grad = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
         grad.addColorStop(0, `rgba(255, 255, 255, ${opacity})`);
-        grad.addColorStop(0.3, `rgba(255, 255, 255, ${opacity * 0.8})`);
+        grad.addColorStop(0.2, `rgba(255, 255, 255, ${opacity * 0.7})`);
         grad.addColorStop(1, "rgba(255, 255, 255, 0)");
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, size, size);
       }
-      return new THREE.CanvasTexture(pointCanvas);
+      return new THREE.CanvasTexture(starCanvas);
     };
 
-    const textureTiny = createCircleTexture(0.85);
-    const textureMedium = createCircleTexture(0.95);
-    const textureDust = createCircleTexture(0.4);
+    const textureFar = createStarTexture(0.7);
+    const textureMid = createStarTexture(0.85);
+    const textureNear = createStarTexture(0.95);
+    const textureDust = createStarTexture(0.3);
 
-    // Star Layer 1: Tiny Distant Stars (1000 count)
-    const tinyStarsCount = isMobile ? 400 : 1000;
-    const tinyStarsGeom = new THREE.BufferGeometry();
-    const tinyPositions = new Float32Array(tinyStarsCount * 3);
-    for (let i = 0; i < tinyStarsCount; i++) {
-      tinyPositions[i * 3] = (Math.random() - 0.5) * 45;
-      tinyPositions[i * 3 + 1] = (Math.random() - 0.5) * 30;
-      tinyPositions[i * 3 + 2] = (Math.random() - 0.5) * 15 - 15; // Deeper distance
+    // Star Groups (to apply slow independent parallax rotations)
+    const farStarsGroup = new THREE.Group();
+    const midStarsGroup = new THREE.Group();
+    const nearStarsGroup = new THREE.Group();
+    const dustGroup = new THREE.Group();
+
+    scene.add(farStarsGroup);
+    scene.add(midStarsGroup);
+    scene.add(nearStarsGroup);
+    scene.add(dustGroup);
+
+    // Layer 1: Thousands of Distant Tiny Stars (2500 stars)
+    const farCount = isMobile ? 800 : 2500;
+    const farGeom = new THREE.BufferGeometry();
+    const farPositions = new Float32Array(farCount * 3);
+    for (let i = 0; i < farCount; i++) {
+      farPositions[i * 3] = (Math.random() - 0.5) * 60;
+      farPositions[i * 3 + 1] = (Math.random() - 0.5) * 40;
+      farPositions[i * 3 + 2] = (Math.random() - 0.5) * 20 - 25; // Far Z-plane
     }
-    tinyStarsGeom.setAttribute("position", new THREE.BufferAttribute(tinyPositions, 3));
-    const tinyStarsMat = new THREE.PointsMaterial({
-      size: 0.05,
-      map: textureTiny,
+    farGeom.setAttribute("position", new THREE.BufferAttribute(farPositions, 3));
+    const farMat = new THREE.PointsMaterial({
+      size: 0.035,
+      map: textureFar,
       transparent: true,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
-      opacity: 0.35,
+      opacity: 0.25,
     });
-    const tinyStars = new THREE.Points(tinyStarsGeom, tinyStarsMat);
-    starsGroup.add(tinyStars);
+    const farStars = new THREE.Points(farGeom, farMat);
+    farStarsGroup.add(farStars);
 
-    // Star Layer 2: Mid-field Twinkling Stars (300 count)
-    const midStarsCount = isMobile ? 100 : 300;
-    const midStarsGeom = new THREE.BufferGeometry();
-    const midPositions = new Float32Array(midStarsCount * 3);
-    for (let i = 0; i < midStarsCount; i++) {
-      midPositions[i * 3] = (Math.random() - 0.5) * 30;
-      midPositions[i * 3 + 1] = (Math.random() - 0.5) * 20;
-      midPositions[i * 3 + 2] = (Math.random() - 0.5) * 15 - 5;
+    // Layer 2: Mid-field Stars (1200 stars)
+    const midCount = isMobile ? 400 : 1200;
+    const midGeom = new THREE.BufferGeometry();
+    const midPositions = new Float32Array(midCount * 3);
+    for (let i = 0; i < midCount; i++) {
+      midPositions[i * 3] = (Math.random() - 0.5) * 45;
+      midPositions[i * 3 + 1] = (Math.random() - 0.5) * 30;
+      midPositions[i * 3 + 2] = (Math.random() - 0.5) * 20 - 5; // Mid Z-plane
     }
-    midStarsGeom.setAttribute("position", new THREE.BufferAttribute(midPositions, 3));
-    const midStarsMat = new THREE.PointsMaterial({
-      size: 0.1,
-      map: textureMedium,
+    midGeom.setAttribute("position", new THREE.BufferAttribute(midPositions, 3));
+    const midMat = new THREE.PointsMaterial({
+      size: 0.055,
+      map: textureMid,
       transparent: true,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
-      opacity: 0.6,
+      opacity: 0.45,
     });
-    const midStars = new THREE.Points(midStarsGeom, midStarsMat);
-    starsGroup.add(midStars);
+    const midStars = new THREE.Points(midGeom, midMat);
+    midStarsGroup.add(midStars);
 
-    // Star Layer 3: Soft Reflective Cosmic Dust (120 count)
-    const dustCount = isMobile ? 30 : 120;
+    // Layer 3: Near Stars (400 stars)
+    const nearCount = isMobile ? 120 : 400;
+    const nearGeom = new THREE.BufferGeometry();
+    const nearPositions = new Float32Array(nearCount * 3);
+    for (let i = 0; i < nearCount; i++) {
+      nearPositions[i * 3] = (Math.random() - 0.5) * 30;
+      nearPositions[i * 3 + 1] = (Math.random() - 0.5) * 20;
+      nearPositions[i * 3 + 2] = (Math.random() - 0.5) * 15 + 5; // Close Z-plane
+    }
+    nearGeom.setAttribute("position", new THREE.BufferAttribute(nearPositions, 3));
+    const nearMat = new THREE.PointsMaterial({
+      size: 0.075,
+      map: textureNear,
+      transparent: true,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+      opacity: 0.55,
+    });
+    const nearStars = new THREE.Points(nearGeom, nearMat);
+    nearStarsGroup.add(nearStars);
+
+    // Layer 4: Occasional Silver Cosmic Dust (80 particles drifting)
+    const dustCount = isMobile ? 20 : 80;
     const dustGeom = new THREE.BufferGeometry();
     const dustPositions = new Float32Array(dustCount * 3);
     const dustSpeedsY = new Float32Array(dustCount);
     for (let i = 0; i < dustCount; i++) {
-      dustPositions[i * 3] = (Math.random() - 0.5) * 20;
-      dustPositions[i * 3 + 1] = (Math.random() - 0.5) * 15;
-      dustPositions[i * 3 + 2] = (Math.random() - 0.5) * 10;
-      dustSpeedsY[i] = 0.0005 + Math.random() * 0.001; // Extremely slow drift
+      dustPositions[i * 3] = (Math.random() - 0.5) * 25;
+      dustPositions[i * 3 + 1] = (Math.random() - 0.5) * 18;
+      dustPositions[i * 3 + 2] = (Math.random() - 0.5) * 10 + 2;
+      dustSpeedsY[i] = 0.0003 + Math.random() * 0.0006; // Ultra-slow drift
     }
     dustGeom.setAttribute("position", new THREE.BufferAttribute(dustPositions, 3));
     const dustMat = new THREE.PointsMaterial({
-      size: 0.25,
+      size: 0.18,
       map: textureDust,
       transparent: true,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
-      opacity: 0.2,
+      opacity: 0.15,
     });
     const dustParticles = new THREE.Points(dustGeom, dustMat);
-    starsGroup.add(dustParticles);
+    dustGroup.add(dustParticles);
 
-    // 4. Milky Way Faint Ambient Band
-    const mwCanvas = document.createElement("canvas");
-    mwCanvas.width = 128;
-    mwCanvas.height = 128;
-    const mwCtx = mwCanvas.getContext("2d");
-    if (mwCtx) {
-      const grad = mwCtx.createRadialGradient(64, 64, 0, 64, 64, 64);
+    // 4. Soft Volumetric Far Glow Plane (Faint nebula-like ray band backplane)
+    const glowCanvas = document.createElement("canvas");
+    glowCanvas.width = 128;
+    glowCanvas.height = 128;
+    const glowCtx = glowCanvas.getContext("2d");
+    if (glowCtx) {
+      const grad = glowCtx.createRadialGradient(64, 64, 0, 64, 64, 64);
       grad.addColorStop(0, "rgba(255, 255, 255, 0.025)");
-      grad.addColorStop(0.4, "rgba(255, 255, 255, 0.015)");
+      grad.addColorStop(0.4, "rgba(255, 255, 255, 0.01)");
       grad.addColorStop(1, "rgba(255, 255, 255, 0)");
-      mwCtx.fillStyle = grad;
-      mwCtx.fillRect(0, 0, 128, 128);
+      glowCtx.fillStyle = grad;
+      glowCtx.fillRect(0, 0, 128, 128);
     }
-    const mwTexture = new THREE.CanvasTexture(mwCanvas);
-    const mwGeom = new THREE.PlaneGeometry(35, 15);
-    const mwMat = new THREE.MeshBasicMaterial({
-      map: mwTexture,
+    const glowTexture = new THREE.CanvasTexture(glowCanvas);
+    const glowGeom = new THREE.PlaneGeometry(40, 20);
+    const glowPlaneMat = new THREE.MeshBasicMaterial({
+      map: glowTexture,
       transparent: true,
       depthWrite: false,
       blending: THREE.AdditiveBlending,
-      opacity: 0.6,
+      opacity: 0.5,
     });
-    const mwMesh = new THREE.Mesh(mwGeom, mwMat);
-    mwMesh.position.set(2, 1, -12); // Deep far background
-    mwMesh.rotation.z = -0.3; // Tilted space angle
-    scene.add(mwMesh);
+    const glowMesh = new THREE.Mesh(glowGeom, glowPlaneMat);
+    glowMesh.position.set(0, 0, -15);
+    scene.add(glowMesh);
 
-    // 5. Luxury Elements: Thin Silver Orbital Rings (2 rings)
-    const ring1Geom = new THREE.RingGeometry(4.5, 4.505, 120);
-    const ringMat = new THREE.LineBasicMaterial({
-      color: 0xffffff,
-      transparent: true,
-      opacity: 0.08,
-      blending: THREE.AdditiveBlending,
-    });
-    const ring1 = new THREE.LineLoop(ring1Geom, ringMat);
-    ring1.rotation.set(1.1, 0.4, 0);
-    scene.add(ring1);
-
-    const ring2Geom = new THREE.RingGeometry(6.0, 6.006, 120);
-    const ring2 = new THREE.LineLoop(ring2Geom, ringMat);
-    ring2.rotation.set(-0.8, -0.6, 0.3);
-    scene.add(ring2);
-
-    // 6. Luxury Elements: Floating Chrome Octahedron Fragments (3 fragments)
-    const fragments: THREE.Mesh[] = [];
-    const fragmentGeom = new THREE.OctahedronGeometry(0.2, 0);
-    const fragmentMat = new THREE.MeshPhysicalMaterial({
-      color: 0x888888,
-      metalness: 1.0,
-      roughness: 0.05,
-      clearcoat: 1.0,
-      clearcoatRoughness: 0.05,
-      transparent: true,
-      opacity: 0.45,
-    });
-
-    if (!isMobile) {
-      // Spawn floating octahedrons at spaced coordinate slots
-      const coordinates = [
-        { x: -3.5, y: 1.8, z: 2 },
-        { x: 3.8, y: -2.0, z: 1 },
-        { x: -1.8, y: -3.2, z: 3 }
-      ];
-      coordinates.forEach((coords) => {
-        const mesh = new THREE.Mesh(fragmentGeom, fragmentMat);
-        mesh.position.set(coords.x, coords.y, coords.z);
-        // Random rotational offsets
-        mesh.rotation.set(Math.random(), Math.random(), Math.random());
-        scene.add(mesh);
-        fragments.push(mesh);
-      });
-    }
-
-    // 7. Mouse Parallax Coordinates Tracking
+    // 5. Mouse Parallax Coordinate Interpolation
     const mouse = { x: 0, y: 0 };
     const targetCamera = { x: 0, y: 0 };
 
     const handleMouseMove = (e: MouseEvent) => {
-      // Normalize mouse positions to [-1, 1]
       mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
       mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
 
-      targetCamera.x = mouse.x * 1.2; // Soft parallax amount
-      targetCamera.y = mouse.y * 0.8;
+      targetCamera.x = mouse.x * 0.9; // Minimal parallax drift to keep text locked
+      targetCamera.y = mouse.y * 0.6;
     };
     window.addEventListener("mousemove", handleMouseMove);
 
-    // 8. Scroll Visibility Observer
+    // 6. Scroll Intersection Observer
     let isVisible = true;
     const observer = new IntersectionObserver(
       (entries) => {
@@ -241,7 +217,7 @@ export default function HeroBackgroundCanvas() {
     );
     observer.observe(canvas);
 
-    // 9. Animation Loop
+    // 7. Animation Loop
     let animationFrameId: number;
     const clock = new THREE.Clock();
 
@@ -256,35 +232,29 @@ export default function HeroBackgroundCanvas() {
       if (isVisible) {
         const time = clock.getElapsedTime();
 
-        // Very slow star twinkling (sine opacity modulation)
-        tinyStarsMat.opacity = 0.2 + Math.sin(time * 0.5) * 0.15;
-        midStarsMat.opacity = 0.35 + Math.cos(time * 0.8) * 0.25;
+        // 1. Natural subtle twinkling (sine modulation on star layer opacity)
+        farMat.opacity = 0.12 + Math.sin(time * 0.3) * 0.08;
+        midMat.opacity = 0.25 + Math.cos(time * 0.5) * 0.15;
+        nearMat.opacity = 0.3 + Math.sin(time * 0.7) * 0.15;
 
-        // Very slow stellar dust flow
+        // 2. Slow rotational drift on star clusters to build parallax movement
+        farStarsGroup.rotation.y = time * 0.0006;
+        midStarsGroup.rotation.y = -time * 0.0004;
+        nearStarsGroup.rotation.y = time * 0.0008;
+
+        // 3. Drift the foreground silver dust upward
         const posArr = dustGeom.attributes.position.array as Float32Array;
         for (let i = 0; i < dustCount; i++) {
-          posArr[i * 3 + 1] += dustSpeedsY[i] * 0.2; // Slowly float upward
-          // Slow sway
-          posArr[i * 3] += Math.sin(time * 0.2 + i) * 0.0003;
+          posArr[i * 3 + 1] += dustSpeedsY[i] * 0.15; // Slow vertical drift
+          posArr[i * 3] += Math.sin(time * 0.1 + i) * 0.0002; // Sway
           
-          if (posArr[i * 3 + 1] > 8) {
-            posArr[i * 3 + 1] = -8; // Recycle to bottom
+          if (posArr[i * 3 + 1] > 9) {
+            posArr[i * 3 + 1] = -9; // Recycle to bottom
           }
         }
         dustGeom.attributes.position.needsUpdate = true;
 
-        // Rotate orbits extremely slowly
-        ring1.rotation.z = time * 0.003;
-        ring2.rotation.z = -time * 0.002;
-
-        // Rotate & slowly float chrome fragments
-        fragments.forEach((fragment, idx) => {
-          fragment.rotation.x += 0.003;
-          fragment.rotation.y += 0.002;
-          fragment.position.y += Math.sin(time * 0.4 + idx) * 0.0008;
-        });
-
-        // Smooth camera parallax interpolation (Lerping)
+        // 4. Smooth camera parallax interpolation (Lerping)
         camera.position.x += (targetCamera.x - camera.position.x) * 0.04;
         camera.position.y += (targetCamera.y - camera.position.y) * 0.04;
         camera.lookAt(0, 0, 0);
@@ -295,7 +265,7 @@ export default function HeroBackgroundCanvas() {
 
     animate();
 
-    // 10. Resize handling
+    // 8. Resize handling
     const handleResize = () => {
       if (!containerRef.current) return;
       width = containerRef.current.clientWidth;
@@ -303,11 +273,11 @@ export default function HeroBackgroundCanvas() {
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
       renderer.setSize(width, height);
-      renderer.setPixelRatio(isMobile ? 1.0 : Math.min(window.devicePixelRatio, 2));
+      renderer.setPixelRatio(isMobile ? 1.0 : Math.min(window.devicePixelRatio, 1.5));
     };
     window.addEventListener("resize", handleResize);
 
-    // 11. Cleanup
+    // 9. Cleanup
     return () => {
       cancelAnimationFrame(animationFrameId);
       window.removeEventListener("mousemove", handleMouseMove);
@@ -315,22 +285,20 @@ export default function HeroBackgroundCanvas() {
       observer.disconnect();
       renderer.dispose();
 
-      tinyStarsGeom.dispose();
-      tinyStarsMat.dispose();
-      midStarsGeom.dispose();
-      midStarsMat.dispose();
+      farGeom.dispose();
+      farMat.dispose();
+      midGeom.dispose();
+      midMat.dispose();
+      nearGeom.dispose();
+      nearMat.dispose();
       dustGeom.dispose();
       dustMat.dispose();
-      mwGeom.dispose();
-      mwMat.dispose();
-      mwTexture.dispose();
-      ring1Geom.dispose();
-      ring2Geom.dispose();
-      ringMat.dispose();
-      fragmentGeom.dispose();
-      fragmentMat.dispose();
-      textureTiny.dispose();
-      textureMedium.dispose();
+      glowGeom.dispose();
+      glowPlaneMat.dispose();
+      glowTexture.dispose();
+      textureFar.dispose();
+      textureMid.dispose();
+      textureNear.dispose();
       textureDust.dispose();
     };
   }, []);

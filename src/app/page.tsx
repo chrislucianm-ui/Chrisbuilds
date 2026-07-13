@@ -137,8 +137,8 @@ export default function Home() {
           <HeroBackgroundCanvas />
         </motion.div>
 
-        {/* 50% Black Overlay for contrast */}
-        <div className="absolute inset-0 bg-black/50 -z-5 pointer-events-none" />
+        {/* Soft ambient center glow overlay for editorial readability */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.035)_0%,rgba(0,0,0,0.6)_80%)] -z-5 pointer-events-none" />
 
         <div className="max-w-4xl mx-auto flex flex-col items-center gap-8">
           <motion.div
