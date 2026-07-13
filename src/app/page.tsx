@@ -1,265 +1,389 @@
 "use client";
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect, useRef } from "react";
+import { motion, useInView, AnimatePresence } from "framer-motion";
+import { ArrowUpRight, Mail, Phone, MessageSquare, Send } from "lucide-react";
+import HeroBackgroundCanvas from "@/components/HeroBackgroundCanvas";
 import LoadingScreen from "@/components/LoadingScreen";
-import Navbar from "@/components/Navbar";
-import Hero3DCanvas from "@/components/Hero3DCanvas";
-import ProjectShowcase from "@/components/ProjectShowcase";
-import AppsAndGames from "@/components/AppsAndGames";
-import Services from "@/components/Services";
-import Technologies from "@/components/Technologies";
-import WhyChooseUs from "@/components/WhyChooseUs";
-import ContactSection from "@/components/ContactSection";
-import { ArrowRight, Eye, Sparkles } from "lucide-react";
+
+interface Service {
+  id: string;
+  title: string;
+  description: string;
+  specs: string[];
+}
+
+const SERVICES: Service[] = [
+  {
+    id: "01",
+    title: "Websites",
+    description: "Crafted to leave a lasting impression.",
+    specs: ["Bespoke", "Timeless", "Precision"]
+  },
+  {
+    id: "02",
+    title: "Web Applications",
+    description: "Powerful systems. Beautifully experienced.",
+    specs: ["Elegant", "Secure", "Performant"]
+  },
+  {
+    id: "03",
+    title: "Mobile Applications",
+    description: "Designed for every touch.",
+    specs: ["Precision", "Tactile", "Fluid"]
+  },
+  {
+    id: "04",
+    title: "AI Solutions",
+    description: "Intelligence, seamlessly integrated.",
+    specs: ["Crafted", "Intelligent", "Scalable"]
+  }
+];
 
 export default function Home() {
   const [loadingComplete, setLoadingComplete] = useState(false);
+  const [triggerSweep, setTriggerSweep] = useState(false);
+  const [mousePos, setMousePos] = useState({ x: -200, y: -200 });
 
-  const handleScrollTo = (id: string) => {
-    const targetElement = document.querySelector(id);
-    if (targetElement) {
-      targetElement.scrollIntoView({ behavior: "smooth" });
+  useEffect(() => {
+    if (loadingComplete) {
+      setTriggerSweep(true);
+    }
+  }, [loadingComplete]);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePos({ x: e.clientX, y: e.clientY });
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
+
+  const scrollToSection = (id: string) => {
+    const element = document.querySelector(id);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" });
     }
   };
 
   return (
     <>
       <LoadingScreen onComplete={() => setLoadingComplete(true)} />
-
       <AnimatePresence>
         {loadingComplete && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 1.2 }}
-            className="relative w-full min-h-screen flex flex-col justify-between"
+            transition={{ duration: 1.0 }}
+            className="relative min-h-screen bg-black text-white selection:bg-white/10 selection:text-white luxury-grid"
           >
-            {/* Header / Navbar */}
-            <Navbar />
+        {/* Faint silver light sweep overlay during reveal */}
+        {triggerSweep && (
+          <motion.div
+            initial={{ y: "-100%", opacity: 0 }}
+            animate={{ y: "100%", opacity: [0, 0.25, 0] }}
+            transition={{ duration: 1.8, ease: "easeInOut" }}
+            className="fixed inset-0 bg-gradient-to-b from-transparent via-white/12 to-transparent pointer-events-none z-[9998]"
+          />
+        )}
 
-            {/* Custom WebGL 3D Landscape Canvas */}
-            <Hero3DCanvas />
+        {/* Subtle Monochrome Mouse Spotlight */}
+      <div
+        className="spotlight-glow hidden md:block"
+        style={{ left: mousePos.x, top: mousePos.y }}
+      />
 
-            {/* Floating blurred organic background elements */}
-            <div className="fluid-blob-1" />
-            <div className="fluid-blob-2" />
-            <div className="fluid-blob-3" />
+      {/* Header Brand */}
+      <header className="absolute top-0 left-0 right-0 z-40 py-8 px-6 md:px-12 flex justify-between items-center max-w-5xl mx-auto border-b border-white/5">
+        <a 
+          href="#home"
+          onClick={(e) => {
+            e.preventDefault();
+            scrollToSection("#home");
+          }}
+          className="flex items-baseline select-none text-white hover:text-white/80 transition-colors"
+        >
+          <span className="font-pinyon text-white/50 text-xl font-normal lowercase tracking-normal pr-1.5 capitalize">Chris</span>
+          <span className="font-mono text-[9px] uppercase tracking-[0.25em] font-black">BUILDS</span>
+        </a>
+        <div className="font-mono text-[9px] text-white/40">
+          SYSTEM ACTIVE
+        </div>
+      </header>
 
-            {/* Hero Section - Temporary red backdrop */}
-            <section
-              id="home"
-              className="relative min-h-screen flex items-center justify-center pt-32 pb-16 px-6 md:px-12 overflow-hidden z-10 bg-transparent"
+      {/* 1. HERO SECTION */}
+      <section
+        id="home"
+        className="min-h-screen flex flex-col justify-center items-center px-6 text-center relative z-10"
+      >
+        {/* Cinematic WebGL Background Canvas with Gradual Reveal */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 2.2, delay: 0.4 }}
+          className="absolute inset-0 -z-10 pointer-events-none"
+        >
+          <HeroBackgroundCanvas />
+        </motion.div>
+
+        {/* 50% Black Overlay for contrast */}
+        <div className="absolute inset-0 bg-black/50 -z-5 pointer-events-none" />
+
+        <div className="max-w-4xl mx-auto flex flex-col items-center gap-8">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="flex items-center gap-2 font-mono text-[9px] tracking-[0.3em] text-white/30 mb-3"
+          >
+            <span>SPECIFICATION</span>
+            <span className="font-pinyon text-white/40 text-lg font-normal lowercase tracking-normal capitalize">no.</span>
+            <span>001</span>
+          </motion.div>
+
+          <motion.h1
+            initial={{ opacity: 0, y: 25 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.15 }}
+            className="text-4xl sm:text-6xl md:text-8xl font-black tracking-premium uppercase leading-[0.95]"
+          >
+            We build digital <br />
+            systems that <span className="text-white/60">endure.</span>
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+            className="text-[10px] sm:text-xs font-mono uppercase tracking-[0.2em] text-white/40 max-w-lg leading-relaxed mt-2"
+          >
+            Bespoke creative design. High-performance systems.<br />
+            Engineered with Swiss precision.
+          </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.45 }}
+            className="flex flex-col sm:flex-row items-center gap-4 mt-6"
+          >
+            <button
+              onClick={() => scrollToSection("#services")}
+              className="btn-luxury px-9 py-4.5 rounded-full w-full sm:w-auto"
             >
-              <div className="max-w-6xl mx-auto w-full relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center pt-8">
-                
-                {/* Left Columns: Text Details */}
-                <div className="col-span-1 lg:col-span-7 flex flex-col gap-8 text-left">
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2, duration: 0.6 }}
-                    className="flex items-center gap-2 text-xs font-semibold text-slate-500 tracking-[0.25em]"
-                  >
-                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#6c00d9] animate-pulse" />
-                    <span>CHRISBUILDS // CREATIVE STUDIO</span>
-                  </motion.div>
-
-                  <motion.h1
-                    initial={{ opacity: 0, y: 25 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4, duration: 0.8 }}
-                    className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-premium text-slate-800 leading-[1.08]"
-                  >
-                    We Design <br />
-                    Digital Experiences <br />
-                    <span className="text-slate-400">That People Remember.</span>
-                  </motion.h1>
-
-                  <motion.p
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.6, duration: 0.8 }}
-                    className="text-sm md:text-base text-slate-600 font-medium max-w-lg leading-relaxed"
-                  >
-                    Websites, Apps & Digital Products crafted for ambitious businesses. We prioritize modern aesthetics, fast interactions, and premium detail.
-                  </motion.p>
-
-                  <motion.div
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.8, duration: 0.8 }}
-                    className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mt-2"
-                  >
-                    <button
-                      onClick={() => handleScrollTo("#showcase")}
-                      className="btn-vibrant px-8 py-3.5 rounded-full text-xs font-bold uppercase tracking-[0.15em] flex items-center justify-center gap-2 cursor-pointer border border-slate-200"
-                    >
-                      <Eye className="w-4 h-4 text-slate-600" /> View Projects
-                    </button>
-                    
-                    <button
-                      onClick={() => handleScrollTo("#contact")}
-                      className="btn-vibrant-outline px-8 py-3.5 rounded-full text-xs uppercase tracking-[0.15em] flex items-center justify-center gap-2 cursor-pointer font-semibold"
-                    >
-                      Start a Project <ArrowRight className="w-4 h-4" />
-                    </button>
-                  </motion.div>
-                </div>
-
-                {/* Right Columns: Floating Luxury Device Mockups */}
-                <div className="col-span-1 lg:col-span-5 flex justify-center lg:justify-end">
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.9, duration: 0.8 }}
-                    className="relative w-80 h-[380px] md:h-[400px] flex items-center justify-center"
-                  >
-                    {/* Floating Browser Mockup */}
-                    <motion.div
-                      animate={{ y: [0, -10, 0] }}
-                      transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                      className="absolute top-0 right-4 w-72 h-48 bg-white/35 border border-white/60 rounded-xl overflow-hidden shadow-lg backdrop-blur-md"
-                    >
-                      {/* Browser Bar */}
-                      <div className="w-full h-7 border-b border-slate-200/40 bg-white/40 px-3 flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
-                        <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
-                        <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
-                      </div>
-                      <div className="p-4 flex flex-col gap-2.5">
-                        <div className="w-24 h-2 rounded bg-slate-400/20" />
-                        <div className="w-full h-8 rounded bg-white/50 border border-slate-200/30" />
-                        <div className="flex gap-2">
-                          <div className="w-10 h-10 rounded-lg bg-white/30 border border-slate-200/30" />
-                          <div className="flex-1 flex flex-col gap-1.5 pt-1">
-                            <div className="w-full h-1.5 rounded bg-slate-400/20" />
-                            <div className="w-2/3 h-1.5 rounded bg-slate-400/20" />
-                          </div>
-                        </div>
-                      </div>
-                    </motion.div>
-
-                    {/* Floating Mobile App Mockup */}
-                    <motion.div
-                      animate={{ y: [0, 8, 0] }}
-                      transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                      className="absolute bottom-4 left-0 w-48 h-64 bg-white/45 border border-white/60 rounded-2xl overflow-hidden p-4 shadow-lg backdrop-blur-md"
-                    >
-                      <div className="w-full h-4 flex justify-between items-center px-1 mb-4">
-                        <span className="w-3.5 h-1.5 rounded-full bg-slate-300/40" />
-                        <span className="w-1.5 h-1.5 rounded-full bg-slate-300/40" />
-                      </div>
-                      <div className="flex flex-col gap-3">
-                        <div className="w-12 h-12 rounded-full border border-slate-200/50 bg-white/50 mx-auto flex items-center justify-center">
-                          <Sparkles className="w-5 h-5 text-[#6c00d9]/40" />
-                        </div>
-                        <div className="w-full h-2 rounded bg-slate-300/20" />
-                        <div className="w-2/3 h-2 rounded bg-slate-300/20 mx-auto" />
-                        
-                        <div className="w-full h-10 rounded-lg bg-[#6c00d9] text-white text-[9px] font-bold flex items-center justify-center uppercase tracking-wider mt-2 shadow-sm">
-                          Start Project
-                        </div>
-                      </div>
-                    </motion.div>
-                  </motion.div>
-                </div>
-
-              </div>
-
-              {/* Scroll down indicator */}
-              <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-1.5 opacity-50 hover:opacity-80 transition-opacity">
-                <span className="text-[9px] font-semibold tracking-widest uppercase text-slate-500">SCROLL DOCK</span>
-                <div className="w-5 h-8 rounded-full border border-slate-300/40 p-1 flex justify-center">
-                  <motion.div
-                    animate={{
-                      y: [0, 10, 0]
-                    }}
-                    transition={{
-                      duration: 1.6,
-                      repeat: Infinity,
-                      ease: "easeInOut"
-                    }}
-                    className="w-1 h-1.5 rounded-full bg-[#6c00d9]"
-                  />
-                </div>
-              </div>
-            </section>
-
-            {/* Featured Projects Showcase */}
-            <div className="relative z-10">
-              <ProjectShowcase />
-            </div>
-
-            {/* Interactive Sandbox Widgets */}
-            <div className="relative z-10">
-              <AppsAndGames />
-            </div>
-
-            {/* Capabilities Services */}
-            <div className="relative z-10">
-              <Services />
-            </div>
-
-            {/* Tech Stack Badge Showcase */}
-            <div className="relative z-10">
-              <Technologies />
-            </div>
-
-            {/* Value Proposition columns */}
-            <div className="relative z-10">
-              <WhyChooseUs />
-            </div>
-
-            {/* Contact Center Form */}
-            <div className="relative z-10">
-              <ContactSection />
-            </div>
-
-            {/* Footer */}
-            <footer className="bg-transparent border-t border-slate-200/50 py-16 px-6 md:px-12 text-center text-xs font-semibold text-slate-500 relative z-10">
-              <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-                <div className="flex items-center gap-2">
-                  <span className="font-sans font-black tracking-widest text-xs text-slate-800">
-                    CHRIS<span className="text-[#6c00d9]">BUILDS</span>
-                  </span>
-                </div>
-                
-                <div className="flex gap-6 text-[9px] text-slate-500 uppercase tracking-widest font-semibold items-center">
-                  <span className="hover:text-[#6c00d9] transition-colors cursor-pointer">PRIVACY POLICY</span>
-                  <span className="hover:text-[#6c00d9] transition-colors cursor-pointer">TERMS DOCK</span>
-                  <a href="/admin" className="hover:text-[#6c00d9] transition-colors cursor-pointer">ADMIN PORTAL</a>
-                </div>
-
-                <div className="text-[9px]">
-                  © 2026 CHRISBUILDS STUDIO. ALL RIGHTS RESERVED.
-                </div>
-              </div>
-            </footer>
-
-            {/* Sticky Floating WhatsApp Contact FAB */}
-            <motion.a
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 1.5, type: "spring", stiffness: 260, damping: 20 }}
-              whileHover={{ scale: 1.1, y: -2 }}
-              whileTap={{ scale: 0.9 }}
-              href="https://wa.me/918738882912?text=Hello%20ChrisBuilds,%20I%20have%20an%20idea%20for%20a%20project..."
-              target="_blank"
-              rel="noopener noreferrer"
-              className="fixed bottom-6 right-6 z-50 p-4 bg-[#25D366] hover:bg-[#20ba5a] text-white rounded-full shadow-2xl flex items-center justify-center cursor-pointer transition-colors duration-300 border border-white/20 group"
-              aria-label="Contact on WhatsApp"
+              What I Build
+            </button>
+            <button
+              onClick={() => scrollToSection("#contact")}
+              className="btn-luxury-outline px-9 py-4.5 rounded-full w-full sm:w-auto"
             >
-              <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current" xmlns="http://www.w3.org/2000/svg">
-                <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.458L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.37 9.864-9.799.002-2.623-1.023-5.086-2.885-6.948C16.512 2.016 14.06 1.01 11.43 1.01c-5.437 0-9.863 4.371-9.867 9.8.001 1.64.453 3.241 1.31 4.673L1.82 20.946l5.728-1.503c1.472.802 3.018 1.226 4.6 1.227h.009zm11.285-7.73c-.3-.149-1.772-.874-2.046-.973-.274-.1-.474-.149-.674.15-.2.299-.774.973-.948 1.172-.175.2-.349.224-.649.075-.3-.15-1.265-.466-2.41-1.485-.89-.794-1.49-1.775-1.665-2.074-.175-.3-.019-.461.13-.61.135-.133.3-.349.449-.524.149-.175.199-.299.299-.499.1-.2.05-.374-.025-.524-.075-.15-.674-1.622-.924-2.221-.244-.588-.492-.51-.674-.519-.173-.009-.372-.01-.572-.01-.2 0-.523.075-.797.374-.274.299-1.047 1.022-1.047 2.493 0 1.47 1.072 2.892 1.222 3.091.149.2 2.11 3.22 5.11 4.516.714.308 1.272.492 1.707.63.717.228 1.37.196 1.885.119.574-.086 1.772-.724 2.022-1.422.25-.699.25-1.297.175-1.422-.075-.125-.275-.199-.575-.349z" />
-              </svg>
-              <span className="absolute right-16 bg-white text-slate-800 text-[10px] font-bold py-1.5 px-3 rounded-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-300 shadow-md border border-slate-100 tracking-widest whitespace-nowrap uppercase">
-                Chat on WhatsApp
-              </span>
-            </motion.a>
+              Get in Touch
+            </button>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* 2. WHAT I BUILD SECTION */}
+      <WhatIBuildSection />
+
+      {/* 3. CONTACT SECTION */}
+      <ContactSectionBlock />
+
+      {/* Footer */}
+      <footer className="py-12 border-t border-white/5 px-6 text-center font-mono text-[9px] text-white/40 relative z-10">
+        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+          <span>© 2026 CHRISBUILDS. ALL RIGHTS PRESERVED.</span>
+          <span className="text-white/60 uppercase tracking-wider">Monochrome Protocol v1.1.0</span>
+        </div>
+      </footer>
           </motion.div>
         )}
       </AnimatePresence>
     </>
+  );
+}
+
+function WhatIBuildSection() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const inView = useInView(containerRef, { once: true, margin: "-100px" });
+
+  return (
+    <section
+      id="services"
+      ref={containerRef}
+      className="py-36 px-6 md:px-12 relative z-10 border-t border-white/5"
+    >
+      <div className="max-w-5xl mx-auto">
+        {/* Title */}
+        <div className="flex flex-col items-center mb-20 text-center">
+          <span className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.3em] text-white/30 mb-3">
+            <span>OFFERINGS</span>
+            <span className="font-pinyon text-white/40 text-lg font-normal lowercase tracking-normal capitalize">no.</span>
+            <span>002</span>
+          </span>
+          <h2 className="text-3xl md:text-5xl font-black uppercase tracking-premium text-white">
+            WHAT I BUILD
+          </h2>
+          <div className="silver-divider max-w-[120px] mt-6" />
+        </div>
+
+        {/* Services List - 2x2 Premium Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {SERVICES.map((service, idx) => (
+            <motion.div
+              key={service.id}
+              initial={{ opacity: 0, y: 35 }}
+              animate={inView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 1.0, delay: idx * 0.15, ease: [0.76, 0, 0.24, 1] }}
+              className="brushed-chrome rounded-3xl p-10 flex flex-col gap-8 text-left relative overflow-hidden group hover:scale-[1.01] hover:border-white/20 transition-all duration-500 border border-white/5 shadow-2xl"
+            >
+              {/* Subtle metallic shimmer moving across the card on hover */}
+              <div className="absolute inset-0 shimmer-line opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+
+              {/* Header with cap ID and signature */}
+              <div className="flex justify-between items-center border-b border-white/5 pb-4">
+                <span className="font-mono text-[9px] text-white/30 uppercase tracking-widest">CAP_ID // {service.id}</span>
+                <span className="flex items-center gap-1 font-mono text-[9px] text-white/40">
+                  <span className="font-pinyon text-white/30 text-base font-normal lowercase tracking-normal capitalize mr-0.5">no.</span>
+                  <span>{idx + 1}</span>
+                </span>
+              </div>
+
+              {/* Elegant bold sans-serif heading + cursive accent */}
+              <div>
+                <h3 className="text-xl md:text-2xl font-black uppercase tracking-wider text-white group-hover:logo-shine-text transition-all duration-300">
+                  {service.title}
+                </h3>
+                <span className="font-pinyon text-white/40 text-[14px] italic block mt-1 lowercase">
+                  crafted // {service.specs[0].toLowerCase()}
+                </span>
+              </div>
+
+              {/* One-sentence premium copy */}
+              <p className="text-[11px] text-white/40 tracking-[0.18em] leading-relaxed flex-grow font-mono uppercase">
+                {service.description}
+              </p>
+
+              {/* Refined capability tags */}
+              <div className="flex flex-wrap gap-2 pt-4 border-t border-white/5 relative z-10">
+                {service.specs.map((spec) => (
+                  <span
+                    key={spec}
+                    className="font-mono text-[9px] uppercase tracking-[0.2em] px-3.5 py-1.5 rounded-full bg-white/[0.02] border border-white/5 text-white/40 group-hover:text-white/70 group-hover:border-white/15 transition-all duration-300"
+                  >
+                    {spec}
+                  </span>
+                ))}
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ContactSectionBlock() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const inView = useInView(containerRef, { once: true, margin: "-100px" });
+
+  const contactLinks = [
+    { label: "Email", value: "chrisbuilds.dev@gmail.com", href: "mailto:chrisbuilds.dev@gmail.com?subject=Project Inquiry", icon: <Mail className="w-4 h-4 text-white/40" strokeWidth={1} /> },
+    { label: "Phone", value: "+91 87388 82912", href: "tel:+918738882912", icon: <Phone className="w-4 h-4 text-white/40" strokeWidth={1} /> },
+    { label: "WhatsApp", value: "+91 87388 82912", href: "https://wa.me/918738882912", icon: <MessageSquare className="w-4 h-4 text-white/40" strokeWidth={1} /> },
+    { label: "Telegram", value: "@chrisbuilds", href: "https://t.me/chrisbuilds", icon: <Send className="w-4 h-4 text-white/40" strokeWidth={1} /> },
+    { 
+      label: "LinkedIn", 
+      value: "linkedin.com/in/chrisbuilds", 
+      href: "#", 
+      icon: (
+        <svg className="w-4 h-4 text-white/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
+          <rect width="4" height="12" x="2" y="9" />
+          <circle cx="4" cy="4" r="2" />
+        </svg>
+      )
+    },
+    { 
+      label: "GitHub", 
+      value: "github.com/chrislucianm-ui", 
+      href: "https://github.com/chrislucianm-ui", 
+      icon: (
+        <svg className="w-4 h-4 text-white/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" />
+          <path d="M9 18c-4.51 2-5-2-7-2" />
+        </svg>
+      )
+    }
+  ];
+
+  return (
+    <section
+      id="contact"
+      ref={containerRef}
+      className="py-36 px-6 md:px-12 relative z-10 border-t border-white/5"
+    >
+      <div className="max-w-4xl mx-auto">
+        
+        {/* Title */}
+        <div className="flex flex-col items-center mb-20 text-center">
+          <span className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.3em] text-white/30 mb-3">
+            <span>CONNECTION</span>
+            <span className="font-pinyon text-white/40 text-lg font-normal lowercase tracking-normal capitalize">no.</span>
+            <span>003</span>
+          </span>
+          <h2 className="text-3xl md:text-5xl font-black uppercase tracking-premium text-white">
+            GET IN TOUCH
+          </h2>
+          <div className="silver-divider max-w-[120px] mt-6" />
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 25 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.8 }}
+          className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto text-left"
+        >
+          {contactLinks.map((item) => (
+            <a
+              key={item.label}
+              href={item.href}
+              className="glass-panel p-8 rounded-3xl flex items-center gap-4 group relative overflow-hidden border border-white/5 shadow-2xl hover:scale-[1.01] hover:border-white/20 transition-all duration-500"
+            >
+              {/* Subtle metallic shimmer moving across the card on hover */}
+              <div className="absolute inset-0 shimmer-line opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+
+              <div className="p-2 bg-white/5 border border-white/10 rounded-xl group-hover:scale-105 transition-transform duration-300 relative z-10">
+                {item.icon}
+              </div>
+              <div className="flex flex-col font-mono relative z-10">
+                <span className="text-[8px] text-white/30 uppercase tracking-[0.25em] font-medium">
+                  {item.label}
+                </span>
+                <span className="text-[11px] text-white/60 tracking-wide font-light break-all mt-1 group-hover:text-white transition-colors">
+                  {item.value}
+                </span>
+              </div>
+            </a>
+          ))}
+        </motion.div>
+
+        {/* Action Button */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          className="mt-12 flex justify-center"
+        >
+          <a
+            href="mailto:chrisbuilds.dev@gmail.com?subject=Project Collaboration Proposal"
+            className="btn-luxury px-10 py-4.5 rounded-full inline-flex items-center gap-2"
+          >
+            Start a Project <ArrowUpRight className="w-4 h-4 animate-pulse" />
+          </a>
+        </motion.div>
+
+      </div>
+    </section>
   );
 }

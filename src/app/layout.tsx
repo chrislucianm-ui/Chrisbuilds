@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Orbitron } from "next/font/google";
+import { Geist, Geist_Mono, Pinyon_Script, Cormorant_Garamond } from "next/font/google";
 import "./globals.css";
+import { SmoothScrollProvider } from "@/app/providers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -12,28 +13,31 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const orbitron = Orbitron({
-  variable: "--font-orbitron",
+const pinyonScript = Pinyon_Script({
+  weight: "400",
   subsets: ["latin"],
+  variable: "--font-pinyon",
+});
+
+const cormorantGaramond = Cormorant_Garamond({
+  weight: ["300", "400", "500", "600", "700"],
+  style: ["normal", "italic"],
+  subsets: ["latin"],
+  variable: "--font-cormorant",
 });
 
 export const metadata: Metadata = {
-  title: "ChrisBuilds | Award-Winning Creative Agency & Digital Studio",
-  description: "We design digital experiences that people remember. Premium custom websites, mobile apps, and digital products crafted for ambitious brands.",
-  keywords: ["ChrisBuilds", "creative agency", "design studio", "digital products", "Awwwards design", "Three.js spline", "Stripe design", "next.js portfolio"],
+  title: "ChrisBuilds | Creative Systems & Dynamic Web Engineering",
+  description: "Bespoke digital portfolios, Next.js web applications, and custom software systems crafted with minimalist precision.",
+  keywords: ["ChrisBuilds", "minimalist portfolio", "Next.js", "React", "TypeScript", "Tailwind CSS", "Awwwards design"],
   authors: [{ name: "Chris" }],
   openGraph: {
-    title: "ChrisBuilds | Award-Winning Creative Agency & Digital Studio",
-    description: "We design digital experiences that people remember. Premium custom websites, mobile apps, and digital products.",
+    title: "ChrisBuilds | Creative Systems & Dynamic Web Engineering",
+    description: "Bespoke digital portfolios, Next.js web applications, and custom software systems.",
     url: "https://chrisbuilds.com",
     siteName: "ChrisBuilds",
     locale: "en_US",
     type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "ChrisBuilds | Award-Winning Creative Agency & Digital Studio",
-    description: "We design digital experiences that people remember.",
   },
 };
 
@@ -45,18 +49,13 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${orbitron.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${pinyonScript.variable} ${cormorantGaramond.variable} h-full antialiased`}
     >
-      <body className="min-h-full bg-bright-sky text-slate-800 selection:bg-primary-pink/10 selection:text-[#d9006c] relative overflow-x-hidden">
-        {/* Ambient Fluid Sky & Cloud Backgrounds */}
-        <div className="fluid-bg-transition" />
-        <div className="cloud-drift-bg" />
-        <div className="fluid-blob-1" />
-        <div className="fluid-blob-2" />
-        <div className="fluid-blob-3" />
-        {children}
+      <body className="min-h-full bg-black text-white selection:bg-white/10 selection:text-white relative overflow-x-hidden">
+        <SmoothScrollProvider>
+          {children}
+        </SmoothScrollProvider>
       </body>
     </html>
   );
 }
-
