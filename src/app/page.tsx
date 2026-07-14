@@ -46,7 +46,8 @@ export default function Home() {
   const [triggerSweep, setTriggerSweep] = useState(false);
   const [mousePos, setMousePos] = useState({ x: -200, y: -200 });
   const [isMobile, setIsMobile] = useState(false);
-  const heroBgRef = useRef<HTMLImageElement>(null);
+  const heroBgDesktopRef = useRef<HTMLImageElement>(null);
+  const heroBgMobileRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -83,10 +84,11 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    if (!heroBgRef.current) return;
+    const targets = [heroBgDesktopRef.current, heroBgMobileRef.current].filter(Boolean);
+    if (targets.length === 0) return;
 
     // GSAP slow zoom and Y pan (1.00 -> 1.03 over 40s)
-    const anim = gsap.to(heroBgRef.current, {
+    const anim = gsap.to(targets, {
       scale: 1.03,
       y: -20,
       duration: 40,
@@ -102,7 +104,7 @@ export default function Home() {
       const yPercent = (clientY / window.innerHeight) - 0.5;
 
       const currentScrollY = window.scrollY;
-      gsap.to(heroBgRef.current, {
+      gsap.to(targets, {
         x: xPercent * 20, // range of 20px (±10px)
         y: yPercent * 16 - 20 - currentScrollY * 0.08, // range of 16px (±8px) plus scroll offset
         duration: 2.0,
@@ -114,7 +116,7 @@ export default function Home() {
     // Scroll parallax listener
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-      gsap.to(heroBgRef.current, {
+      gsap.to(targets, {
         y: -20 - currentScrollY * 0.08,
         duration: 0.8,
         ease: "power1.out",
@@ -223,19 +225,18 @@ export default function Home() {
             id="home"
             className="min-h-screen flex flex-col justify-center items-center md:items-start px-6 md:px-12 lg:px-16 text-center md:text-left relative z-10 max-w-7xl mx-auto w-full"
           >
-            {/* Full-Screen Cinematic Image Layer using optimized next/image */}
-            <div className="absolute inset-0 z-[-2] w-full h-full overflow-hidden pointer-events-none select-none">
+            {/* Desktop 4K Background Image (hidden on mobile) */}
+            <div className="absolute inset-0 z-[-2] w-full h-full overflow-hidden pointer-events-none select-none hidden md:block">
               <Image
-                ref={heroBgRef}
-                src="/hero-bg.jpg"
-                alt="Luxury space cinematic wallpaper"
+                ref={heroBgDesktopRef}
+                src="/hero-bg-desktop.png"
+                alt="Luxury space cinematic wallpaper 4K"
                 fill
                 priority
                 quality={100}
-                sizes="(max-width: 768px) 2160px, (max-width: 1200px) 2560px, 3840px"
+                sizes="(max-width: 1200px) 2560px, 3840px"
                 className="object-cover"
                 style={{
-                  objectPosition: isMobile ? "70% center" : "center center",
                   transformOrigin: "center center",
                 }}
               />
@@ -247,6 +248,29 @@ export default function Home() {
               <div className="twinkle-star" style={{ top: "25%", left: "45%", animationDelay: "4.5s" }} />
               <div className="twinkle-star" style={{ top: "70%", left: "80%", animationDelay: "2s" }} />
               <div className="twinkle-star" style={{ top: "10%", left: "85%", animationDelay: "0.5s" }} />
+            </div>
+
+            {/* Mobile 4K Portrait Background Image (hidden on desktop) */}
+            <div className="absolute inset-0 z-[-2] w-full h-full overflow-hidden pointer-events-none select-none md:hidden">
+              <Image
+                ref={heroBgMobileRef}
+                src="/hero-bg-mobile.png"
+                alt="Luxury space cinematic wallpaper mobile portrait 4K"
+                fill
+                priority
+                quality={100}
+                sizes="2160px"
+                className="object-cover"
+                style={{
+                  transformOrigin: "center center",
+                }}
+              />
+              
+              {/* Twinkling star overlays (extremely subtle, high-performance) */}
+              <div className="twinkle-star" style={{ top: "20%", left: "15%", animationDelay: "0.5s" }} />
+              <div className="twinkle-star" style={{ top: "40%", left: "80%", animationDelay: "2s" }} />
+              <div className="twinkle-star" style={{ top: "65%", left: "25%", animationDelay: "1s" }} />
+              <div className="twinkle-star" style={{ top: "10%", left: "70%", animationDelay: "3.5s" }} />
             </div>
 
             {/* Light volumetric contrast overlay */}
