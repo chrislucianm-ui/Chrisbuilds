@@ -231,18 +231,18 @@ export default function Home() {
             {/* Faint Film Grain Overlay */}
             <div className="film-grain" />
 
-            <div className="max-w-4xl flex flex-col items-start gap-6 w-full mt-16 md:mt-0">
+            <div className="max-w-[750px] flex flex-col items-start gap-2 w-full mt-16 md:mt-0">
               <motion.h1
                 initial={{ opacity: 0, y: 25 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.15 }}
-                className="text-5xl sm:text-7xl md:text-8xl font-black tracking-premium uppercase leading-[0.85] text-left text-white max-w-4xl flex flex-col items-start gap-1"
+                className="font-black tracking-[-0.03em] uppercase leading-[0.9] text-left text-white max-w-[750px] flex flex-col items-start gap-1"
               >
-                <span>We build digital</span>
-                <span className="bg-gradient-to-b from-white/70 via-white/95 to-white bg-clip-text text-transparent">
+                <span className="text-4xl sm:text-6xl md:text-[5.2rem] lg:text-[6.2rem] w-full block drop-shadow-[0_2px_10px_rgba(0,0,0,0.3)]">We build digital</span>
+                <span className="text-5xl sm:text-7xl md:text-[5.8rem] lg:text-[6.8rem] bg-gradient-to-b from-white/80 via-white/95 to-white bg-clip-text text-transparent drop-shadow-[0_2px_10px_rgba(0,0,0,0.3)] block">
                   experiences.
                 </span>
-                <span className="font-pinyon text-[#BFBFBF] text-3xl sm:text-4xl md:text-5xl font-normal lowercase tracking-[0.05em] normal-case mt-4">
+                <span className="font-pinyon text-[#BFBFBF] text-3xl sm:text-4xl md:text-[2.75rem] font-normal lowercase tracking-[0.04em] normal-case mt-2 drop-shadow-[0_2px_8px_rgba(0,0,0,0.3)] block">
                   that people remember.
                 </span>
               </motion.h1>
@@ -251,7 +251,7 @@ export default function Home() {
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.3 }}
-                className="flex flex-row items-center gap-4 mt-8 w-full justify-start"
+                className="flex flex-row items-center gap-4 mt-5 w-full justify-start"
               >
                 <button
                   onClick={() => scrollToSection("#services")}
