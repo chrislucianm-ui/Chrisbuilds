@@ -172,8 +172,12 @@ export default function Home() {
           <HeroBackgroundCanvas />
         </motion.div>
 
-        {/* Soft ambient center glow overlay for editorial readability */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.035)_0%,rgba(0,0,0,0.6)_80%)] -z-5 pointer-events-none" />
+        {/* 70-80% Black Overlay for contrast + edge vignette */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.02)_0%,rgba(0,0,0,0.76)_90%)] -z-5 pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_30%,rgba(0,0,0,0.85)_100%)] -z-4 pointer-events-none" />
+
+        {/* Faint Film Grain Overlay */}
+        <div className="film-grain" />
 
         <div className="max-w-4xl mx-auto flex flex-col items-center gap-8">
           <motion.h1
@@ -192,9 +196,10 @@ export default function Home() {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
-            className="text-[9px] sm:text-[10px] font-mono uppercase tracking-[0.3em] text-white/50 max-w-xl leading-relaxed mt-2"
+            className="text-[9px] sm:text-[10px] font-mono uppercase tracking-[0.25em] text-white/50 max-w-2xl leading-relaxed mt-2"
           >
-            Bespoke design. High-performance systems.
+            Bespoke websites, intelligent web applications,<br />
+            and premium mobile experiences crafted with precision.
           </motion.p>
 
           <motion.div
@@ -213,7 +218,7 @@ export default function Home() {
               onClick={() => scrollToSection("#contact")}
               className="btn-luxury-outline px-9 py-4.5 rounded-full w-full sm:w-auto"
             >
-              Get in Touch
+              Let's Talk
             </button>
           </motion.div>
         </div>
