@@ -236,15 +236,15 @@ export default function Home() {
                 initial={{ opacity: 0, y: 25 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.15 }}
-                className="font-black tracking-[-0.03em] uppercase leading-[0.9] text-center md:text-left text-white max-w-[750px] flex flex-col items-center md:items-start gap-1 w-full"
+                className="font-black tracking-[-0.03em] uppercase leading-[0.85] text-center md:text-left text-white max-w-[750px] flex flex-col items-center md:items-start gap-0 w-full"
               >
-                <span className="text-4xl sm:text-6xl md:text-[5.2rem] lg:text-[6.2rem] w-full block drop-shadow-[0_2px_10px_rgba(0,0,0,0.3)]">
-                  <span className="md:inline block">We build</span> <span className="md:inline block">digital</span>
+                <span className="text-[clamp(1.8rem,8.2vw,6.2rem)] font-black w-full block whitespace-nowrap drop-shadow-[0_2px_10px_rgba(0,0,0,0.3)]">
+                  We build digital
                 </span>
-                <span className="text-5xl sm:text-7xl md:text-[5.8rem] lg:text-[6.8rem] bg-gradient-to-b from-white/80 via-white/95 to-white bg-clip-text text-transparent drop-shadow-[0_2px_10px_rgba(0,0,0,0.3)] block w-full text-center md:text-left">
+                <span className="text-[clamp(1.5rem,7vw,5.3rem)] bg-gradient-to-b from-white/80 via-white/95 to-white bg-clip-text text-transparent drop-shadow-[0_2px_10px_rgba(0,0,0,0.3)] block w-full text-center md:text-left whitespace-nowrap mt-1 md:mt-0">
                   experiences.
                 </span>
-                <span className="font-pinyon text-[#BFBFBF] text-3xl sm:text-4xl md:text-[2.75rem] font-normal lowercase tracking-[0.04em] normal-case mt-2 drop-shadow-[0_2px_8px_rgba(0,0,0,0.3)] block w-full text-center md:text-left">
+                <span className="font-pinyon text-[#BFBFBF] text-3xl sm:text-4xl md:text-[2.75rem] font-normal lowercase tracking-[0.04em] normal-case mt-3.5 md:mt-2.5 drop-shadow-[0_2px_8px_rgba(0,0,0,0.3)] block w-full text-center md:text-left">
                   that people remember.
                 </span>
               </motion.h1>
@@ -257,13 +257,13 @@ export default function Home() {
               >
                 <button
                   onClick={() => scrollToSection("#services")}
-                  className="btn-luxury px-9 py-4 rounded-full"
+                  className="btn-luxury px-9 py-4 rounded-full w-44 md:w-auto"
                 >
                   What I Build
                 </button>
                 <button
                   onClick={() => scrollToSection("#contact")}
-                  className="btn-luxury-outline px-9 py-4 rounded-full"
+                  className="btn-luxury-outline px-9 py-4 rounded-full w-44 md:w-auto"
                 >
                   Let's Talk
                 </button>
