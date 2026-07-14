@@ -236,11 +236,14 @@ export default function Home() {
                 initial={{ opacity: 0, y: 25 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.15 }}
-                className="text-5xl sm:text-7xl md:text-8xl font-black tracking-premium uppercase leading-[0.88] text-left text-white max-w-4xl"
+                className="text-5xl sm:text-7xl md:text-8xl font-black tracking-premium uppercase leading-[0.85] text-left text-white max-w-4xl flex flex-col items-start gap-1"
               >
-                Crafted to be <br />
+                <span>We build digital</span>
                 <span className="bg-gradient-to-b from-white/70 via-white/95 to-white bg-clip-text text-transparent">
-                  remembered.
+                  experiences.
+                </span>
+                <span className="font-pinyon text-white/55 text-3xl sm:text-4xl md:text-5xl font-normal lowercase tracking-normal normal-case mt-3">
+                  that people remember.
                 </span>
               </motion.h1>
 
