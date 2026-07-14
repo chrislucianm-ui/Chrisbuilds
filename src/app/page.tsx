@@ -3,8 +3,8 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import { ArrowUpRight, Mail, Phone, MessageSquare, Send } from "lucide-react";
-import HeroBackgroundCanvas from "@/components/HeroBackgroundCanvas";
 import LoadingScreen from "@/components/LoadingScreen";
+import { gsap } from "gsap";
 
 interface Service {
   id: string;
@@ -44,6 +44,17 @@ export default function Home() {
   const [loadingComplete, setLoadingComplete] = useState(false);
   const [triggerSweep, setTriggerSweep] = useState(false);
   const [mousePos, setMousePos] = useState({ x: -200, y: -200 });
+  const [isMobile, setIsMobile] = useState(false);
+  const heroBgRef = useRef<HTMLImageElement>(null);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   useEffect(() => {
     if (loadingComplete) {
@@ -70,6 +81,41 @@ export default function Home() {
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
+  useEffect(() => {
+    if (!heroBgRef.current) return;
+
+    // GSAP slow zoom and Y pan (1.00 -> 1.03 over 40s)
+    const anim = gsap.to(heroBgRef.current, {
+      scale: 1.03,
+      y: -20,
+      duration: 40,
+      ease: "sine.inOut",
+      repeat: -1,
+      yoyo: true,
+    });
+
+    // Mouse parallax listener (X: +-10px, Y: +-8px max)
+    const handleMouseMove = (e: MouseEvent) => {
+      const { clientX, clientY } = e;
+      const xPercent = (clientX / window.innerWidth) - 0.5;
+      const yPercent = (clientY / window.innerHeight) - 0.5;
+
+      gsap.to(heroBgRef.current, {
+        x: xPercent * 20, // total range of 20px (±10px)
+        y: yPercent * 16 - 10, // total range of 16px (±8px)
+        duration: 2.0,
+        ease: "power2.out",
+        overwrite: "auto",
+      });
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => {
+      anim.kill();
+      window.removeEventListener("mousemove", handleMouseMove);
+    };
+  }, [loadingComplete]);
+
   const scrollToSection = (id: string) => {
     const element = document.querySelector(id);
     if (element) {
@@ -88,108 +134,115 @@ export default function Home() {
             transition={{ duration: 1.0 }}
             className="relative min-h-screen bg-black text-white selection:bg-white/10 selection:text-white luxury-grid"
           >
-        {/* Faint silver light sweep overlay during reveal */}
-        {triggerSweep && (
-          <motion.div
-            initial={{ y: "-100%", opacity: 0 }}
-            animate={{ y: "100%", opacity: [0, 0.25, 0] }}
-            transition={{ duration: 1.8, ease: "easeInOut" }}
-            className="fixed inset-0 bg-gradient-to-b from-transparent via-white/12 to-transparent pointer-events-none z-[9998]"
+            {/* Cinematic Faint Silver Light Sweep Overlay */}
+            {triggerSweep && (
+              <motion.div
+                initial={{ y: "-100%", opacity: 0 }}
+                animate={{ y: "100%", opacity: [0, 0.25, 0] }}
+                transition={{ duration: 1.8, ease: "easeInOut" }}
+                className="fixed inset-0 bg-gradient-to-b from-transparent via-white/12 to-transparent pointer-events-none z-[9998]"
+              />
+            )}
+
+            {/* Subtle Monochrome Mouse Spotlight */}
+          <div
+            className="spotlight-glow hidden md:block"
+            style={{ left: mousePos.x, top: mousePos.y }}
           />
-        )}
 
-        {/* Subtle Monochrome Mouse Spotlight */}
-      <div
-        className="spotlight-glow hidden md:block"
-        style={{ left: mousePos.x, top: mousePos.y }}
-      />
-
-      {/* Header Brand */}
-      <header className="absolute top-0 left-0 right-0 z-40 py-8 px-6 md:px-12 flex justify-between items-center max-w-6xl mx-auto">
-        <a 
-          href="#home"
-          onClick={(e) => {
-            e.preventDefault();
-            scrollToSection("#home");
-          }}
-          className="flex items-baseline select-none text-white hover:text-white/80 transition-colors relative z-10"
-        >
-          <span className="font-pinyon text-white/50 text-xl font-normal lowercase tracking-normal pr-1.5 capitalize">Chris</span>
-          <span className="font-sans text-[10px] uppercase tracking-[0.2em] font-black">BUILDS</span>
-        </a>
-
-        {/* Center Nav Links */}
-        <nav className="hidden md:flex items-center gap-8 relative z-10">
-          {[
-            { name: "HOME", href: "#home" },
-            { name: "SERVICES", href: "#services" },
-            { name: "WORK", href: "#services" },
-            { name: "ABOUT", href: "#services" },
-            { name: "CONTACT", href: "#contact" }
-          ].map((link, idx) => (
-            <a
-              key={link.name}
-              href={link.href}
+          {/* Header Brand */}
+          <header className="absolute top-0 left-0 right-0 z-40 py-8 px-6 md:px-12 flex justify-between items-center max-w-7xl mx-auto">
+            <a 
+              href="#home"
               onClick={(e) => {
                 e.preventDefault();
-                scrollToSection(link.href);
+                scrollToSection("#home");
               }}
-              className="font-mono text-[8px] uppercase tracking-[0.25em] text-white/50 hover:text-white transition-colors relative py-2 group"
+              className="flex items-baseline select-none text-white hover:text-white/80 transition-colors relative z-10"
             >
-              {link.name}
-              {idx === 0 && (
-                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 bg-white rounded-full" />
-              )}
+              <span className="font-pinyon text-white/50 text-xl font-normal lowercase tracking-normal pr-1.5 capitalize">Chris</span>
+              <span className="font-sans text-[10px] uppercase tracking-[0.2em] font-black">BUILDS</span>
             </a>
-          ))}
-        </nav>
 
-        {/* Right Button */}
-        <a
-          href="#contact"
-          onClick={(e) => {
-            e.preventDefault();
-            scrollToSection("#contact");
-          }}
-          className="font-mono text-[8px] uppercase tracking-[0.25em] px-5 py-2.5 rounded-full border border-white/10 bg-white/[0.02] text-white hover:bg-white hover:text-black hover:border-white transition-all duration-300 relative z-10"
-        >
-          Let's Talk ↗
-        </a>
-      </header>
+            {/* Center Nav Links */}
+            <nav className="hidden md:flex items-center gap-8 relative z-10">
+              {[
+                { name: "HOME", href: "#home" },
+                { name: "SERVICES", href: "#services" },
+                { name: "WORK", href: "#services" },
+                { name: "ABOUT", href: "#services" },
+                { name: "CONTACT", href: "#contact" }
+              ].map((link, idx) => (
+                <a
+                  key={link.name}
+                  href={link.href}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    scrollToSection(link.href);
+                  }}
+                  className="font-mono text-[8px] uppercase tracking-[0.25em] text-white/50 hover:text-white transition-colors relative py-2 group"
+                >
+                  {link.name}
+                  {idx === 0 && (
+                    <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 bg-white rounded-full" />
+                  )}
+                </a>
+              ))}
+            </nav>
 
-      {/* 1. HERO SECTION */}
-      <section
-        id="home"
-        className="min-h-screen flex flex-col justify-center items-start px-6 md:px-20 text-left relative z-10 max-w-6xl mx-auto w-full"
-      >
-        {/* Cinematic WebGL Background Canvas with Gradual Reveal */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 2.2, delay: 0.4 }}
-          className="absolute inset-0 -z-10 pointer-events-none"
-        >
-          <HeroBackgroundCanvas />
-        </motion.div>
+            {/* Right Button */}
+            <a
+              href="#contact"
+              onClick={(e) => {
+                e.preventDefault();
+                scrollToSection("#contact");
+              }}
+              className="font-mono text-[8px] uppercase tracking-[0.25em] px-5 py-2.5 rounded-full border border-white/10 bg-white/[0.02] text-white hover:bg-white hover:text-black hover:border-white transition-all duration-300 relative z-10"
+            >
+              Let's Talk ↗
+            </a>
+          </header>
 
-        {/* 35-45% Black Overlay for contrast and readability */}
-        <div className="absolute inset-0 bg-black/40 -z-5 pointer-events-none" />
-
-        {/* Faint Film Grain Overlay */}
-        <div className="film-grain" />
-
-        <div className="max-w-3xl flex flex-col items-start gap-6 w-full mt-16 md:mt-0">
-          <motion.h1
-            initial={{ opacity: 0, y: 25 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.15 }}
-            className="text-5xl sm:text-7xl md:text-8xl font-black tracking-premium uppercase leading-[0.88] text-left text-white"
+          {/* 1. HERO SECTION */}
+          <section
+            id="home"
+            className="min-h-screen flex flex-col justify-center items-start px-6 md:pl-12 lg:pl-16 text-left relative z-10 max-w-7xl mx-auto w-full"
           >
-            We build digital <br />
-            <span className="bg-gradient-to-b from-white/70 via-white/95 to-white bg-clip-text text-transparent">
-              experiences.
-            </span>
-          </motion.h1>
+            {/* Full-Screen Cinematic Image Layer */}
+            <img
+              ref={heroBgRef}
+              src="/hero-bg.jpg"
+              alt="Luxury space cinematic wallpaper"
+              className="absolute inset-0 w-full h-full object-cover z-[-2] pointer-events-none select-none"
+              style={{
+                objectPosition: isMobile ? "70% center" : "center center",
+                transformOrigin: "center center",
+              }}
+            />
+
+            {/* Light volumetric contrast overlay */}
+            <div 
+              className="absolute inset-0 z-[-1] pointer-events-none"
+              style={{
+                background: "linear-gradient(to bottom, rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0.30))"
+              }}
+            />
+
+            {/* Faint Film Grain Overlay */}
+            <div className="film-grain" />
+
+            <div className="max-w-4xl flex flex-col items-start gap-6 w-full mt-16 md:mt-0">
+              <motion.h1
+                initial={{ opacity: 0, y: 25 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.15 }}
+                className="text-5xl sm:text-7xl md:text-8xl font-black tracking-premium uppercase leading-[0.88] text-left text-white max-w-4xl"
+              >
+                Crafted to be <br />
+                <span className="bg-gradient-to-b from-white/70 via-white/95 to-white bg-clip-text text-transparent">
+                  remembered.
+                </span>
+              </motion.h1>
 
           <motion.p
             initial={{ opacity: 0, y: 15 }}
