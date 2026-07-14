@@ -242,40 +242,30 @@ export default function Home() {
                 <span className="bg-gradient-to-b from-white/70 via-white/95 to-white bg-clip-text text-transparent">
                   experiences.
                 </span>
-                <span className="font-pinyon text-white/55 text-3xl sm:text-4xl md:text-5xl font-normal lowercase tracking-normal normal-case mt-3">
+                <span className="font-pinyon text-[#BFBFBF] text-3xl sm:text-4xl md:text-5xl font-normal lowercase tracking-[0.05em] normal-case mt-4">
                   that people remember.
                 </span>
               </motion.h1>
 
-          <motion.p
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-            className="text-[9px] sm:text-[10px] font-mono uppercase tracking-[0.25em] text-white/50 max-w-xl leading-relaxed text-left mt-2"
-          >
-            Bespoke websites, intelligent web applications,<br />
-            and premium mobile experiences crafted with precision.
-          </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.45 }}
-            className="flex flex-row items-center gap-4 mt-6 w-full justify-start"
-          >
-            <button
-              onClick={() => scrollToSection("#services")}
-              className="btn-luxury px-9 py-4 rounded-full"
-            >
-              What I Build
-            </button>
-            <button
-              onClick={() => scrollToSection("#contact")}
-              className="btn-luxury-outline px-9 py-4 rounded-full"
-            >
-              Let's Talk
-            </button>
-          </motion.div>
+              <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.3 }}
+                className="flex flex-row items-center gap-4 mt-8 w-full justify-start"
+              >
+                <button
+                  onClick={() => scrollToSection("#services")}
+                  className="btn-luxury px-9 py-4 rounded-full"
+                >
+                  What I Build
+                </button>
+                <button
+                  onClick={() => scrollToSection("#contact")}
+                  className="btn-luxury-outline px-9 py-4 rounded-full"
+                >
+                  Let's Talk
+                </button>
+              </motion.div>
         </div>
 
         {/* Scroll Indicator */}
