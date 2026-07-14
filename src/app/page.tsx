@@ -115,7 +115,7 @@ export default function Home() {
           className="flex items-baseline select-none text-white hover:text-white/80 transition-colors relative z-10"
         >
           <span className="font-pinyon text-white/50 text-xl font-normal lowercase tracking-normal pr-1.5 capitalize">Chris</span>
-          <span className="font-mono text-[9px] uppercase tracking-[0.25em] font-black">BUILDS</span>
+          <span className="font-sans text-[10px] uppercase tracking-[0.2em] font-black">BUILDS</span>
         </a>
 
         {/* Center Nav Links */}
@@ -160,7 +160,7 @@ export default function Home() {
       {/* 1. HERO SECTION */}
       <section
         id="home"
-        className="min-h-screen flex flex-col justify-center items-center px-6 text-center relative z-10"
+        className="min-h-screen flex flex-col justify-center items-start px-6 md:px-20 text-left relative z-10 max-w-6xl mx-auto w-full"
       >
         {/* Cinematic WebGL Background Canvas with Gradual Reveal */}
         <motion.div
@@ -172,22 +172,21 @@ export default function Home() {
           <HeroBackgroundCanvas />
         </motion.div>
 
-        {/* 70-80% Black Overlay for contrast + edge vignette */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.02)_0%,rgba(0,0,0,0.76)_90%)] -z-5 pointer-events-none" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_30%,rgba(0,0,0,0.85)_100%)] -z-4 pointer-events-none" />
+        {/* 35-45% Black Overlay for contrast and readability */}
+        <div className="absolute inset-0 bg-black/40 -z-5 pointer-events-none" />
 
         {/* Faint Film Grain Overlay */}
         <div className="film-grain" />
 
-        <div className="max-w-4xl mx-auto flex flex-col items-center gap-8">
+        <div className="max-w-3xl flex flex-col items-start gap-6 w-full mt-16 md:mt-0">
           <motion.h1
             initial={{ opacity: 0, y: 25 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.15 }}
-            className="text-4xl sm:text-6xl md:text-8xl font-black tracking-premium uppercase leading-[0.95]"
+            className="text-5xl sm:text-7xl md:text-8xl font-black tracking-premium uppercase leading-[0.88] text-left text-white"
           >
             We build digital <br />
-            <span className="bg-gradient-to-b from-white/70 via-white/95 to-white bg-clip-text text-transparent drop-shadow-[0_15px_30px_rgba(255,255,255,0.12)]">
+            <span className="bg-gradient-to-b from-white/70 via-white/95 to-white bg-clip-text text-transparent">
               experiences.
             </span>
           </motion.h1>
@@ -196,7 +195,7 @@ export default function Home() {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
-            className="text-[9px] sm:text-[10px] font-mono uppercase tracking-[0.25em] text-white/50 max-w-2xl leading-relaxed mt-2"
+            className="text-[9px] sm:text-[10px] font-mono uppercase tracking-[0.25em] text-white/50 max-w-xl leading-relaxed text-left mt-2"
           >
             Bespoke websites, intelligent web applications,<br />
             and premium mobile experiences crafted with precision.
@@ -206,17 +205,17 @@ export default function Home() {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.45 }}
-            className="flex flex-col sm:flex-row items-center gap-4 mt-6"
+            className="flex flex-row items-center gap-4 mt-6 w-full justify-start"
           >
             <button
               onClick={() => scrollToSection("#services")}
-              className="btn-luxury px-9 py-4.5 rounded-full w-full sm:w-auto"
+              className="btn-luxury px-9 py-4 rounded-full"
             >
               What I Build
             </button>
             <button
               onClick={() => scrollToSection("#contact")}
-              className="btn-luxury-outline px-9 py-4.5 rounded-full w-full sm:w-auto"
+              className="btn-luxury-outline px-9 py-4 rounded-full"
             >
               Let's Talk
             </button>

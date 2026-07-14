@@ -42,9 +42,10 @@ export default function HeroBackgroundCanvas() {
     const bgTexture = textureLoader.load("/hero-bg.jpg", (tex) => {
       tex.generateMipmaps = false;
       tex.minFilter = THREE.LinearFilter;
+      handleResize(); // Trigger cover calculations once texture dimensions are resolved
     });
 
-    // Create a massive background plane mapping the image
+    // Create a background plane mapping the image
     const bgGeom = new THREE.PlaneGeometry(36, 24);
     const bgMat = new THREE.MeshBasicMaterial({
       map: bgTexture,
@@ -53,8 +54,11 @@ export default function HeroBackgroundCanvas() {
       depthWrite: false,
     });
     const bgMesh = new THREE.Mesh(bgGeom, bgMat);
-    bgMesh.position.set(0, -1.0, -18); // Position horizon slightly down
+    bgMesh.position.set(0, 0, -18); // Put it deep behind all elements
     scene.add(bgMesh);
+
+    // Initialize baseScale userData parameters
+    bgMesh.userData = { baseScaleX: 1.0, baseScaleY: 1.0 };
 
     // 3. Helper to create circular star overlay textures
     const createStarTexture = (opacity = 1.0) => {
@@ -74,8 +78,8 @@ export default function HeroBackgroundCanvas() {
       return new THREE.CanvasTexture(starCanvas);
     };
 
-    const textureFar = createStarTexture(0.5);
-    const textureMid = createStarTexture(0.7);
+    const textureFar = createStarTexture(0.45);
+    const textureMid = createStarTexture(0.65);
     const textureDust = createStarTexture(0.25);
 
     // Star Groups (for parallax depth overlaying the image)
@@ -178,7 +182,7 @@ export default function HeroBackgroundCanvas() {
     glowMesh.position.set(0, 0, -10);
     scene.add(glowMesh);
 
-    // 5. Dynamic Shooting Stars (Streaking across)
+    // 5. Dynamic Shooting Stars (Streaking across every 20-30s)
     const shootingStarGeom = new THREE.BufferGeometry();
     const streakPoints = [
       new THREE.Vector3(0, 0, 0),
@@ -211,12 +215,12 @@ export default function HeroBackgroundCanvas() {
       shootingStar.position.set(streakStartPos.x, streakStartPos.y, streakStartPos.z);
     };
 
-    // Trigger every 16 to 24 seconds (Rare shooting stars)
+    // Trigger every 25 seconds (Rare shooting stars)
     const shootingInterval = setInterval(() => {
       if (!prefersReducedMotion && !isMobile) {
         triggerShootingStar();
       }
-    }, 18000);
+    }, 25000);
 
     // 6. Mouse Parallax Coordinate Tracking
     const mouse = { x: 0, y: 0 };
@@ -226,8 +230,8 @@ export default function HeroBackgroundCanvas() {
       mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
       mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
 
-      targetCamera.x = mouse.x * 0.65; // Soft parallax drift
-      targetCamera.y = mouse.y * 0.4;
+      targetCamera.x = mouse.x * 0.45; // Very subtle, premium drift
+      targetCamera.y = mouse.y * 0.3;
     };
     window.addEventListener("mousemove", handleMouseMove);
 
@@ -258,27 +262,30 @@ export default function HeroBackgroundCanvas() {
       if (isVisible) {
         const time = clock.getElapsedTime();
 
-        // 1. Slow Zoom (Scale 1.00 -> 1.03 over 35 seconds, looping smoothly)
-        const zoomTime = 35;
+        // 1. Slow Zoom (Scale 1.00 -> 1.02 over 40 seconds, looping smoothly)
+        const zoomTime = 40;
         const loopCycle = time % (zoomTime * 2);
-        let scaleVal = 1.0;
+        let zoomVal = 1.0;
         if (loopCycle < zoomTime) {
-          scaleVal = 1.0 + (loopCycle / zoomTime) * 0.035;
+          zoomVal = 1.0 + (loopCycle / zoomTime) * 0.02;
         } else {
-          scaleVal = 1.035 - ((loopCycle - zoomTime) / zoomTime) * 0.035;
+          zoomVal = 1.02 - ((loopCycle - zoomTime) / zoomTime) * 0.02;
         }
-        bgMesh.scale.set(scaleVal, scaleVal, 1.0);
+
+        const baseSX = bgMesh.userData.baseScaleX || 1.0;
+        const baseSY = bgMesh.userData.baseScaleY || 1.0;
+        bgMesh.scale.set(baseSX * zoomVal, baseSY * zoomVal, 1.0);
 
         // 2. Gentle vertical drift
-        bgMesh.position.y = -1.0 + Math.sin(time * 0.04) * 0.18;
+        bgMesh.position.y = Math.sin(time * 0.04) * 0.12;
 
         // 3. Stars Twinkling Opacity Modulation
         farMat.opacity = 0.1 + Math.sin(time * 0.4) * 0.05;
         midMat.opacity = 0.22 + Math.cos(time * 0.6) * 0.1;
 
         // 4. Parallax star layer rotations
-        farStarsGroup.rotation.y = time * 0.0003;
-        midStarsGroup.rotation.y = -time * 0.0002;
+        farStarsGroup.rotation.y = time * 0.0002;
+        midStarsGroup.rotation.y = -time * 0.0001;
 
         // 5. Drift the cosmic dust points
         const posArr = dustGeom.attributes.position.array as Float32Array;
@@ -321,7 +328,7 @@ export default function HeroBackgroundCanvas() {
 
     animate();
 
-    // 9. Resize handling
+    // 9. Resize handling (Calculates cover aspect ratio matching background-size: cover)
     const handleResize = () => {
       if (!containerRef.current) return;
       width = containerRef.current.clientWidth;
@@ -330,8 +337,32 @@ export default function HeroBackgroundCanvas() {
       camera.updateProjectionMatrix();
       renderer.setSize(width, height);
       renderer.setPixelRatio(isMobile ? 1.0 : Math.min(window.devicePixelRatio, 1.5));
+
+      // Calculate cover scale for bgMesh
+      const vFOV = (camera.fov * Math.PI) / 180;
+      const viewportHeight = 2 * Math.tan(vFOV / 2) * 30; // camera.z=12 to bgMesh.z=-18 is 30 distance
+      const viewportWidth = viewportHeight * camera.aspect;
+
+      const imageAspect = 1.5; // aspect ratio of 36x24 plane
+      
+      let scaleX = 1;
+      let scaleY = 1;
+
+      if (camera.aspect > imageAspect) {
+        scaleX = viewportWidth / 36;
+        scaleY = scaleX;
+      } else {
+        scaleY = viewportHeight / 24;
+        scaleX = scaleY;
+      }
+
+      bgMesh.userData.baseScaleX = scaleX;
+      bgMesh.userData.baseScaleY = scaleY;
     };
     window.addEventListener("resize", handleResize);
+
+    // Call resize once immediately to initialize scale
+    handleResize();
 
     // 10. Cleanup
     return () => {
