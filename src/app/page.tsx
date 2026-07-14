@@ -5,6 +5,7 @@ import { motion, useInView, AnimatePresence } from "framer-motion";
 import { ArrowUpRight, Mail, Phone, MessageSquare, Send } from "lucide-react";
 import LoadingScreen from "@/components/LoadingScreen";
 import { gsap } from "gsap";
+import Image from "next/image";
 
 interface Service {
   id: string;
@@ -94,25 +95,39 @@ export default function Home() {
       yoyo: true,
     });
 
-    // Mouse parallax listener (X: +-10px, Y: +-8px max)
+    // Mouse parallax listener (X: ±10px, Y: ±8px max)
     const handleMouseMove = (e: MouseEvent) => {
       const { clientX, clientY } = e;
       const xPercent = (clientX / window.innerWidth) - 0.5;
       const yPercent = (clientY / window.innerHeight) - 0.5;
 
+      const currentScrollY = window.scrollY;
       gsap.to(heroBgRef.current, {
-        x: xPercent * 20, // total range of 20px (±10px)
-        y: yPercent * 16 - 10, // total range of 16px (±8px)
+        x: xPercent * 20, // range of 20px (±10px)
+        y: yPercent * 16 - 20 - currentScrollY * 0.08, // range of 16px (±8px) plus scroll offset
         duration: 2.0,
         ease: "power2.out",
         overwrite: "auto",
       });
     };
 
+    // Scroll parallax listener
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      gsap.to(heroBgRef.current, {
+        y: -20 - currentScrollY * 0.08,
+        duration: 0.8,
+        ease: "power1.out",
+        overwrite: "auto",
+      });
+    };
+
     window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("scroll", handleScroll);
     return () => {
       anim.kill();
       window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("scroll", handleScroll);
     };
   }, [loadingComplete]);
 
@@ -208,17 +223,31 @@ export default function Home() {
             id="home"
             className="min-h-screen flex flex-col justify-center items-center md:items-start px-6 md:px-12 lg:px-16 text-center md:text-left relative z-10 max-w-7xl mx-auto w-full"
           >
-            {/* Full-Screen Cinematic Image Layer */}
-            <img
-              ref={heroBgRef}
-              src="/hero-bg.jpg"
-              alt="Luxury space cinematic wallpaper"
-              className="absolute inset-0 w-full h-full object-cover z-[-2] pointer-events-none select-none"
-              style={{
-                objectPosition: isMobile ? "70% center" : "center center",
-                transformOrigin: "center center",
-              }}
-            />
+            {/* Full-Screen Cinematic Image Layer using optimized next/image */}
+            <div className="absolute inset-0 z-[-2] w-full h-full overflow-hidden pointer-events-none select-none">
+              <Image
+                ref={heroBgRef}
+                src="/hero-bg.jpg"
+                alt="Luxury space cinematic wallpaper"
+                fill
+                priority
+                quality={100}
+                sizes="(max-width: 768px) 2160px, (max-width: 1200px) 2560px, 3840px"
+                className="object-cover"
+                style={{
+                  objectPosition: isMobile ? "70% center" : "center center",
+                  transformOrigin: "center center",
+                }}
+              />
+              
+              {/* Twinkling star overlays (extremely subtle, high-performance) */}
+              <div className="twinkle-star" style={{ top: "15%", left: "20%", animationDelay: "0s" }} />
+              <div className="twinkle-star" style={{ top: "35%", left: "75%", animationDelay: "1.5s" }} />
+              <div className="twinkle-star" style={{ top: "60%", left: "15%", animationDelay: "3s" }} />
+              <div className="twinkle-star" style={{ top: "25%", left: "45%", animationDelay: "4.5s" }} />
+              <div className="twinkle-star" style={{ top: "70%", left: "80%", animationDelay: "2s" }} />
+              <div className="twinkle-star" style={{ top: "10%", left: "85%", animationDelay: "0.5s" }} />
+            </div>
 
             {/* Light volumetric contrast overlay */}
             <div 
@@ -228,31 +257,34 @@ export default function Home() {
               }}
             />
 
+            {/* Subtle dark gradient behind text for desktop/mobile legibility */}
+            <div className="absolute inset-0 z-[-1] pointer-events-none bg-[radial-gradient(circle_at_25%_50%,rgba(0,0,0,0.35)_0%,transparent_50%)] hidden md:block" />
+            <div className="absolute inset-0 z-[-1] pointer-events-none bg-[radial-gradient(circle_at_center,rgba(0,0,0,0.4)_0%,transparent_60%)] md:hidden" />
+
             {/* Faint Film Grain Overlay */}
             <div className="film-grain" />
 
-            <div className="max-w-[750px] flex flex-col items-center md:items-start gap-2 w-full mt-16 md:mt-0">
+            <motion.div
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+              className="max-w-[750px] flex flex-col items-center md:items-start gap-2 w-full mt-16 md:mt-0"
+            >
               <motion.h1
-                initial={{ opacity: 0, y: 25 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.15 }}
                 className="font-black tracking-[-0.03em] uppercase leading-[0.85] text-center md:text-left text-white max-w-[750px] flex flex-col items-center md:items-start gap-0 w-full"
               >
                 <span className="text-[clamp(1.8rem,8.2vw,6.2rem)] font-black w-full block whitespace-nowrap drop-shadow-[0_2px_10px_rgba(0,0,0,0.3)]">
                   We build digital
                 </span>
-                <span className="text-[clamp(1.5rem,7vw,5.3rem)] bg-gradient-to-b from-white/80 via-white/95 to-white bg-clip-text text-transparent drop-shadow-[0_2px_10px_rgba(0,0,0,0.3)] block w-full text-center md:text-left whitespace-nowrap mt-1 md:mt-0">
+                <span className="text-[clamp(1.48rem,6.7vw,5.1rem)] bg-gradient-to-b from-white/80 via-white/95 to-white bg-clip-text text-transparent drop-shadow-[0_2px_10px_rgba(0,0,0,0.3)] block w-full text-center md:text-left whitespace-nowrap mt-1 md:mt-0">
                   experiences.
                 </span>
-                <span className="font-pinyon text-[#BFBFBF] text-3xl sm:text-4xl md:text-[2.75rem] font-normal lowercase tracking-[0.04em] normal-case mt-3.5 md:mt-2.5 drop-shadow-[0_2px_8px_rgba(0,0,0,0.3)] block w-full text-center md:text-left">
+                <span className="font-pinyon text-[#BFBFBF]/88 text-3xl sm:text-4xl md:text-[2.75rem] font-normal lowercase tracking-[0.08em] normal-case mt-2 md:mt-1 drop-shadow-[0_0_6px_rgba(255,255,255,0.2)] block w-full text-center md:text-left">
                   that people remember.
                 </span>
               </motion.h1>
 
-              <motion.div
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.3 }}
+              <div
                 className="flex flex-row items-center justify-center md:justify-start gap-4 mt-8 md:mt-5 w-full"
               >
                 <button
@@ -267,8 +299,8 @@ export default function Home() {
                 >
                   Let's Talk
                 </button>
-              </motion.div>
-        </div>
+              </div>
+            </motion.div>
 
         {/* Scroll Indicator */}
         <motion.div 
