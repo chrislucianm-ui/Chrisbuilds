@@ -105,17 +105,55 @@ export default function Home() {
       />
 
       {/* Header Brand */}
-      <header className="absolute top-0 left-0 right-0 z-40 py-8 px-6 md:px-12 flex justify-between items-center max-w-5xl mx-auto">
+      <header className="absolute top-0 left-0 right-0 z-40 py-8 px-6 md:px-12 flex justify-between items-center max-w-6xl mx-auto">
         <a 
           href="#home"
           onClick={(e) => {
             e.preventDefault();
             scrollToSection("#home");
           }}
-          className="flex items-baseline select-none text-white hover:text-white/80 transition-colors"
+          className="flex items-baseline select-none text-white hover:text-white/80 transition-colors relative z-10"
         >
           <span className="font-pinyon text-white/50 text-xl font-normal lowercase tracking-normal pr-1.5 capitalize">Chris</span>
           <span className="font-mono text-[9px] uppercase tracking-[0.25em] font-black">BUILDS</span>
+        </a>
+
+        {/* Center Nav Links */}
+        <nav className="hidden md:flex items-center gap-8 relative z-10">
+          {[
+            { name: "HOME", href: "#home" },
+            { name: "SERVICES", href: "#services" },
+            { name: "WORK", href: "#services" },
+            { name: "ABOUT", href: "#services" },
+            { name: "CONTACT", href: "#contact" }
+          ].map((link, idx) => (
+            <a
+              key={link.name}
+              href={link.href}
+              onClick={(e) => {
+                e.preventDefault();
+                scrollToSection(link.href);
+              }}
+              className="font-mono text-[8px] uppercase tracking-[0.25em] text-white/50 hover:text-white transition-colors relative py-2 group"
+            >
+              {link.name}
+              {idx === 0 && (
+                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 bg-white rounded-full" />
+              )}
+            </a>
+          ))}
+        </nav>
+
+        {/* Right Button */}
+        <a
+          href="#contact"
+          onClick={(e) => {
+            e.preventDefault();
+            scrollToSection("#contact");
+          }}
+          className="font-mono text-[8px] uppercase tracking-[0.25em] px-5 py-2.5 rounded-full border border-white/10 bg-white/[0.02] text-white hover:bg-white hover:text-black hover:border-white transition-all duration-300 relative z-10"
+        >
+          Let's Talk ↗
         </a>
       </header>
 
@@ -145,14 +183,16 @@ export default function Home() {
             className="text-4xl sm:text-6xl md:text-8xl font-black tracking-premium uppercase leading-[0.95]"
           >
             We build digital <br />
-            experiences.
+            <span className="bg-gradient-to-b from-white/70 via-white/95 to-white bg-clip-text text-transparent drop-shadow-[0_15px_30px_rgba(255,255,255,0.12)]">
+              experiences.
+            </span>
           </motion.h1>
 
           <motion.p
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
-            className="text-[10px] sm:text-xs font-mono uppercase tracking-[0.2em] text-white/40 max-w-lg leading-relaxed mt-2"
+            className="text-[9px] sm:text-[10px] font-mono uppercase tracking-[0.3em] text-white/50 max-w-xl leading-relaxed mt-2"
           >
             Bespoke design. High-performance systems.
           </motion.p>
@@ -177,6 +217,24 @@ export default function Home() {
             </button>
           </motion.div>
         </div>
+
+        {/* Scroll Indicator */}
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 0.5 }}
+          transition={{ duration: 1.2, delay: 1.0 }}
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 pointer-events-none select-none"
+        >
+          <div className="w-5 h-8 border border-white/20 rounded-full flex justify-center p-1.5">
+            <motion.div 
+              animate={{ y: [0, 6, 0] }}
+              transition={{ repeat: Infinity, duration: 1.8, ease: "easeInOut" }}
+              className="w-1 h-1.5 bg-white/65 rounded-full"
+            />
+          </div>
+          <span className="font-mono text-[8px] uppercase tracking-[0.3em] text-white/40 mt-1">SCROLL</span>
+          <div className="w-[1px] h-12 bg-gradient-to-b from-white/20 to-transparent mt-1" />
+        </motion.div>
       </section>
 
       {/* 2. WHAT I BUILD SECTION */}
