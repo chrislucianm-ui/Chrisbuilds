@@ -292,24 +292,24 @@ export default function Home() {
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-              className="max-w-[750px] flex flex-col items-center md:items-start gap-2 w-full mt-16 md:mt-0"
+              className="max-w-[750px] flex flex-col items-center md:items-start gap-2 w-full mt-16 md:mt-0 -translate-y-[140px] md:translate-y-0"
             >
               <motion.h1
                 className="font-black tracking-[-0.03em] uppercase leading-[0.85] text-center md:text-left text-white max-w-[750px] flex flex-col items-center md:items-start gap-0 w-full"
               >
                 <span className="text-[clamp(1.8rem,8.2vw,6.2rem)] font-black w-full block whitespace-nowrap drop-shadow-[0_2px_10px_rgba(0,0,0,0.3)]">
-                  We build digital
+                  WE BUILD DIGITAL
                 </span>
-                <span className="text-[clamp(1.48rem,6.7vw,5.1rem)] bg-gradient-to-b from-white/80 via-white/95 to-white bg-clip-text text-transparent drop-shadow-[0_2px_10px_rgba(0,0,0,0.3)] block w-full text-center md:text-left whitespace-nowrap mt-1 md:mt-0">
-                  experiences.
+                <span className="text-[clamp(1.53rem,6.97vw,5.27rem)] bg-gradient-to-b from-white/80 via-white/95 to-white bg-clip-text text-transparent drop-shadow-[0_2px_10px_rgba(0,0,0,0.3)] block w-full text-center md:text-left whitespace-nowrap mt-1 md:mt-0">
+                  EXPERIENCES.
                 </span>
-                <span className="font-pinyon text-[#BFBFBF]/88 text-3xl sm:text-4xl md:text-[2.75rem] font-normal lowercase tracking-[0.08em] normal-case mt-2 md:mt-1 drop-shadow-[0_0_6px_rgba(255,255,255,0.2)] block w-full text-center md:text-left">
+                <span className="font-pinyon text-[#BFBFBF]/88 text-3xl sm:text-4xl md:text-[2.75rem] font-normal lowercase tracking-[0.08em] normal-case mt-3 md:mt-2 drop-shadow-[0_0_6px_rgba(255,255,255,0.2)] block w-full text-center md:text-left">
                   that people remember.
                 </span>
               </motion.h1>
 
               <div
-                className="flex flex-row items-center justify-center md:justify-start gap-4 mt-8 md:mt-5 w-full"
+                className="flex flex-row items-center justify-center md:justify-start gap-4 mt-6 md:mt-4 w-full"
               >
                 <button
                   onClick={() => scrollToSection("#services")}
