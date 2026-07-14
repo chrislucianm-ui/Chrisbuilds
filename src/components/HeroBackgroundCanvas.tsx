@@ -37,21 +37,7 @@ export default function HeroBackgroundCanvas() {
     renderer.setPixelRatio(isMobile ? 1.0 : Math.min(window.devicePixelRatio, 1.5));
     renderer.setClearColor(0x000000, 1.0);
 
-    // 2. Ambient and Directional Lights (Backlit configuration for the sunrise effect)
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.01);
-    scene.add(ambientLight);
-
-    // Bright directional light emerging from the horizon behind the planet
-    const sunLight = new THREE.DirectionalLight(0xffffff, 5.0);
-    sunLight.position.set(1.5, -2.0, -2.5); // Backlit positioning
-    scene.add(sunLight);
-
-    // Very soft secondary fill light
-    const fillLight = new THREE.DirectionalLight(0xffffff, 0.15);
-    fillLight.position.set(-6, 3, 2);
-    scene.add(fillLight);
-
-    // 3. Helper Textures (Procedural canvas-based for absolute compatibility)
+    // 2. Helper to create circular star textures
     const createStarTexture = (opacity = 1.0) => {
       const size = 16;
       const starCanvas = document.createElement("canvas");
@@ -69,72 +55,6 @@ export default function HeroBackgroundCanvas() {
       return new THREE.CanvasTexture(starCanvas);
     };
 
-    const createPlanetTexture = () => {
-      const size = 512;
-      const canvas = document.createElement("canvas");
-      canvas.width = size;
-      canvas.height = size;
-      const ctx = canvas.getContext("2d");
-      if (ctx) {
-        ctx.fillStyle = "#050505";
-        ctx.fillRect(0, 0, size, size);
-        // Draw subtle fine surface texture/noise
-        for (let i = 0; i < 200; i++) {
-          const x = Math.random() * size;
-          const y = Math.random() * size;
-          const r = Math.random() * 35 + 5;
-          const grad = ctx.createRadialGradient(x, y, 0, x, y, r);
-          grad.addColorStop(0, "rgba(255, 255, 255, 0.008)");
-          grad.addColorStop(0.5, "rgba(0, 0, 0, 0.015)");
-          grad.addColorStop(1, "rgba(0, 0, 0, 0)");
-          ctx.fillStyle = grad;
-          ctx.beginPath();
-          ctx.arc(x, y, r, 0, Math.PI * 2);
-          ctx.fill();
-        }
-      }
-      return new THREE.CanvasTexture(canvas);
-    };
-
-    const createSunriseGlowTexture = () => {
-      const size = 256;
-      const canvas = document.createElement("canvas");
-      canvas.width = size;
-      canvas.height = size;
-      const ctx = canvas.getContext("2d");
-      if (ctx) {
-        const grad = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
-        grad.addColorStop(0, "rgba(255, 255, 255, 1.0)");
-        grad.addColorStop(0.08, "rgba(255, 255, 255, 0.85)");
-        grad.addColorStop(0.2, "rgba(255, 255, 255, 0.25)");
-        grad.addColorStop(0.45, "rgba(240, 240, 240, 0.05)");
-        grad.addColorStop(1, "rgba(0, 0, 0, 0)");
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, 0, size, size);
-      }
-      return new THREE.CanvasTexture(canvas);
-    };
-
-    const createFlareRayTexture = () => {
-      const w = 512;
-      const h = 64;
-      const canvas = document.createElement("canvas");
-      canvas.width = w;
-      canvas.height = h;
-      const ctx = canvas.getContext("2d");
-      if (ctx) {
-        const grad = ctx.createLinearGradient(0, 0, w, 0);
-        grad.addColorStop(0, "rgba(255, 255, 255, 0)");
-        grad.addColorStop(0.4, "rgba(255, 255, 255, 0.12)");
-        grad.addColorStop(0.5, "rgba(255, 255, 255, 0.7)");
-        grad.addColorStop(0.6, "rgba(255, 255, 255, 0.12)");
-        grad.addColorStop(1, "rgba(255, 255, 255, 0)");
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, 0, w, h);
-      }
-      return new THREE.CanvasTexture(canvas);
-    };
-
     const createMilkyWayTexture = () => {
       const w = 512;
       const h = 256;
@@ -143,44 +63,46 @@ export default function HeroBackgroundCanvas() {
       canvas.height = h;
       const ctx = canvas.getContext("2d");
       if (ctx) {
-        // Soft cloud gradient diagonal path
+        // Soft gradient representing a distant galaxy band
         const grad = ctx.createLinearGradient(0, h, w, 0);
-        grad.addColorStop(0, "rgba(255,255,255,0)");
-        grad.addColorStop(0.35, "rgba(255,255,255,0.015)");
-        grad.addColorStop(0.5, "rgba(255,255,255,0.08)");
-        grad.addColorStop(0.65, "rgba(255,255,255,0.015)");
-        grad.addColorStop(1, "rgba(255,255,255,0)");
+        grad.addColorStop(0, "rgba(255, 255, 255, 0)");
+        grad.addColorStop(0.4, "rgba(255, 255, 255, 0.015)");
+        grad.addColorStop(0.5, "rgba(255, 255, 255, 0.07)");
+        grad.addColorStop(0.6, "rgba(255, 255, 255, 0.015)");
+        grad.addColorStop(1, "rgba(255, 255, 255, 0)");
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, w, h);
       }
       return new THREE.CanvasTexture(canvas);
     };
 
-    const textureFar = createStarTexture(0.7);
+    const textureFar = createStarTexture(0.65);
     const textureMid = createStarTexture(0.85);
-    const textureDust = createStarTexture(0.35);
+    const textureDust = createStarTexture(0.3);
 
-    // Star Groups (for parallax rotation)
+    // Star Groups (for slow independent rotations)
     const farStarsGroup = new THREE.Group();
     const midStarsGroup = new THREE.Group();
+    const nearStarsGroup = new THREE.Group();
     const dustGroup = new THREE.Group();
 
     scene.add(farStarsGroup);
     scene.add(midStarsGroup);
+    scene.add(nearStarsGroup);
     scene.add(dustGroup);
 
-    // Layer 1: Thousands of Distant Tiny Stars (3000 count)
-    const farCount = isMobile ? 1000 : 3000;
+    // Layer 1: Thousands of Distant Tiny Stars (3200 count)
+    const farCount = isMobile ? 1200 : 3200;
     const farGeom = new THREE.BufferGeometry();
     const farPositions = new Float32Array(farCount * 3);
     for (let i = 0; i < farCount; i++) {
-      farPositions[i * 3] = (Math.random() - 0.5) * 80;
-      farPositions[i * 3 + 1] = (Math.random() - 0.5) * 50;
-      farPositions[i * 3 + 2] = (Math.random() - 0.5) * 20 - 30; // Far Z-plane
+      farPositions[i * 3] = (Math.random() - 0.5) * 85;
+      farPositions[i * 3 + 1] = (Math.random() - 0.5) * 55;
+      farPositions[i * 3 + 2] = (Math.random() - 0.5) * 20 - 32; // Far Z-depth
     }
     farGeom.setAttribute("position", new THREE.BufferAttribute(farPositions, 3));
     const farMat = new THREE.PointsMaterial({
-      size: 0.032,
+      size: 0.03,
       map: textureFar,
       transparent: true,
       blending: THREE.AdditiveBlending,
@@ -190,37 +112,58 @@ export default function HeroBackgroundCanvas() {
     const farStars = new THREE.Points(farGeom, farMat);
     farStarsGroup.add(farStars);
 
-    // Layer 2: Mid-field Stars (1200 count)
-    const midCount = isMobile ? 400 : 1200;
+    // Layer 2: Mid-field Stars (1400 count)
+    const midCount = isMobile ? 500 : 1400;
     const midGeom = new THREE.BufferGeometry();
     const midPositions = new Float32Array(midCount * 3);
     for (let i = 0; i < midCount; i++) {
-      midPositions[i * 3] = (Math.random() - 0.5) * 55;
-      midPositions[i * 3 + 1] = (Math.random() - 0.5) * 35;
+      midPositions[i * 3] = (Math.random() - 0.5) * 60;
+      midPositions[i * 3 + 1] = (Math.random() - 0.5) * 40;
       midPositions[i * 3 + 2] = (Math.random() - 0.5) * 20 - 10;
     }
     midGeom.setAttribute("position", new THREE.BufferAttribute(midPositions, 3));
     const midMat = new THREE.PointsMaterial({
-      size: 0.052,
-      map: textureFar,
+      size: 0.05,
+      map: textureMid,
       transparent: true,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
-      opacity: 0.42,
+      opacity: 0.45,
     });
     const midStars = new THREE.Points(midGeom, midMat);
     midStarsGroup.add(midStars);
 
-    // Layer 3: Occasional Silver Cosmic Dust (60 count)
-    const dustCount = isMobile ? 15 : 60;
+    // Layer 3: Near-field Stars (500 count)
+    const nearCount = isMobile ? 150 : 500;
+    const nearGeom = new THREE.BufferGeometry();
+    const nearPositions = new Float32Array(nearCount * 3);
+    for (let i = 0; i < nearCount; i++) {
+      nearPositions[i * 3] = (Math.random() - 0.5) * 35;
+      nearPositions[i * 3 + 1] = (Math.random() - 0.5) * 25;
+      nearPositions[i * 3 + 2] = (Math.random() - 0.5) * 15 + 4;
+    }
+    nearGeom.setAttribute("position", new THREE.BufferAttribute(nearPositions, 3));
+    const nearMat = new THREE.PointsMaterial({
+      size: 0.07,
+      map: textureMid,
+      transparent: true,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+      opacity: 0.55,
+    });
+    const nearStars = new THREE.Points(nearGeom, nearMat);
+    nearStarsGroup.add(nearStars);
+
+    // Layer 4: Soft Cosmic Dust (90 count)
+    const dustCount = isMobile ? 25 : 90;
     const dustGeom = new THREE.BufferGeometry();
     const dustPositions = new Float32Array(dustCount * 3);
     const dustSpeedsY = new Float32Array(dustCount);
     for (let i = 0; i < dustCount; i++) {
-      dustPositions[i * 3] = (Math.random() - 0.5) * 30;
+      dustPositions[i * 3] = (Math.random() - 0.5) * 25;
       dustPositions[i * 3 + 1] = (Math.random() - 0.5) * 20;
-      dustPositions[i * 3 + 2] = (Math.random() - 0.5) * 10 + 2;
-      dustSpeedsY[i] = 0.0002 + Math.random() * 0.0004;
+      dustPositions[i * 3 + 2] = (Math.random() - 0.5) * 10;
+      dustSpeedsY[i] = 0.00015 + Math.random() * 0.00035; // Very slow upward drift
     }
     dustGeom.setAttribute("position", new THREE.BufferAttribute(dustPositions, 3));
     const dustMat = new THREE.PointsMaterial({
@@ -234,86 +177,88 @@ export default function HeroBackgroundCanvas() {
     const dustParticles = new THREE.Points(dustGeom, dustMat);
     dustGroup.add(dustParticles);
 
-    // 4. Milky Way Diagonal Band (Background Plane)
+    // 3. Faint Milky Way Diagonal Band (Background Plane)
     const mwGeom = new THREE.PlaneGeometry(45, 20);
     const mwMat = new THREE.MeshBasicMaterial({
       map: createMilkyWayTexture(),
       transparent: true,
       depthWrite: false,
       blending: THREE.AdditiveBlending,
-      opacity: 0.65,
+      opacity: 0.55,
     });
     const mwMesh = new THREE.Mesh(mwGeom, mwMat);
-    mwMesh.position.set(-2, 2, -18);
-    mwMesh.rotation.z = -0.36; // Diagonal cross behind headline
+    mwMesh.position.set(-1, 1, -16);
+    mwMesh.rotation.z = -0.32; // Diagonal cross behind the typography
     scene.add(mwMesh);
 
-    // 5. Massive Dark Planet (Bottom Right)
-    const planetRadius = isMobile ? 6.5 : 8.5;
-    const planetGeom = new THREE.SphereGeometry(planetRadius, 64, 64);
-    const planetMat = new THREE.MeshPhysicalMaterial({
-      color: 0x070707,
-      roughness: 0.95,
-      metalness: 0.02,
-      sheen: 1.0, // Atmospheric edge highlights
-      sheenColor: 0xbbbbbb,
-      sheenRoughness: 0.35,
-      map: createPlanetTexture(),
-    });
-    const planet = new THREE.Mesh(planetGeom, planetMat);
-    // Positioned tilted at bottom right
-    const planetX = isMobile ? 4.5 : 6.8;
-    const planetY = isMobile ? -6.8 : -8.5;
-    const planetZ = isMobile ? 3.0 : 4.0;
-    planet.position.set(planetX, planetY, planetZ);
-    scene.add(planet);
-
-    // 6. Silver Sunrise Glow (Lens Flare Plane right on the planet horizon edge)
-    const sunriseGlowGeom = new THREE.PlaneGeometry(7.5, 7.5);
-    const sunriseGlowMat = new THREE.MeshBasicMaterial({
-      map: createSunriseGlowTexture(),
+    // 4. Volumetric Center Glow Plane (Glow behind the headline)
+    const glowCanvas = document.createElement("canvas");
+    glowCanvas.width = 128;
+    glowCanvas.height = 128;
+    const glowCtx = glowCanvas.getContext("2d");
+    if (glowCtx) {
+      const grad = glowCtx.createRadialGradient(64, 64, 0, 64, 64, 64);
+      grad.addColorStop(0, "rgba(255, 255, 255, 0.025)");
+      grad.addColorStop(0.4, "rgba(255, 255, 255, 0.01)");
+      grad.addColorStop(1, "rgba(255, 255, 255, 0)");
+      glowCtx.fillStyle = grad;
+      glowCtx.fillRect(0, 0, 128, 128);
+    }
+    const glowTexture = new THREE.CanvasTexture(glowCanvas);
+    const glowGeom = new THREE.PlaneGeometry(35, 18);
+    const glowPlaneMat = new THREE.MeshBasicMaterial({
+      map: glowTexture,
       transparent: true,
-      blending: THREE.AdditiveBlending,
       depthWrite: false,
-      opacity: 0.75,
+      blending: THREE.AdditiveBlending,
+      opacity: 0.45,
     });
-    const sunriseGlow = new THREE.Mesh(sunriseGlowGeom, sunriseGlowMat);
-    // Placed exactly on the upper-left horizon curve of the planet
-    const sunriseX = isMobile ? 1.0 : 1.6;
-    const sunriseY = isMobile ? -1.3 : -1.7;
-    const sunriseZ = isMobile ? 2.5 : 3.2;
-    sunriseGlow.position.set(sunriseX, sunriseY, sunriseZ);
-    scene.add(sunriseGlow);
+    const glowMesh = new THREE.Mesh(glowGeom, glowPlaneMat);
+    glowMesh.position.set(0, 0, -12);
+    scene.add(glowMesh);
 
-    // Volumetric Horizon Flare Ray
-    const rayGeom = new THREE.PlaneGeometry(18, 2.2);
-    const rayMat = new THREE.MeshBasicMaterial({
-      map: createFlareRayTexture(),
+    // 5. Dynamic Shooting Stars (Cinematic streaks triggered randomly)
+    const shootingStarGeom = new THREE.BufferGeometry();
+    const streakPoints = [
+      new THREE.Vector3(0, 0, 0),
+      new THREE.Vector3(-1.8, 1.2, 0) // Streak direction (top-right to bottom-left)
+    ];
+    shootingStarGeom.setFromPoints(streakPoints);
+    const shootingStarMat = new THREE.LineBasicMaterial({
+      color: 0xffffff,
       transparent: true,
+      opacity: 0.0,
       blending: THREE.AdditiveBlending,
-      depthWrite: false,
-      opacity: 0.6,
+      linewidth: 1,
     });
-    const rayMesh = new THREE.Mesh(rayGeom, rayMat);
-    rayMesh.position.set(sunriseX, sunriseY, sunriseZ + 0.1);
-    rayMesh.rotation.z = -0.42; // Tilted parallel to planet curvature
-    scene.add(rayMesh);
+    const shootingStar = new THREE.Line(shootingStarGeom, shootingStarMat);
+    scene.add(shootingStar);
 
-    // 7. Faint Crescent Moon (Left Side)
-    const moonGeom = new THREE.SphereGeometry(1.2, 32, 32);
-    const moonMat = new THREE.MeshPhysicalMaterial({
-      color: 0x050505,
-      roughness: 0.95,
-      metalness: 0.01,
-      sheen: 0.8,
-      sheenColor: 0x999999,
-      sheenRoughness: 0.4,
-    });
-    const moon = new THREE.Mesh(moonGeom, moonMat);
-    moon.position.set(-8, -0.6, -2);
-    scene.add(moon);
+    let streakActive = false;
+    let streakTime = 0;
+    const streakDuration = 0.8; // Duration of the streak in seconds
+    const streakSpeed = { x: -16, y: 11 }; // Speed of movement across the viewport
+    let streakStartPos = { x: 0, y: 0, z: -5 };
 
-    // 8. Mouse Parallax Coordinate Interpolation
+    const triggerShootingStar = () => {
+      if (streakActive) return;
+      streakActive = true;
+      streakTime = 0;
+      // Spawn at random top-right coordinates
+      streakStartPos.x = Math.random() * 12 + 2;
+      streakStartPos.y = Math.random() * 6 + 2;
+      streakStartPos.z = Math.random() * -10 - 5;
+      shootingStar.position.set(streakStartPos.x, streakStartPos.y, streakStartPos.z);
+    };
+
+    // Trigger a shooting star every 8 to 14 seconds
+    const shootingInterval = setInterval(() => {
+      if (!prefersReducedMotion && !isMobile) {
+        triggerShootingStar();
+      }
+    }, 11000);
+
+    // 6. Mouse Parallax Coordinate Tracking
     const mouse = { x: 0, y: 0 };
     const targetCamera = { x: 0, y: 0 };
 
@@ -321,12 +266,12 @@ export default function HeroBackgroundCanvas() {
       mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
       mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
 
-      targetCamera.x = mouse.x * 0.45; // Very subtle, premium drift
-      targetCamera.y = mouse.y * 0.3;
+      targetCamera.x = mouse.x * 0.75; // Subtle camera drift
+      targetCamera.y = mouse.y * 0.5;
     };
     window.addEventListener("mousemove", handleMouseMove);
 
-    // 9. Scroll Intersection Observer
+    // 7. Scroll Intersection Observer
     let isVisible = true;
     const observer = new IntersectionObserver(
       (entries) => {
@@ -338,7 +283,7 @@ export default function HeroBackgroundCanvas() {
     );
     observer.observe(canvas);
 
-    // 10. Animation Loop
+    // 8. Animation Loop
     let animationFrameId: number;
     const clock = new THREE.Clock();
 
@@ -352,35 +297,51 @@ export default function HeroBackgroundCanvas() {
 
       if (isVisible) {
         const time = clock.getElapsedTime();
+        const delta = clock.getDelta();
 
-        // Stars Twinkling Opacity Modulation
-        farMat.opacity = 0.15 + Math.sin(time * 0.35) * 0.07;
-        midMat.opacity = 0.28 + Math.cos(time * 0.55) * 0.14;
+        // 1. Natural slow twinkling modulation
+        farMat.opacity = 0.16 + Math.sin(time * 0.35) * 0.08;
+        midMat.opacity = 0.28 + Math.cos(time * 0.5) * 0.16;
+        nearMat.opacity = 0.32 + Math.sin(time * 0.7) * 0.18;
 
-        // Slow parallax orbital rotation drift
-        farStarsGroup.rotation.y = time * 0.0003;
-        midStarsGroup.rotation.y = -time * 0.0002;
+        // 2. Slow rotational drift on star groups (creates depth and parallax)
+        farStarsGroup.rotation.y = time * 0.0004;
+        midStarsGroup.rotation.y = -time * 0.0003;
+        nearStarsGroup.rotation.y = time * 0.0006;
 
-        // Drift the cosmic dust
+        // 3. Drift the cosmic dust points upward
         const posArr = dustGeom.attributes.position.array as Float32Array;
         for (let i = 0; i < dustCount; i++) {
           posArr[i * 3 + 1] += dustSpeedsY[i] * 0.15;
-          posArr[i * 3] += Math.sin(time * 0.08 + i) * 0.0002;
+          posArr[i * 3] += Math.sin(time * 0.1 + i) * 0.00025;
           
           if (posArr[i * 3 + 1] > 10) {
-            posArr[i * 3 + 1] = -10;
+            posArr[i * 3 + 1] = -10; // Recycle back to bottom
           }
         }
         dustGeom.attributes.position.needsUpdate = true;
 
-        // Very slow planet and moon self-rotation
-        planet.rotation.y = time * 0.001;
-        moon.rotation.y = time * 0.002;
+        // 4. Update Shooting Star position and opacity
+        if (streakActive) {
+          streakTime += 0.016; // increment approximate frame time
+          if (streakTime >= streakDuration) {
+            streakActive = false;
+            shootingStarMat.opacity = 0;
+          } else {
+            // Move along trajectory path
+            shootingStar.position.x = streakStartPos.x + streakTime * streakSpeed.x;
+            shootingStar.position.y = streakStartPos.y + streakTime * streakSpeed.y;
+            
+            // Fading envelope: quick fade-in, long fade-out
+            if (streakTime < streakDuration * 0.2) {
+              shootingStarMat.opacity = (streakTime / (streakDuration * 0.2)) * 0.45;
+            } else {
+              shootingStarMat.opacity = (1.0 - (streakTime - streakDuration * 0.2) / (streakDuration * 0.8)) * 0.45;
+            }
+          }
+        }
 
-        // Soft shimmer on the sunrise rays
-        rayMat.opacity = 0.5 + Math.sin(time * 0.8) * 0.1;
-
-        // Camera Parallax Lerping
+        // 5. Smooth camera parallax interpolation (Lerping)
         camera.position.x += (targetCamera.x - camera.position.x) * 0.04;
         camera.position.y += (targetCamera.y - camera.position.y) * 0.04;
         camera.lookAt(0, 0, 0);
@@ -391,7 +352,7 @@ export default function HeroBackgroundCanvas() {
 
     animate();
 
-    // 11. Resize handling
+    // 9. Resize handling
     const handleResize = () => {
       if (!containerRef.current) return;
       width = containerRef.current.clientWidth;
@@ -403,8 +364,9 @@ export default function HeroBackgroundCanvas() {
     };
     window.addEventListener("resize", handleResize);
 
-    // 12. Cleanup
+    // 10. Cleanup
     return () => {
+      clearInterval(shootingInterval);
       cancelAnimationFrame(animationFrameId);
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("resize", handleResize);
@@ -415,18 +377,15 @@ export default function HeroBackgroundCanvas() {
       farMat.dispose();
       midGeom.dispose();
       midMat.dispose();
+      nearGeom.dispose();
+      nearMat.dispose();
       dustGeom.dispose();
       dustMat.dispose();
-      mwGeom.dispose();
-      mwMat.dispose();
-      planetGeom.dispose();
-      planetMat.dispose();
-      sunriseGlowGeom.dispose();
-      sunriseGlowMat.dispose();
-      rayGeom.dispose();
-      rayMat.dispose();
-      moonGeom.dispose();
-      moonMat.dispose();
+      glowGeom.dispose();
+      glowPlaneMat.dispose();
+      glowTexture.dispose();
+      shootingStarGeom.dispose();
+      shootingStarMat.dispose();
       textureFar.dispose();
       textureMid.dispose();
       textureDust.dispose();
