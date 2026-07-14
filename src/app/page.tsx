@@ -105,7 +105,7 @@ export default function Home() {
       />
 
       {/* Header Brand */}
-      <header className="absolute top-0 left-0 right-0 z-40 py-8 px-6 md:px-12 flex justify-between items-center max-w-5xl mx-auto border-b border-white/5">
+      <header className="absolute top-0 left-0 right-0 z-40 py-8 px-6 md:px-12 flex justify-between items-center max-w-5xl mx-auto">
         <a 
           href="#home"
           onClick={(e) => {
@@ -117,9 +117,6 @@ export default function Home() {
           <span className="font-pinyon text-white/50 text-xl font-normal lowercase tracking-normal pr-1.5 capitalize">Chris</span>
           <span className="font-mono text-[9px] uppercase tracking-[0.25em] font-black">BUILDS</span>
         </a>
-        <div className="font-mono text-[9px] text-white/40">
-          SYSTEM ACTIVE
-        </div>
       </header>
 
       {/* 1. HERO SECTION */}
@@ -141,17 +138,6 @@ export default function Home() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.035)_0%,rgba(0,0,0,0.6)_80%)] -z-5 pointer-events-none" />
 
         <div className="max-w-4xl mx-auto flex flex-col items-center gap-8">
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="flex items-center gap-2 font-mono text-[9px] tracking-[0.3em] text-white/30 mb-3"
-          >
-            <span>SPECIFICATION</span>
-            <span className="font-pinyon text-white/40 text-lg font-normal lowercase tracking-normal capitalize">no.</span>
-            <span>001</span>
-          </motion.div>
-
           <motion.h1
             initial={{ opacity: 0, y: 25 }}
             animate={{ opacity: 1, y: 0 }}
@@ -159,7 +145,7 @@ export default function Home() {
             className="text-4xl sm:text-6xl md:text-8xl font-black tracking-premium uppercase leading-[0.95]"
           >
             We build digital <br />
-            systems that <span className="text-white/60">endure.</span>
+            experiences.
           </motion.h1>
 
           <motion.p
@@ -168,8 +154,7 @@ export default function Home() {
             transition={{ duration: 0.8, delay: 0.3 }}
             className="text-[10px] sm:text-xs font-mono uppercase tracking-[0.2em] text-white/40 max-w-lg leading-relaxed mt-2"
           >
-            Bespoke creative design. High-performance systems.<br />
-            Engineered with Swiss precision.
+            Bespoke design. High-performance systems.
           </motion.p>
 
           <motion.div
@@ -201,10 +186,9 @@ export default function Home() {
       <ContactSectionBlock />
 
       {/* Footer */}
-      <footer className="py-12 border-t border-white/5 px-6 text-center font-mono text-[9px] text-white/40 relative z-10">
+      <footer className="py-12 px-6 text-center font-mono text-[9px] text-white/40 relative z-10">
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
           <span>© 2026 CHRISBUILDS. ALL RIGHTS PRESERVED.</span>
-          <span className="text-white/60 uppercase tracking-wider">Monochrome Protocol v1.1.0</span>
         </div>
       </footer>
           </motion.div>
@@ -227,11 +211,6 @@ function WhatIBuildSection() {
       <div className="max-w-5xl mx-auto">
         {/* Title */}
         <div className="flex flex-col items-center mb-20 text-center">
-          <span className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.3em] text-white/30 mb-3">
-            <span>OFFERINGS</span>
-            <span className="font-pinyon text-white/40 text-lg font-normal lowercase tracking-normal capitalize">no.</span>
-            <span>002</span>
-          </span>
           <h2 className="text-3xl md:text-5xl font-black uppercase tracking-premium text-white">
             WHAT I BUILD
           </h2>
@@ -246,29 +225,15 @@ function WhatIBuildSection() {
               initial={{ opacity: 0, y: 35 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 1.0, delay: idx * 0.15, ease: [0.76, 0, 0.24, 1] }}
-              className="brushed-chrome rounded-3xl p-10 flex flex-col gap-8 text-left relative overflow-hidden group hover:scale-[1.01] hover:border-white/20 transition-all duration-500 border border-white/5 shadow-2xl"
+              className="brushed-chrome rounded-3xl p-10 flex flex-col gap-6 text-left relative overflow-hidden group hover:scale-[1.01] hover:border-white/20 transition-all duration-500 border border-white/5 shadow-2xl"
             >
               {/* Subtle metallic shimmer moving across the card on hover */}
               <div className="absolute inset-0 shimmer-line opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
 
-              {/* Header with cap ID and signature */}
-              <div className="flex justify-between items-center border-b border-white/5 pb-4">
-                <span className="font-mono text-[9px] text-white/30 uppercase tracking-widest">CAP_ID // {service.id}</span>
-                <span className="flex items-center gap-1 font-mono text-[9px] text-white/40">
-                  <span className="font-pinyon text-white/30 text-base font-normal lowercase tracking-normal capitalize mr-0.5">no.</span>
-                  <span>{idx + 1}</span>
-                </span>
-              </div>
-
-              {/* Elegant bold sans-serif heading + cursive accent */}
-              <div>
-                <h3 className="text-xl md:text-2xl font-black uppercase tracking-wider text-white group-hover:logo-shine-text transition-all duration-300">
-                  {service.title}
-                </h3>
-                <span className="font-pinyon text-white/40 text-[14px] italic block mt-1 lowercase">
-                  crafted // {service.specs[0].toLowerCase()}
-                </span>
-              </div>
+              {/* Elegant bold sans-serif heading */}
+              <h3 className="text-xl md:text-2xl font-black uppercase tracking-wider text-white group-hover:logo-shine-text transition-all duration-300">
+                {service.title}
+              </h3>
 
               {/* One-sentence premium copy */}
               <p className="text-[11px] text-white/40 tracking-[0.18em] leading-relaxed flex-grow font-mono uppercase">
@@ -276,15 +241,8 @@ function WhatIBuildSection() {
               </p>
 
               {/* Refined capability tags */}
-              <div className="flex flex-wrap gap-2 pt-4 border-t border-white/5 relative z-10">
-                {service.specs.map((spec) => (
-                  <span
-                    key={spec}
-                    className="font-mono text-[9px] uppercase tracking-[0.2em] px-3.5 py-1.5 rounded-full bg-white/[0.02] border border-white/5 text-white/40 group-hover:text-white/70 group-hover:border-white/15 transition-all duration-300"
-                  >
-                    {spec}
-                  </span>
-                ))}
+              <div className="font-mono text-[9px] uppercase tracking-[0.25em] text-white/30 pt-4 border-t border-white/5 relative z-10">
+                {service.specs.join(" • ")}
               </div>
             </motion.div>
           ))}
@@ -338,11 +296,6 @@ function ContactSectionBlock() {
         
         {/* Title */}
         <div className="flex flex-col items-center mb-20 text-center">
-          <span className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.3em] text-white/30 mb-3">
-            <span>CONNECTION</span>
-            <span className="font-pinyon text-white/40 text-lg font-normal lowercase tracking-normal capitalize">no.</span>
-            <span>003</span>
-          </span>
           <h2 className="text-3xl md:text-5xl font-black uppercase tracking-premium text-white">
             GET IN TOUCH
           </h2>
