@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowUpRight, Mail, Phone, MessageSquare, Send, X } from "lucide-react";
 import LoadingScreen from "@/components/LoadingScreen";
@@ -18,20 +18,20 @@ const PROJECTS: Project[] = [
   {
     title: "Noir.io",
     category: "Creative Scroll Studio",
-    description: "An immersive, story-driven luxury showcase featuring advanced inertial scrolling, mouse-relative camera drift, and glassmorphic depth filters.",
-    specs: ["Three.js", "GSAP", "Refraction Shaders"]
+    description: "An immersive, story-driven luxury showcase featuring advanced inertial scrolling, mouse-relative camera drift, and reflective glassmorphic spec sheets.",
+    specs: ["Three.js", "GSAP", "Mirror Speculars"]
   },
   {
     title: "SpaceX Orbit",
     category: "Cinematic Traversal",
-    description: "A real-time flight telemetry simulation mapping orbiting spacecraft positions to interactive volumetric particle nebulas.",
+    description: "A real-time flight telemetry simulation mapping orbiting spacecraft positions to interactive volumetric particle systems.",
     specs: ["WebGL", "Framer Motion", "Real-Time Telemetry"]
   },
   {
     title: "Apple Bloom",
     category: "Luxury Product Film",
     description: "Interactive 3D product reveal experience with concentric chrome rings, reflective materials, and macro camera animations.",
-    specs: ["MeshPhysicalMaterial", "Bloom Shaders", "Volumetric Lighting"]
+    specs: ["MeshPhysicalMaterial", "Chrome Reflectivity", "Volumetric Lighting"]
   },
   {
     title: "Awwwards",
@@ -97,16 +97,14 @@ export default function Home() {
     const center = centers[index];
     const dist = Math.abs(scrollProgress - center);
     const opacity = Math.max(0, 1 - dist * 6.8); // sharp smooth fade
-    const blur = Math.min(16, dist * 120); // smooth blur transition
-    const yOffset = (scrollProgress - center) * -60; // subtle floating depth float
+    const yOffset = (scrollProgress - center) * -50; // subtle floating depth float
 
     return {
       opacity,
-      filter: `blur(${blur}px)`,
       transform: `translateY(${yOffset}px)`,
       pointerEvents: opacity > 0.1 ? ("auto" as const) : ("none" as const),
       display: opacity > 0 ? ("flex" as const) : ("none" as const),
-      transition: "opacity 150ms ease-out, filter 150ms ease-out, transform 150ms ease-out"
+      transition: "opacity 150ms ease-out, transform 150ms ease-out"
     };
   };
 
@@ -172,11 +170,11 @@ export default function Home() {
               <span className="text-[10px] text-white/30 uppercase tracking-[0.35em] font-mono mb-6">
                 Arrival
               </span>
-              <h1 className="text-5xl md:text-8xl font-black uppercase tracking-premium leading-[0.9] text-white max-w-4xl">
+              <h1 className="text-5xl md:text-8xl font-black uppercase tracking-premium leading-[0.9] text-white max-w-4xl font-sans">
                 WE BUILD DIGITAL<br />
                 <span className="logo-shine-text">EXPERIENCES.</span>
               </h1>
-              <span className="mt-8 font-cursive text-xl md:text-2xl text-white/50 tracking-wider">
+              <span className="mt-8 font-pinyon text-3xl md:text-4xl text-white/60 tracking-normal">
                 that people remember.
               </span>
               <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
@@ -197,22 +195,22 @@ export default function Home() {
               </span>
               <div className="flex flex-col gap-6 items-center justify-center">
                 <h2 
-                  style={{ opacity: stepOpacity0, filter: `blur(${(1 - stepOpacity0) * 16}px)`, transition: "opacity 150ms ease-out, filter 150ms ease-out" }}
-                  className="text-2xl md:text-5xl font-black uppercase tracking-premium max-w-3xl text-white"
+                  style={{ opacity: stepOpacity0, transition: "opacity 150ms ease-out" }}
+                  className="text-2xl md:text-5xl font-black uppercase tracking-premium max-w-3xl text-white font-sans"
                 >
                   We don't build websites.
                 </h2>
                 <h2 
-                  style={{ opacity: stepOpacity1, filter: `blur(${(1 - stepOpacity1) * 16}px)`, transition: "opacity 150ms ease-out, filter 150ms ease-out" }}
-                  className="text-2xl md:text-5xl font-black uppercase tracking-premium max-w-3xl text-white/60"
+                  style={{ opacity: stepOpacity1, transition: "opacity 150ms ease-out" }}
+                  className="text-2xl md:text-5xl font-black uppercase tracking-premium max-w-3xl text-white/60 font-sans"
                 >
                   We build first impressions.
                 </h2>
                 <h2 
-                  style={{ opacity: stepOpacity2, filter: `blur(${(1 - stepOpacity2) * 16}px)`, transition: "opacity 150ms ease-out, filter 150ms ease-out" }}
-                  className="text-2xl md:text-5xl font-black uppercase tracking-premium max-w-4xl text-white leading-none"
+                  style={{ opacity: stepOpacity2, transition: "opacity 150ms ease-out" }}
+                  className="text-2xl md:text-5xl font-black uppercase tracking-premium max-w-4xl text-white leading-none font-serif"
                 >
-                  Luxury is an experience,<br />
+                  <span className="font-pinyon text-3xl md:text-5xl text-white/80 lowercase tracking-normal block mb-4">Luxury is an experience,</span>
                   <span className="logo-shine-text">not a feature.</span>
                 </h2>
               </div>
@@ -227,7 +225,7 @@ export default function Home() {
                 <span className="text-[10px] text-white/30 uppercase tracking-[0.35em] font-mono mb-6 block">
                   Capabilities
                 </span>
-                <h2 className="text-4xl md:text-7xl font-black uppercase tracking-premium text-white leading-none mb-12">
+                <h2 className="text-4xl md:text-7xl font-black uppercase tracking-premium text-white leading-none mb-12 font-sans">
                   WHAT WE BUILD
                 </h2>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-6 max-w-3xl pointer-events-auto">
@@ -266,24 +264,24 @@ export default function Home() {
                 
                 {/* Editorial headers */}
                 <div 
-                  style={{ opacity: 1.0 - gridOpacity, filter: `blur(${(gridOpacity) * 16}px)`, pointerEvents: 1.0 - gridOpacity > 0.1 ? "auto" : "none", display: gridOpacity < 0.95 ? "flex" : "none", transition: "opacity 150ms ease-out, filter 150ms ease-out" }}
+                  style={{ opacity: 1.0 - gridOpacity, pointerEvents: 1.0 - gridOpacity > 0.1 ? "auto" : "none", display: gridOpacity < 0.95 ? "flex" : "none", transition: "opacity 150ms ease-out" }}
                   className="flex flex-col gap-4 text-center absolute"
                 >
                   <h2 
-                    style={{ opacity: ringOpacity0, filter: `blur(${(1 - ringOpacity0) * 12}px)`, transition: "opacity 150ms ease-out, filter 150ms ease-out" }}
-                    className="text-xl md:text-4xl font-black uppercase tracking-premium text-white"
+                    style={{ opacity: ringOpacity0, transition: "opacity 150ms ease-out" }}
+                    className="text-xl md:text-4xl font-black uppercase tracking-premium text-white font-serif"
                   >
-                    Crafted with precision.
+                    <span className="font-pinyon text-2xl md:text-4xl text-white/80 lowercase tracking-normal block mb-2">Crafted with precision.</span>
                   </h2>
                   <h2 
-                    style={{ opacity: ringOpacity1, filter: `blur(${(1 - ringOpacity1) * 12}px)`, transition: "opacity 150ms ease-out, filter 150ms ease-out" }}
-                    className="text-xl md:text-4xl font-black uppercase tracking-premium text-white/75"
+                    style={{ opacity: ringOpacity1, transition: "opacity 150ms ease-out" }}
+                    className="text-xl md:text-4xl font-black uppercase tracking-premium text-white/75 font-serif"
                   >
-                    Designed with purpose.
+                    <span className="font-pinyon text-2xl md:text-4xl text-white/60 lowercase tracking-normal block mb-2 font-light">Designed to be remembered.</span>
                   </h2>
                   <h2 
-                    style={{ opacity: ringOpacity2, filter: `blur(${(1 - ringOpacity2) * 12}px)`, transition: "opacity 150ms ease-out, filter 150ms ease-out" }}
-                    className="text-xl md:text-4xl font-black uppercase tracking-premium text-white/50"
+                    style={{ opacity: ringOpacity2, transition: "opacity 150ms ease-out" }}
+                    className="text-xl md:text-4xl font-black uppercase tracking-premium text-white/50 font-sans"
                   >
                     Built to perform.
                   </h2>
@@ -291,7 +289,7 @@ export default function Home() {
 
                 {/* Capabilities Grid */}
                 <div 
-                  style={{ opacity: gridOpacity, filter: `blur(${(1 - gridOpacity) * 12}px)`, pointerEvents: gridOpacity > 0.1 ? "auto" : "none", display: gridOpacity > 0.05 ? "grid" : "none", transition: "opacity 150ms ease-out, filter 150ms ease-out" }}
+                  style={{ opacity: gridOpacity, pointerEvents: gridOpacity > 0.1 ? "auto" : "none", display: gridOpacity > 0.05 ? "grid" : "none", transition: "opacity 150ms ease-out" }}
                   className="grid grid-cols-2 md:grid-cols-3 gap-6 w-full pointer-events-auto"
                 >
                   {[
@@ -322,8 +320,8 @@ export default function Home() {
               <span className="text-[10px] text-white/30 uppercase tracking-[0.35em] font-mono mb-8">
                 Philosophy
               </span>
-              <h2 className="text-3xl md:text-6xl font-black uppercase tracking-premium leading-tight text-white max-w-4xl">
-                Every pixel matters.<br />
+              <h2 className="text-3xl md:text-6xl font-black uppercase tracking-premium leading-tight text-white max-w-4xl font-serif">
+                <span className="font-pinyon text-4xl md:text-6xl text-white/80 lowercase tracking-normal block mb-4">Every pixel matters.</span>
                 Every interaction tells a story.<br />
                 <span className="logo-shine-text">Every experience leaves an impression.</span>
               </h2>
@@ -338,7 +336,7 @@ export default function Home() {
                 <span className="text-[10px] text-white/30 uppercase tracking-[0.35em] font-mono mb-6 block">
                   Showcase
                 </span>
-                <h2 className="text-4xl md:text-7xl font-black uppercase tracking-premium text-white leading-none mb-12">
+                <h2 className="text-4xl md:text-7xl font-black uppercase tracking-premium text-white leading-none mb-12 font-sans">
                   FEATURED WORK
                 </h2>
                 
@@ -373,7 +371,7 @@ export default function Home() {
                 <span className="text-[10px] text-white/30 uppercase tracking-[0.35em] font-mono mb-6">
                   Collaborate
                 </span>
-                <h2 className="text-4xl md:text-6xl font-black uppercase tracking-premium leading-none text-white max-w-md">
+                <h2 className="text-4xl md:text-6xl font-black uppercase tracking-premium leading-none text-white max-w-md font-sans">
                   Let's build something unforgettable.
                 </h2>
                 <h3 className="mt-8 text-lg font-bold tracking-widest uppercase">
@@ -461,7 +459,7 @@ export default function Home() {
                 >
                   <button 
                     onClick={() => setActiveProject(null)}
-                    className="absolute top-6 right-6 p-2 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 transition-colors text-white/60 hover:text-white"
+                    className="absolute top-6 right-6 p-2 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 transition-colors text-white/60 hover:text-white pointer-events-auto"
                   >
                     <X className="w-4 h-4" />
                   </button>

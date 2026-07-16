@@ -31,9 +31,8 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
     const container = containerRef.current;
     const isMobile = window.innerWidth < 768;
 
-    // 1. Scene & Setup
+    // 1. Scene & Setup (Fog removed completely to keep visuals crisp and sharp)
     const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x000000, 0.015);
 
     const camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 1000);
     camera.position.set(0, 0, 12);
@@ -51,18 +50,35 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
     renderer.toneMappingExposure = 1.0;
 
     // 2. Add Lighting (Volumetric direction lights for chrome/glass specs)
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.1);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.25);
     scene.add(ambientLight);
 
-    const mainLight = new THREE.DirectionalLight(0xffffff, 2.0);
-    mainLight.position.set(10, 5, 10);
+    const mainLight = new THREE.DirectionalLight(0xffffff, 2.5);
+    mainLight.position.set(12, 8, 12);
     scene.add(mainLight);
 
-    const secondaryLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    secondaryLight.position.set(-10, -5, -5);
+    const secondaryLight = new THREE.DirectionalLight(0xffffff, 1.2);
+    secondaryLight.position.set(-12, -8, -6);
     scene.add(secondaryLight);
 
-    // 3. Create a circular star texture dynamically
+    // 3. Crisp 4K Space Backdrop Plane (Milky Way & Space Horizon)
+    const textureLoader = new THREE.TextureLoader();
+    const bgTexture = textureLoader.load(isMobile ? "/hero-bg-mobile.png" : "/hero-bg-desktop.png", (tex) => {
+      tex.generateMipmaps = false;
+      tex.minFilter = THREE.LinearFilter;
+    });
+
+    const bgGeom = new THREE.PlaneGeometry(320, 200);
+    const bgMat = new THREE.MeshBasicMaterial({
+      map: bgTexture,
+      depthWrite: false,
+      transparent: false,
+    });
+    const bgMesh = new THREE.Mesh(bgGeom, bgMat);
+    bgMesh.position.set(0, 0, -140);
+    scene.add(bgMesh);
+
+    // 4. Create a circular star texture dynamically
     const createStarTexture = () => {
       const size = 16;
       const starCanvas = document.createElement("canvas");
@@ -82,7 +98,7 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
 
     const starTexture = createStarTexture();
 
-    // 4. Starfield setup (1800 points)
+    // 5. Starfield setup (1800 points - Sharp, High-Contrast)
     const starCount = isMobile ? 800 : 1800;
     const starGeom = new THREE.BufferGeometry();
     const starPositions = new Float32Array(starCount * 3);
@@ -102,56 +118,89 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
       transparent: true,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
-      opacity: 0.8,
+      opacity: 0.95,
     });
     const starField = new THREE.Points(starGeom, starMat);
     scene.add(starField);
 
-    // 5. Ambient Nebula Planes (Keeps background active and volumetric)
-    const createNebulaTexture = (color: string) => {
-      const size = 256;
-      const nCanvas = document.createElement("canvas");
-      nCanvas.width = size;
-      nCanvas.height = size;
-      const ctx = nCanvas.getContext("2d");
-      if (ctx) {
-        const grad = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
-        grad.addColorStop(0, color);
-        grad.addColorStop(0.5, "rgba(255, 255, 255, 0.005)");
-        grad.addColorStop(1, "rgba(0, 0, 0, 0)");
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, 0, size, size);
-      }
-      return new THREE.CanvasTexture(nCanvas);
+    // 6. Foreground Interactive Particles (React to mouse movement)
+    const particleCount = isMobile ? 80 : 220;
+    const particlesGeom = new THREE.BufferGeometry();
+    const particlePositions = new Float32Array(particleCount * 3);
+    const particleVelocities = new Float32Array(particleCount * 3);
+
+    for (let i = 0; i < particleCount; i++) {
+      particlePositions[i * 3] = (Math.random() - 0.5) * 40;
+      particlePositions[i * 3 + 1] = (Math.random() - 0.5) * 25;
+      particlePositions[i * 3 + 2] = (Math.random() - 0.5) * 60 - 20;
+
+      particleVelocities[i * 3] = (Math.random() - 0.5) * 0.015;
+      particleVelocities[i * 3 + 1] = (Math.random() - 0.5) * 0.015;
+      particleVelocities[i * 3 + 2] = (Math.random() - 0.5) * 0.015;
+    }
+
+    particlesGeom.setAttribute("position", new THREE.BufferAttribute(particlePositions, 3));
+    const particlesMat = new THREE.PointsMaterial({
+      size: 0.07,
+      color: 0xffffff,
+      transparent: true,
+      opacity: 0.85,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+    const particlesMesh = new THREE.Points(particlesGeom, particlesMat);
+    scene.add(particlesMesh);
+
+    // 7. Shooting Stars (Dynamic light streaks)
+    const shootingStarCount = 3;
+    const shootingStars: {
+      mesh: THREE.Line;
+      vx: number;
+      vy: number;
+      vz: number;
+      life: number;
+      maxLife: number;
+    }[] = [];
+
+    for (let i = 0; i < shootingStarCount; i++) {
+      const lineGeom = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(0, 0, 0),
+        new THREE.Vector3(-1.8, -1.2, 0.6)
+      ]);
+      const lineMat = new THREE.LineBasicMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0,
+        blending: THREE.AdditiveBlending,
+      });
+      const line = new THREE.Line(lineGeom, lineMat);
+      scene.add(line);
+
+      shootingStars.push({
+        mesh: line,
+        vx: 0,
+        vy: 0,
+        vz: 0,
+        life: 0,
+        maxLife: 0
+      });
+    }
+
+    const triggerShootingStar = (star: typeof shootingStars[0]) => {
+      star.mesh.position.set(
+        (Math.random() - 0.3) * 45,
+        15 + Math.random() * 5,
+        -Math.random() * 80 - 20
+      );
+      star.vx = -0.45 - Math.random() * 0.45;
+      star.vy = -0.32 - Math.random() * 0.32;
+      star.vz = 0.12 + Math.random() * 0.12;
+      star.life = 0;
+      star.maxLife = 35 + Math.floor(Math.random() * 45);
+      (star.mesh.material as THREE.LineBasicMaterial).opacity = 0.95;
     };
 
-    const nebulaTexture1 = createNebulaTexture("rgba(255, 255, 255, 0.02)");
-    const nebulaTexture2 = createNebulaTexture("rgba(200, 200, 200, 0.012)");
-
-    const nebulaGeom = new THREE.PlaneGeometry(100, 100);
-    const nebulaMat1 = new THREE.MeshBasicMaterial({
-      map: nebulaTexture1,
-      transparent: true,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
-      opacity: 0.8,
-    });
-    const nebulaMat2 = new THREE.MeshBasicMaterial({
-      map: nebulaTexture2,
-      transparent: true,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
-      opacity: 0.8,
-    });
-
-    const nebula1 = new THREE.Mesh(nebulaGeom, nebulaMat1);
-    nebula1.position.set(-15, 10, -90);
-    const nebula2 = new THREE.Mesh(nebulaGeom, nebulaMat2);
-    nebula2.position.set(15, -10, -90);
-
-    scene.add(nebula1, nebula2);
-
-    // 6. Realistic Digital Grid Earth Sphere
+    // 8. Realistic Digital Grid Earth Sphere (High Contrast)
     const earthCanvas = document.createElement("canvas");
     earthCanvas.width = 1024;
     earthCanvas.height = 512;
@@ -196,7 +245,7 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
     const earthGeom = new THREE.SphereGeometry(3.5, 64, 64);
     const earthMat = new THREE.MeshStandardMaterial({
       color: 0x0c0c0c,
-      roughness: 0.15,
+      roughness: 0.12,
       metalness: 0.95,
       bumpMap: earthTexture,
       bumpScale: 0.08,
@@ -207,7 +256,7 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
     const earthMesh = new THREE.Mesh(earthGeom, earthMat);
     scene.add(earthMesh);
 
-    // Glowing Atmospheric Outer Shell
+    // Glowing Atmospheric Outer Shell (Sharp intensity gradient)
     const atmosGeom = new THREE.SphereGeometry(3.68, 64, 64);
     const atmosMat = new THREE.ShaderMaterial({
       vertexShader: `
@@ -221,7 +270,7 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
         varying vec3 vNormal;
         void main() {
           float intensity = pow(0.72 - dot(vNormal, vec3(0, 0, 1.0)), 2.8);
-          gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0) * intensity * 0.35;
+          gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0) * intensity * 0.45;
         }
       `,
       blending: THREE.AdditiveBlending,
@@ -232,15 +281,15 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
     const atmosMesh = new THREE.Mesh(atmosGeom, atmosMat);
     earthMesh.add(atmosMesh);
 
-    // Volumetric Sunrise Glow behind Curvature
+    // Volumetric Sunrise Glow behind Curvature (Pure white gold accent)
     const sunriseGlowCanvas = document.createElement("canvas");
     sunriseGlowCanvas.width = 128;
     sunriseGlowCanvas.height = 128;
     const sunriseCtx = sunriseGlowCanvas.getContext("2d");
     if (sunriseCtx) {
       const grad = sunriseCtx.createRadialGradient(64, 64, 0, 64, 64, 64);
-      grad.addColorStop(0, "rgba(255, 255, 255, 0.25)");
-      grad.addColorStop(0.3, "rgba(255, 245, 230, 0.08)");
+      grad.addColorStop(0, "rgba(255, 255, 255, 0.35)");
+      grad.addColorStop(0.3, "rgba(255, 245, 230, 0.12)");
       grad.addColorStop(1, "rgba(255, 255, 255, 0)");
       sunriseCtx.fillStyle = grad;
       sunriseCtx.fillRect(0, 0, 128, 128);
@@ -252,24 +301,24 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
       transparent: true,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
-      opacity: 0.65,
+      opacity: 0.75,
     });
     const sunriseGlow = new THREE.Mesh(sunriseGeom, sunriseMat);
     scene.add(sunriseGlow);
 
-    // 7. Scene 3 Floating Glass Geometries
+    // 9. Scene 3 Floating Glass Geometries (High Clarity polish)
     const glassGroup = new THREE.Group();
     scene.add(glassGroup);
 
     const glassMat = new THREE.MeshPhysicalMaterial({
       color: 0xffffff,
       transparent: true,
-      opacity: 0.22,
-      roughness: 0.05,
-      metalness: 0.05,
-      transmission: 0.95,
-      ior: 1.52,
-      thickness: 1.5,
+      opacity: 0.25,
+      roughness: 0.0,
+      metalness: 0.1,
+      transmission: 0.98,
+      ior: 1.62,
+      thickness: 1.8,
       side: THREE.DoubleSide,
       depthWrite: true,
     });
@@ -289,14 +338,14 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
       glassGroup.add(shape);
     });
 
-    // 8. Scene 4 Concentric Chrome & Glass Rings
+    // 10. Scene 4 Concentric Chrome & Glass Rings (Polished mirror finish)
     const ringsGroup = new THREE.Group();
     scene.add(ringsGroup);
 
     const chromeMat = new THREE.MeshStandardMaterial({
-      color: 0xcccccc,
+      color: 0xffffff,
       metalness: 1.0,
-      roughness: 0.06,
+      roughness: 0.01,
     });
 
     const ring1 = new THREE.Mesh(new THREE.TorusGeometry(6.0, 0.12, 16, 100), chromeMat);
@@ -306,7 +355,7 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
     ringsGroup.add(ring1, ring2, ring3);
     ringsGroup.position.set(0, 0, -32);
 
-    // 9. Scene 6 Orbiting Holographic Project Cards
+    // 11. Scene 6 Orbiting Holographic Project Cards
     const projectsGroup = new THREE.Group();
     scene.add(projectsGroup);
 
@@ -348,7 +397,7 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
       projectsGroup.add(card.mesh);
     });
 
-    // 10. Spline Paths for Cinematic Continuity
+    // 12. Spline Paths for Cinematic Continuity
     const cameraPath = new THREE.CatmullRomCurve3([
       new THREE.Vector3(0, 0, 10),      // Scene 1: Arrival
       new THREE.Vector3(0, 2.5, 18),    // Scene 2: Vision
@@ -371,7 +420,7 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
       new THREE.Vector3(1.5, -0.6, 0)   // Scene 7
     ]);
 
-    // 11. Interactive Mouse Parallax coordinates
+    // 13. Interactive Mouse Parallax coordinates
     const mouse = { x: 0, y: 0 };
     const targetCamera = { x: 0, y: 0 };
 
@@ -383,7 +432,7 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
     };
     window.addEventListener("mousemove", handleMouseMove);
 
-    // 12. Animation Loop
+    // 14. Animation Loop
     let animationFrameId: number;
     let lerpedScroll = 0;
     const clock = new THREE.Clock();
@@ -409,6 +458,10 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
       camera.position.y += targetCamera.y;
       
       camera.lookAt(lookTarget);
+
+      // Parallax-offset the huge background backdrop mesh to keep it centered and realistic
+      bgMesh.position.x = camera.position.x * 0.95;
+      bgMesh.position.y = camera.position.y * 0.95;
 
       const baseZoom = 1.0 + Math.sin(time * 0.08) * 0.008;
 
@@ -446,6 +499,8 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
       serviceShapes.forEach((shape, i) => {
         shape.rotation.x = time * 0.12 + i;
         shape.rotation.y = time * 0.18 + i;
+        // Subtle floating drift
+        shape.position.y = Math.sin(time + i) * 0.3 + (i / serviceShapes.length) * 2.0 - 1.0;
       });
 
       // 3. Chrome/Glass rings active profile (peaks at 0.54)
@@ -512,12 +567,48 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
       }
       starGeom.attributes.position.needsUpdate = true;
 
-      // Twinkle glow
-      starMat.opacity = 0.5 + Math.sin(time * 0.5) * 0.25;
+      // Twinkle star glow
+      starMat.opacity = 0.75 + Math.sin(time * 0.5) * 0.2;
 
-      // Rotate nebulas slowly
-      nebula1.rotation.z = time * 0.005;
-      nebula2.rotation.z = -time * 0.003;
+      // ----------------------------------------------------
+      // FOREGROUND PARTICLES DRIFT WITH MOUSE
+      // ----------------------------------------------------
+      const fpArr = particlesGeom.attributes.position.array as Float32Array;
+      for (let i = 0; i < particleCount; i++) {
+        fpArr[i * 3] += particleVelocities[i * 3];
+        fpArr[i * 3 + 1] += particleVelocities[i * 3 + 1];
+        fpArr[i * 3 + 2] += particleVelocities[i * 3 + 2];
+
+        // Repel/attract based on targetCamera (mouse coordinates)
+        fpArr[i * 3] += (targetCamera.x * 2.0 - fpArr[i * 3]) * 0.001;
+        fpArr[i * 3 + 1] += (targetCamera.y * 1.5 - fpArr[i * 3 + 1]) * 0.001;
+
+        // Wrap around boundaries
+        if (Math.abs(fpArr[i * 3]) > 25) fpArr[i * 3] = -fpArr[i * 3];
+        if (Math.abs(fpArr[i * 3 + 1]) > 18) fpArr[i * 3 + 1] = -fpArr[i * 3 + 1];
+        if (fpArr[i * 3 + 2] > 20 || fpArr[i * 3 + 2] < -60) fpArr[i * 3 + 2] = -40;
+      }
+      particlesGeom.attributes.position.needsUpdate = true;
+
+      // ----------------------------------------------------
+      // UPDATE SHOOTING STARS
+      // ----------------------------------------------------
+      shootingStars.forEach(star => {
+        if (star.life < star.maxLife) {
+          star.mesh.position.x += star.vx;
+          star.mesh.position.y += star.vy;
+          star.mesh.position.z += star.vz;
+          star.life++;
+          
+          if (star.life > star.maxLife - 10) {
+            (star.mesh.material as THREE.LineBasicMaterial).opacity = (star.maxLife - star.life) / 10;
+          }
+        } else {
+          if (Math.random() < 0.008) {
+            triggerShootingStar(star);
+          }
+        }
+      });
 
       // Gently rotate Earth
       earthMesh.rotation.y = time * 0.015;
@@ -546,6 +637,16 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
       starGeom.dispose();
       starMat.dispose();
       starTexture.dispose();
+      particlesGeom.dispose();
+      particlesMat.dispose();
+      shootingStars.forEach(s => {
+        s.mesh.geometry.dispose();
+        if (Array.isArray(s.mesh.material)) {
+          s.mesh.material.forEach(m => m.dispose());
+        } else {
+          s.mesh.material.dispose();
+        }
+      });
       earthGeom.dispose();
       earthMat.dispose();
       earthTexture.dispose();
@@ -561,14 +662,20 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
       ring3.geometry.dispose();
       projectCardGeom.dispose();
       projectCards.forEach((c) => {
-        c.mesh.material.dispose();
-        if (c.mesh.material.map) c.mesh.material.map.dispose();
+        const mat = c.mesh.material;
+        if (Array.isArray(mat)) {
+          mat.forEach((m) => {
+            m.dispose();
+            if ('map' in m && m.map) m.map.dispose();
+          });
+        } else {
+          mat.dispose();
+          if ('map' in mat && mat.map) mat.map.dispose();
+        }
       });
-      nebulaGeom.dispose();
-      nebulaMat1.dispose();
-      nebulaMat2.dispose();
-      nebulaTexture1.dispose();
-      nebulaTexture2.dispose();
+      bgGeom.dispose();
+      bgMat.dispose();
+      bgTexture.dispose();
     };
   }, []);
 
