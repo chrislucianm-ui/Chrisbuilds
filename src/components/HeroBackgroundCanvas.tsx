@@ -3,65 +3,67 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 
-export default function HeroBackgroundCanvas() {
+interface Props {
+  scrollProgress: number; // 0.0 to 1.0
+  hoveredProjectIndex: number | null;
+}
+
+export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectIndex }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  // Use refs to pass variables into the animation loop without triggering react re-renders
+  const scrollRef = useRef(0);
+  const hoveredIndexRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    scrollRef.current = scrollProgress;
+  }, [scrollProgress]);
+
+  useEffect(() => {
+    hoveredIndexRef.current = hoveredProjectIndex;
+  }, [hoveredProjectIndex]);
 
   useEffect(() => {
     if (!canvasRef.current || !containerRef.current) return;
 
     const canvas = canvasRef.current;
     const container = containerRef.current;
-
-    // Check prefers-reduced-motion
-    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-    let width = container.clientWidth;
-    let height = container.clientHeight;
     const isMobile = window.innerWidth < 768;
 
-    // 1. Scene, Camera, Renderer
+    // 1. Scene & Setup
     const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x000000, 0.045);
+    scene.fog = new THREE.FogExp2(0x000000, 0.015);
 
-    const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 100);
+    const camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 1000);
     camera.position.set(0, 0, 12);
 
     const renderer = new THREE.WebGLRenderer({
       canvas,
-      antialias: false,
+      antialias: !isMobile,
       alpha: false,
       powerPreference: "high-performance",
     });
-    renderer.setSize(width, height);
+    renderer.setSize(container.clientWidth, container.clientHeight);
     renderer.setPixelRatio(isMobile ? 1.0 : Math.min(window.devicePixelRatio, 1.5));
     renderer.setClearColor(0x000000, 1.0);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.0;
 
-    // 2. Load the exact attached image as a WebGL texture
-    const textureLoader = new THREE.TextureLoader();
-    const bgTexture = textureLoader.load("/hero-bg.jpg", (tex) => {
-      tex.generateMipmaps = false;
-      tex.minFilter = THREE.LinearFilter;
-      handleResize(); // Trigger cover calculations once texture dimensions are resolved
-    });
+    // 2. Add Lighting (Volumetric direction lights for chrome/glass specs)
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.08);
+    scene.add(ambientLight);
 
-    // Create a background plane mapping the image
-    const bgGeom = new THREE.PlaneGeometry(36, 24);
-    const bgMat = new THREE.MeshBasicMaterial({
-      map: bgTexture,
-      transparent: true,
-      opacity: 1.0,
-      depthWrite: false,
-    });
-    const bgMesh = new THREE.Mesh(bgGeom, bgMat);
-    bgMesh.position.set(0, 0, -18); // Put it deep behind all elements
-    scene.add(bgMesh);
+    const mainLight = new THREE.DirectionalLight(0xffffff, 1.8);
+    mainLight.position.set(10, 5, 10);
+    scene.add(mainLight);
 
-    // Initialize baseScale userData parameters
-    bgMesh.userData = { baseScaleX: 1.0, baseScaleY: 1.0 };
+    const secondaryLight = new THREE.DirectionalLight(0xffffff, 0.6);
+    secondaryLight.position.set(-10, -5, -5);
+    scene.add(secondaryLight);
 
-    // 3. Helper to create circular star overlay textures
-    const createStarTexture = (opacity = 1.0) => {
+    // 3. Create a circular star texture dynamically
+    const createStarTexture = () => {
       const size = 16;
       const starCanvas = document.createElement("canvas");
       starCanvas.width = size;
@@ -69,8 +71,8 @@ export default function HeroBackgroundCanvas() {
       const ctx = starCanvas.getContext("2d");
       if (ctx) {
         const grad = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
-        grad.addColorStop(0, `rgba(255, 255, 255, ${opacity})`);
-        grad.addColorStop(0.2, `rgba(255, 255, 255, ${opacity * 0.7})`);
+        grad.addColorStop(0, "rgba(255, 255, 255, 1.0)");
+        grad.addColorStop(0.2, "rgba(255, 255, 255, 0.7)");
         grad.addColorStop(1, "rgba(255, 255, 255, 0)");
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, size, size);
@@ -78,323 +80,482 @@ export default function HeroBackgroundCanvas() {
       return new THREE.CanvasTexture(starCanvas);
     };
 
-    const textureFar = createStarTexture(0.45);
-    const textureMid = createStarTexture(0.65);
-    const textureDust = createStarTexture(0.25);
+    const starTexture = createStarTexture();
 
-    // Star Groups (for parallax depth overlaying the image)
-    const farStarsGroup = new THREE.Group();
-    const midStarsGroup = new THREE.Group();
-    const dustGroup = new THREE.Group();
+    // 4. Starfield setup (1500 points)
+    const starCount = isMobile ? 600 : 1500;
+    const starGeom = new THREE.BufferGeometry();
+    const starPositions = new Float32Array(starCount * 3);
+    const starSpeeds = new Float32Array(starCount);
 
-    scene.add(farStarsGroup);
-    scene.add(midStarsGroup);
-    scene.add(dustGroup);
-
-    // Star Layer 1 (500 count overlaying background)
-    const farCount = isMobile ? 150 : 500;
-    const farGeom = new THREE.BufferGeometry();
-    const farPositions = new Float32Array(farCount * 3);
-    for (let i = 0; i < farCount; i++) {
-      farPositions[i * 3] = (Math.random() - 0.5) * 60;
-      farPositions[i * 3 + 1] = (Math.random() - 0.5) * 40;
-      farPositions[i * 3 + 2] = (Math.random() - 0.5) * 15 - 12; // In front of backplane
+    for (let i = 0; i < starCount; i++) {
+      starPositions[i * 3] = (Math.random() - 0.5) * 120;
+      starPositions[i * 3 + 1] = (Math.random() - 0.5) * 80;
+      // Spread stars far back
+      starPositions[i * 3 + 2] = -Math.random() * 120;
+      starSpeeds[i] = 0.05 + Math.random() * 0.15;
     }
-    farGeom.setAttribute("position", new THREE.BufferAttribute(farPositions, 3));
-    const farMat = new THREE.PointsMaterial({
-      size: 0.035,
-      map: textureFar,
+    starGeom.setAttribute("position", new THREE.BufferAttribute(starPositions, 3));
+
+    const starMat = new THREE.PointsMaterial({
+      size: 0.12,
+      map: starTexture,
       transparent: true,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
-      opacity: 0.15,
+      opacity: 0.8,
     });
-    const farStars = new THREE.Points(farGeom, farMat);
-    farStarsGroup.add(farStars);
+    const starField = new THREE.Points(starGeom, starMat);
+    scene.add(starField);
 
-    // Star Layer 2 (200 count)
-    const midCount = isMobile ? 60 : 200;
-    const midGeom = new THREE.BufferGeometry();
-    const midPositions = new Float32Array(midCount * 3);
-    for (let i = 0; i < midCount; i++) {
-      midPositions[i * 3] = (Math.random() - 0.5) * 40;
-      midPositions[i * 3 + 1] = (Math.random() - 0.5) * 28;
-      midPositions[i * 3 + 2] = (Math.random() - 0.5) * 10 - 4;
+    // 5. Realistic Digital Grid Earth Sphere
+    // Draw Earth landmasses & grid onto canvas programmatically
+    const earthCanvas = document.createElement("canvas");
+    earthCanvas.width = 1024;
+    earthCanvas.height = 512;
+    const earthCtx = earthCanvas.getContext("2d");
+    if (earthCtx) {
+      earthCtx.fillStyle = "#000000";
+      earthCtx.fillRect(0, 0, 1024, 512);
+
+      // Draw stylized continents
+      earthCtx.fillStyle = "#ffffff";
+      const continentBlobs = [
+        { x: 300, y: 200, r: 90 }, { x: 380, y: 220, r: 70 },
+        { x: 650, y: 180, r: 85 }, { x: 740, y: 220, r: 75 }, { x: 600, y: 250, r: 60 },
+        { x: 220, y: 350, r: 80 }, { x: 300, y: 320, r: 60 },
+        { x: 800, y: 360, r: 70 }, { x: 850, y: 320, r: 50 },
+        { x: 500, y: 120, r: 40 }, { x: 450, y: 80, r: 60 }
+      ];
+      continentBlobs.forEach(blob => {
+        earthCtx.beginPath();
+        earthCtx.arc(blob.x, blob.y, blob.r, 0, Math.PI * 2);
+        earthCtx.fill();
+      });
+
+      // Destination-in composition locks grid to landmass blobs only
+      earthCtx.globalCompositeOperation = "destination-in";
+      earthCtx.strokeStyle = "#ffffff";
+      earthCtx.lineWidth = 1.5;
+      for (let y = 0; y < 512; y += 10) {
+        earthCtx.beginPath();
+        earthCtx.moveTo(0, y);
+        earthCtx.lineTo(1024, y);
+        earthCtx.stroke();
+      }
+      for (let x = 0; x < 1024; x += 10) {
+        earthCtx.beginPath();
+        earthCtx.moveTo(x, 0);
+        earthCtx.lineTo(x, 512);
+        earthCtx.stroke();
+      }
+      earthCtx.globalCompositeOperation = "source-over";
     }
-    midGeom.setAttribute("position", new THREE.BufferAttribute(midPositions, 3));
-    const midMat = new THREE.PointsMaterial({
-      size: 0.055,
-      map: textureMid,
-      transparent: true,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
-      opacity: 0.35,
-    });
-    const midStars = new THREE.Points(midGeom, midMat);
-    midStarsGroup.add(midStars);
 
-    // Cosmic Dust (50 count)
-    const dustCount = isMobile ? 15 : 50;
-    const dustGeom = new THREE.BufferGeometry();
-    const dustPositions = new Float32Array(dustCount * 3);
-    const dustSpeedsY = new Float32Array(dustCount);
-    for (let i = 0; i < dustCount; i++) {
-      dustPositions[i * 3] = (Math.random() - 0.5) * 20;
-      dustPositions[i * 3 + 1] = (Math.random() - 0.5) * 15;
-      dustPositions[i * 3 + 2] = (Math.random() - 0.5) * 8 + 2;
-      dustSpeedsY[i] = 0.0001 + Math.random() * 0.00025;
-    }
-    dustGeom.setAttribute("position", new THREE.BufferAttribute(dustPositions, 3));
-    const dustMat = new THREE.PointsMaterial({
-      size: 0.15,
-      map: textureDust,
+    const earthTexture = new THREE.CanvasTexture(earthCanvas);
+    const earthGeom = new THREE.SphereGeometry(3.5, 64, 64);
+    const earthMat = new THREE.MeshStandardMaterial({
+      color: 0x0c0c0c,
+      roughness: 0.15,
+      metalness: 0.95,
+      bumpMap: earthTexture,
+      bumpScale: 0.08,
+      alphaMap: earthTexture,
       transparent: true,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
-      opacity: 0.1,
+      opacity: 0.95,
     });
-    const dustParticles = new THREE.Points(dustGeom, dustMat);
-    dustGroup.add(dustParticles);
+    const earthMesh = new THREE.Mesh(earthGeom, earthMat);
+    earthMesh.position.set(0, 0, 0);
+    scene.add(earthMesh);
 
-    // 4. Volumetric Center Glow Plane (Glow behind the headline)
-    const glowCanvas = document.createElement("canvas");
-    glowCanvas.width = 128;
-    glowCanvas.height = 128;
-    const glowCtx = glowCanvas.getContext("2d");
-    if (glowCtx) {
-      const grad = glowCtx.createRadialGradient(64, 64, 0, 64, 64, 64);
-      grad.addColorStop(0, "rgba(255, 255, 255, 0.02)");
-      grad.addColorStop(0.4, "rgba(255, 255, 255, 0.008)");
+    // Glowing Atmospheric Outer Shell
+    const atmosGeom = new THREE.SphereGeometry(3.68, 64, 64);
+    const atmosMat = new THREE.ShaderMaterial({
+      vertexShader: `
+        varying vec3 vNormal;
+        void main() {
+          vNormal = normalize(normalMatrix * normal);
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        varying vec3 vNormal;
+        void main() {
+          float intensity = pow(0.72 - dot(vNormal, vec3(0, 0, 1.0)), 2.8);
+          gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0) * intensity * 0.35;
+        }
+      `,
+      blending: THREE.AdditiveBlending,
+      side: THREE.BackSide,
+      transparent: true,
+      depthWrite: false,
+    });
+    const atmosMesh = new THREE.Mesh(atmosGeom, atmosMat);
+    earthMesh.add(atmosMesh);
+
+    // Volumetric Sunrise Glow behind Curvature
+    const sunriseGlowCanvas = document.createElement("canvas");
+    sunriseGlowCanvas.width = 128;
+    sunriseGlowCanvas.height = 128;
+    const sunriseCtx = sunriseGlowCanvas.getContext("2d");
+    if (sunriseCtx) {
+      const grad = sunriseCtx.createRadialGradient(64, 64, 0, 64, 64, 64);
+      grad.addColorStop(0, "rgba(255, 255, 255, 0.25)");
+      grad.addColorStop(0.3, "rgba(255, 245, 230, 0.08)");
       grad.addColorStop(1, "rgba(255, 255, 255, 0)");
-      glowCtx.fillStyle = grad;
-      glowCtx.fillRect(0, 0, 128, 128);
+      sunriseCtx.fillStyle = grad;
+      sunriseCtx.fillRect(0, 0, 128, 128);
     }
-    const glowTexture = new THREE.CanvasTexture(glowCanvas);
-    const glowGeom = new THREE.PlaneGeometry(32, 16);
-    const glowPlaneMat = new THREE.MeshBasicMaterial({
-      map: glowTexture,
+    const sunriseTexture = new THREE.CanvasTexture(sunriseGlowCanvas);
+    const sunriseGeom = new THREE.PlaneGeometry(16, 12);
+    const sunriseMat = new THREE.MeshBasicMaterial({
+      map: sunriseTexture,
       transparent: true,
-      depthWrite: false,
       blending: THREE.AdditiveBlending,
-      opacity: 0.45,
+      depthWrite: false,
+      opacity: 0.65,
     });
-    const glowMesh = new THREE.Mesh(glowGeom, glowPlaneMat);
-    glowMesh.position.set(0, 0, -10);
-    scene.add(glowMesh);
+    const sunriseGlow = new THREE.Mesh(sunriseGeom, sunriseMat);
+    sunriseGlow.position.set(2.8, -1.8, -1.0);
+    scene.add(sunriseGlow);
 
-    // 5. Dynamic Shooting Stars (Streaking across every 20-30s)
-    const shootingStarGeom = new THREE.BufferGeometry();
-    const streakPoints = [
-      new THREE.Vector3(0, 0, 0),
-      new THREE.Vector3(-1.6, 1.0, 0)
-    ];
-    shootingStarGeom.setFromPoints(streakPoints);
-    const shootingStarMat = new THREE.LineBasicMaterial({
+    // 6. Scene 3 Floating Glass Geometries
+    const glassGroup = new THREE.Group();
+    scene.add(glassGroup);
+
+    const glassMat = new THREE.MeshPhysicalMaterial({
       color: 0xffffff,
       transparent: true,
-      opacity: 0.0,
-      blending: THREE.AdditiveBlending,
-      linewidth: 1,
+      opacity: 0.22,
+      roughness: 0.05,
+      metalness: 0.05,
+      transmission: 0.95,
+      ior: 1.52,
+      thickness: 1.5,
+      side: THREE.DoubleSide,
+      depthWrite: true,
     });
-    const shootingStar = new THREE.Line(shootingStarGeom, shootingStarMat);
-    scene.add(shootingStar);
 
-    let streakActive = false;
-    let streakTime = 0;
-    const streakDuration = 0.75;
-    const streakSpeed = { x: -15, y: 9.3 };
-    let streakStartPos = { x: 0, y: 0, z: -5 };
+    const serviceShapes = [
+      new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.6, 1.6), glassMat), // Websites
+      new THREE.Mesh(new THREE.OctahedronGeometry(1.2), glassMat), // Web Apps
+      new THREE.Mesh(new THREE.TorusKnotGeometry(0.7, 0.22, 100, 16), glassMat), // Mobile
+      new THREE.Mesh(new THREE.IcosahedronGeometry(1.2), glassMat), // AI Solutions
+      new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.8, 1.8, 32), glassMat), // Automations
+      new THREE.Mesh(new THREE.TorusGeometry(0.9, 0.35, 16, 100), glassMat) // Branding
+    ];
 
-    const triggerShootingStar = () => {
-      if (streakActive) return;
-      streakActive = true;
-      streakTime = 0;
-      streakStartPos.x = Math.random() * 12 + 1;
-      streakStartPos.y = Math.random() * 5 + 2;
-      streakStartPos.z = Math.random() * -8 - 4;
-      shootingStar.position.set(streakStartPos.x, streakStartPos.y, streakStartPos.z);
+    // Position in a wide hexagonal arrangement in Z-depth
+    serviceShapes.forEach((shape, i) => {
+      const angle = (i / serviceShapes.length) * Math.PI * 2;
+      shape.position.set(Math.cos(angle) * 7.5, Math.sin(angle) * 4.5, -30);
+      shape.scale.set(0, 0, 0); // start hidden
+      glassGroup.add(shape);
+    });
+
+    // 7. Scene 4 Concentric Chrome & Glass Rings
+    const ringsGroup = new THREE.Group();
+    scene.add(ringsGroup);
+
+    const chromeMat = new THREE.MeshStandardMaterial({
+      color: 0xcccccc,
+      metalness: 1.0,
+      roughness: 0.06,
+    });
+
+    const ring1 = new THREE.Mesh(new THREE.TorusGeometry(6.0, 0.12, 16, 100), chromeMat);
+    const ring2 = new THREE.Mesh(new THREE.TorusGeometry(4.5, 0.09, 16, 100), glassMat);
+    const ring3 = new THREE.Mesh(new THREE.TorusGeometry(3.0, 0.06, 16, 100), chromeMat);
+
+    ringsGroup.add(ring1, ring2, ring3);
+    ringsGroup.position.set(0, 0, -32); // Positioned for fly-through
+
+    // 8. Scene 6 Orbiting Holographic Project Cards
+    const projectsGroup = new THREE.Group();
+    scene.add(projectsGroup);
+
+    const projectCardGeom = new THREE.PlaneGeometry(3.4, 2.2);
+    // Dynamic canvas texture for holographic borders
+    const createProjectCardTexture = (title: string, label: string) => {
+      const cardCanvas = document.createElement("canvas");
+      cardCanvas.width = 512;
+      cardCanvas.height = 320;
+      const ctx = cardCanvas.getContext("2d");
+      if (ctx) {
+        ctx.fillStyle = "rgba(0, 0, 0, 0.95)";
+        ctx.fillRect(0, 0, 512, 320);
+
+        // Thin glow border
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
+        ctx.lineWidth = 4;
+        ctx.strokeRect(8, 8, 496, 304);
+
+        // Title text
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 26px var(--font-geist-sans), sans-serif";
+        ctx.letterSpacing = "0.08em";
+        ctx.fillText(title.toUpperCase(), 35, 150);
+
+        // Label details
+        ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
+        ctx.font = "14px var(--font-geist-mono), monospace";
+        ctx.fillText(label.toUpperCase(), 35, 195);
+      }
+      return new THREE.CanvasTexture(cardCanvas);
     };
 
-    // Trigger every 25 seconds (Rare shooting stars)
-    const shootingInterval = setInterval(() => {
-      if (!prefersReducedMotion && !isMobile) {
-        triggerShootingStar();
-      }
-    }, 25000);
+    const projectCards = [
+      { mesh: new THREE.Mesh(projectCardGeom, new THREE.MeshPhysicalMaterial({ map: createProjectCardTexture("Noir.io", "Creative Scroll Studio"), transparent: true, opacity: 0.9, roughness: 0.1, metalness: 0.1, transmission: 0.4, side: THREE.DoubleSide })), angle: 0 },
+      { mesh: new THREE.Mesh(projectCardGeom, new THREE.MeshPhysicalMaterial({ map: createProjectCardTexture("SpaceX Orbit", "Cinematic Traversal"), transparent: true, opacity: 0.9, roughness: 0.1, metalness: 0.1, transmission: 0.4, side: THREE.DoubleSide })), angle: Math.PI * 0.5 },
+      { mesh: new THREE.Mesh(projectCardGeom, new THREE.MeshPhysicalMaterial({ map: createProjectCardTexture("Apple Bloom", "Luxury Product Film"), transparent: true, opacity: 0.9, roughness: 0.1, metalness: 0.1, transmission: 0.4, side: THREE.DoubleSide })), angle: Math.PI },
+      { mesh: new THREE.Mesh(projectCardGeom, new THREE.MeshPhysicalMaterial({ map: createProjectCardTexture("Awwwards", "Digital Space Story"), transparent: true, opacity: 0.9, roughness: 0.1, metalness: 0.1, transmission: 0.4, side: THREE.DoubleSide })), angle: Math.PI * 1.5 }
+    ];
 
-    // 6. Mouse Parallax Coordinate Tracking
+    projectCards.forEach((card) => {
+      card.mesh.position.set(Math.cos(card.angle) * 9, Math.sin(card.angle) * 3, -65);
+      projectsGroup.add(card.mesh);
+    });
+
+    // 9. Interactive Mouse Parallax coordinates
     const mouse = { x: 0, y: 0 };
     const targetCamera = { x: 0, y: 0 };
 
     const handleMouseMove = (e: MouseEvent) => {
       mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
       mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
-
-      targetCamera.x = mouse.x * 0.45; // Very subtle, premium drift
-      targetCamera.y = mouse.y * 0.3;
+      targetCamera.x = mouse.x * 0.5;
+      targetCamera.y = mouse.y * 0.35;
     };
     window.addEventListener("mousemove", handleMouseMove);
 
-    // 7. Scroll Intersection Observer
-    let isVisible = true;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          isVisible = entry.isIntersecting;
-        });
-      },
-      { threshold: 0.05 }
-    );
-    observer.observe(canvas);
-
-    // 8. Animation Loop
+    // 10. Animation Loop
     let animationFrameId: number;
+    let lerpedScroll = 0;
     const clock = new THREE.Clock();
 
     const animate = () => {
-      if (prefersReducedMotion) {
-        renderer.render(scene, camera);
-        return;
-      }
-
       animationFrameId = requestAnimationFrame(animate);
 
-      if (isVisible) {
-        const time = clock.getElapsedTime();
+      const time = clock.getElapsedTime();
 
-        // 1. Slow Zoom (Scale 1.00 -> 1.02 over 40 seconds, looping smoothly)
-        const zoomTime = 40;
-        const loopCycle = time % (zoomTime * 2);
-        let zoomVal = 1.0;
-        if (loopCycle < zoomTime) {
-          zoomVal = 1.0 + (loopCycle / zoomTime) * 0.02;
-        } else {
-          zoomVal = 1.02 - ((loopCycle - zoomTime) / zoomTime) * 0.02;
-        }
+      // Smooth scroll lerping for liquid-fluid transitions
+      lerpedScroll += (scrollRef.current - lerpedScroll) * 0.05;
 
-        const baseSX = bgMesh.userData.baseScaleX || 1.0;
-        const baseSY = bgMesh.userData.baseScaleY || 1.0;
-        bgMesh.scale.set(baseSX * zoomVal, baseSY * zoomVal, 1.0);
+      // ----------------------------------------------------
+      // WEBGL SCROLL TIMELINE PHYSICS
+      // ----------------------------------------------------
 
-        // 2. Gentle vertical drift
-        bgMesh.position.y = Math.sin(time * 0.04) * 0.12;
+      // Camera base zoom & float drift
+      const baseZoom = 1.0 + Math.sin(time * 0.08) * 0.008;
 
-        // 3. Stars Twinkling Opacity Modulation
-        farMat.opacity = 0.1 + Math.sin(time * 0.4) * 0.05;
-        midMat.opacity = 0.22 + Math.cos(time * 0.6) * 0.1;
+      // Reset positions to handle parallax overlays cleanly
+      earthMesh.position.set(0, 0, 0);
+      glassGroup.position.set(0, 0, 0);
+      ringsGroup.position.set(0, 0, 0);
+      projectsGroup.position.set(0, 0, 0);
 
-        // 4. Parallax star layer rotations
-        farStarsGroup.rotation.y = time * 0.0002;
-        midStarsGroup.rotation.y = -time * 0.0001;
+      // Section thresholds
+      if (lerpedScroll < 0.15) {
+        // Scene 1: Earth close up
+        const t = lerpedScroll / 0.15;
+        camera.position.set(targetCamera.x, targetCamera.y, 9.5 + t * 4.5);
+        earthMesh.scale.set(baseZoom, baseZoom, baseZoom);
+        earthMesh.position.x = -t * 1.5; // slow shift left
+        sunriseGlow.position.x = 2.8 - t * 1.5;
 
-        // 5. Drift the cosmic dust points
-        const posArr = dustGeom.attributes.position.array as Float32Array;
-        for (let i = 0; i < dustCount; i++) {
-          posArr[i * 3 + 1] += dustSpeedsY[i] * 0.12;
-          posArr[i * 3] += Math.sin(time * 0.08 + i) * 0.0002;
+        // Hide other items
+        glassGroup.scale.set(0, 0, 0);
+        ringsGroup.scale.set(0, 0, 0);
+        projectsGroup.scale.set(0, 0, 0);
+
+      } else if (lerpedScroll >= 0.15 && lerpedScroll < 0.30) {
+        // Scene 2: Pulling away from Earth
+        const t = (lerpedScroll - 0.15) / 0.15;
+        camera.position.set(targetCamera.x, targetCamera.y, 14.0 + t * 14.0);
+        earthMesh.position.x = -1.5 - t * 10; // Earth slides off-screen left
+        sunriseGlow.position.x = 1.3 - t * 10;
+        
+        glassGroup.scale.set(0, 0, 0);
+        ringsGroup.scale.set(0, 0, 0);
+        projectsGroup.scale.set(0, 0, 0);
+
+      } else if (lerpedScroll >= 0.30 && lerpedScroll < 0.45) {
+        // Scene 3: Entering the Galaxy, floating Glass Services
+        const t = (lerpedScroll - 0.30) / 0.15;
+        camera.position.set(targetCamera.x, targetCamera.y, 28.0 - t * 4.0);
+        earthMesh.position.x = -11.5 - t * 15; // completely hide Earth
+
+        // Float and scale services glass objects
+        glassGroup.scale.set(1, 1, 1);
+        serviceShapes.forEach((shape, i) => {
+          const baseScale = 1.0 + Math.sin(time + i) * 0.05;
+          const s = t * baseScale;
+          shape.scale.set(s, s, s);
+          // spin
+          shape.rotation.x = time * 0.1 + i;
+          shape.rotation.y = time * 0.15 + i;
+        });
+
+        ringsGroup.scale.set(0, 0, 0);
+        projectsGroup.scale.set(0, 0, 0);
+
+      } else if (lerpedScroll >= 0.45 && lerpedScroll < 0.60) {
+        // Scene 4: Flying through Chrome/Glass Rings
+        const t = (lerpedScroll - 0.45) / 0.15;
+        // Fade service glass shapes
+        serviceShapes.forEach((shape) => {
+          const s = (1.0 - t);
+          shape.scale.set(s, s, s);
+        });
+
+        // Camera flies right through rings at Z=-32. Z moves 24 to -42.
+        camera.position.set(targetCamera.x, targetCamera.y, 24.0 - t * 66.0);
+        
+        ringsGroup.scale.set(1, 1, 1);
+        // Spin concentric rings
+        ring1.rotation.y = time * 0.18;
+        ring1.rotation.z = time * 0.08;
+        ring2.rotation.y = -time * 0.12;
+        ring2.rotation.z = -time * 0.14;
+        ring3.rotation.y = time * 0.22;
+
+        projectsGroup.scale.set(0, 0, 0);
+
+      } else if (lerpedScroll >= 0.60 && lerpedScroll < 0.75) {
+        // Scene 5: Speed-warp / philosophy
+        const t = (lerpedScroll - 0.60) / 0.15;
+        ringsGroup.scale.set(0, 0, 0);
+        projectsGroup.scale.set(0, 0, 0);
+
+        // Keep camera steady while star speed increases
+        camera.position.set(targetCamera.x, targetCamera.y, -42.0 - t * 8.0);
+
+      } else if (lerpedScroll >= 0.75 && lerpedScroll < 0.90) {
+        // Scene 6: Featured Orbiting Projects
+        const t = (lerpedScroll - 0.75) / 0.15;
+        camera.position.set(targetCamera.x, targetCamera.y, -50.0 - t * 4.0);
+
+        // Show orbiting project panels
+        projectsGroup.scale.set(1, 1, 1);
+        
+        projectCards.forEach((card, idx) => {
+          const orbitalRadius = 8.5;
+          const speedFactor = time * 0.08;
+          const currentAngle = card.angle + speedFactor;
           
-          if (posArr[i * 3 + 1] > 10) {
-            posArr[i * 3 + 1] = -10;
-          }
-        }
-        dustGeom.attributes.position.needsUpdate = true;
+          let cardX = Math.cos(currentAngle) * orbitalRadius;
+          let cardY = Math.sin(currentAngle) * 2.8;
+          let cardZ = -65 + Math.sin(currentAngle) * 4;
 
-        // 6. Update Shooting Star position
-        if (streakActive) {
-          streakTime += 0.016;
-          if (streakTime >= streakDuration) {
-            streakActive = false;
-            shootingStarMat.opacity = 0;
-          } else {
-            shootingStar.position.x = streakStartPos.x + streakTime * streakSpeed.x;
-            shootingStar.position.y = streakStartPos.y + streakTime * streakSpeed.y;
+          const isHovered = hoveredIndexRef.current === idx;
+          if (isHovered) {
+            // Lerp selected project card to center-focus in front of camera
+            card.mesh.position.x += (targetCamera.x - card.mesh.position.x) * 0.12;
+            card.mesh.position.y += (targetCamera.y - card.mesh.position.y) * 0.12;
+            card.mesh.position.z += (camera.position.z - 4.5 - card.mesh.position.z) * 0.12;
             
-            if (streakTime < streakDuration * 0.2) {
-              shootingStarMat.opacity = (streakTime / (streakDuration * 0.2)) * 0.4;
-            } else {
-              shootingStarMat.opacity = (1.0 - (streakTime - streakDuration * 0.2) / (streakDuration * 0.8)) * 0.4;
-            }
+            // Align rotation directly to camera face
+            card.mesh.rotation.set(0, 0, 0);
+          } else {
+            // Normal orbit movement
+            card.mesh.position.set(cardX, cardY, cardZ);
+            card.mesh.rotation.y = Math.sin(time * 0.15 + idx) * 0.08;
+            card.mesh.rotation.x = Math.cos(time * 0.1 + idx) * 0.08;
           }
-        }
+        });
 
-        // 7. Smooth camera parallax interpolation (Lerping)
-        camera.position.x += (targetCamera.x - camera.position.x) * 0.04;
-        camera.position.y += (targetCamera.y - camera.position.y) * 0.04;
-        camera.lookAt(0, 0, 0);
+      } else if (lerpedScroll >= 0.90) {
+        // Scene 7: Contact orbit back
+        const t = (lerpedScroll - 0.90) / 0.10;
+        projectsGroup.scale.set(0, 0, 0);
 
-        renderer.render(scene, camera);
+        // Transition camera from project coordinate system back to Earth close orbit
+        camera.position.set(
+          targetCamera.x + (1.0 - t) * 0,
+          targetCamera.y + (1.0 - t) * 0,
+          -54.0 + t * 65.5 // Z moves from -54 to 11.5
+        );
+
+        // Scale and align Earth back
+        earthMesh.position.set(1.5, -0.8, 0); // Position on the right side of Contact overlay
+        earthMesh.scale.set(baseZoom, baseZoom, baseZoom);
+        sunriseGlow.position.set(4.3, -2.6, -1.0);
       }
+
+      // ----------------------------------------------------
+      // STARFIELD TWINKLE & TRAVEL SPEED ANIMATION
+      // ----------------------------------------------------
+      const posArr = starGeom.attributes.position.array as Float32Array;
+      const isWarpSpeed = lerpedScroll >= 0.60 && lerpedScroll < 0.75;
+      const warpSpeedFactor = isWarpSpeed ? 12.0 : 1.0;
+
+      for (let i = 0; i < starCount; i++) {
+        // Stars translate towards camera along Z
+        posArr[i * 3 + 2] += starSpeeds[i] * warpSpeedFactor;
+        
+        // Reset stars passing the viewport
+        if (posArr[i * 3 + 2] > 15) {
+          posArr[i * 3 + 2] = -120;
+          posArr[i * 3] = (Math.random() - 0.5) * 120;
+          posArr[i * 3 + 1] = (Math.random() - 0.5) * 80;
+        }
+      }
+      starGeom.attributes.position.needsUpdate = true;
+
+      // Soft twinkle glow modulation
+      starMat.opacity = 0.5 + Math.sin(time * 0.5) * 0.25;
+
+      // Gently rotate Earth
+      earthMesh.rotation.y = time * 0.015;
+
+      renderer.render(scene, camera);
     };
 
     animate();
 
-    // 9. Resize handling (Calculates cover aspect ratio matching background-size: cover)
+    // 11. Responsive resize handler
     const handleResize = () => {
       if (!containerRef.current) return;
-      width = containerRef.current.clientWidth;
-      height = containerRef.current.clientHeight;
-      camera.aspect = width / height;
+      const w = containerRef.current.clientWidth;
+      const h = containerRef.current.clientHeight;
+      camera.aspect = w / h;
       camera.updateProjectionMatrix();
-      renderer.setSize(width, height);
-      renderer.setPixelRatio(isMobile ? 1.0 : Math.min(window.devicePixelRatio, 1.5));
-
-      // Calculate cover scale for bgMesh
-      const vFOV = (camera.fov * Math.PI) / 180;
-      const viewportHeight = 2 * Math.tan(vFOV / 2) * 30; // camera.z=12 to bgMesh.z=-18 is 30 distance
-      const viewportWidth = viewportHeight * camera.aspect;
-
-      const imageAspect = 1.5; // aspect ratio of 36x24 plane
-      
-      let scaleX = 1;
-      let scaleY = 1;
-
-      if (camera.aspect > imageAspect) {
-        scaleX = viewportWidth / 36;
-        scaleY = scaleX;
-      } else {
-        scaleY = viewportHeight / 24;
-        scaleX = scaleY;
-      }
-
-      bgMesh.userData.baseScaleX = scaleX;
-      bgMesh.userData.baseScaleY = scaleY;
+      renderer.setSize(w, h);
     };
     window.addEventListener("resize", handleResize);
 
-    // Call resize once immediately to initialize scale
-    handleResize();
-
-    // 10. Cleanup
     return () => {
-      clearInterval(shootingInterval);
       cancelAnimationFrame(animationFrameId);
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("resize", handleResize);
-      observer.disconnect();
       renderer.dispose();
 
-      farGeom.dispose();
-      farMat.dispose();
-      midGeom.dispose();
-      midMat.dispose();
-      dustGeom.dispose();
-      dustMat.dispose();
-      bgGeom.dispose();
-      bgMat.dispose();
-      bgTexture.dispose();
-      glowGeom.dispose();
-      glowPlaneMat.dispose();
-      glowTexture.dispose();
-      shootingStarGeom.dispose();
-      shootingStarMat.dispose();
-      textureFar.dispose();
-      textureMid.dispose();
-      textureDust.dispose();
+      starGeom.dispose();
+      starMat.dispose();
+      starTexture.dispose();
+      earthGeom.dispose();
+      earthMat.dispose();
+      earthTexture.dispose();
+      atmosGeom.dispose();
+      atmosMat.dispose();
+      sunriseGeom.dispose();
+      sunriseMat.dispose();
+      sunriseTexture.dispose();
+      glassMat.dispose();
+      chromeMat.dispose();
+      ring1.geometry.dispose();
+      ring2.geometry.dispose();
+      ring3.geometry.dispose();
+      projectCardGeom.dispose();
+      projectCards.forEach((c) => {
+        c.mesh.material.dispose();
+        if (c.mesh.material.map) c.mesh.material.map.dispose();
+      });
     };
   }, []);
 
   return (
-    <div ref={containerRef} className="absolute inset-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
+    <div ref={containerRef} className="fixed inset-0 w-full h-full overflow-hidden -z-10 pointer-events-none bg-black">
       <canvas ref={canvasRef} className="w-full h-full block" />
     </div>
   );
