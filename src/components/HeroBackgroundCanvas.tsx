@@ -373,31 +373,48 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
       // WEBGL MESH ACTIVATION BELL CURVES
       // ----------------------------------------------------
 
-      // Earth scale and position animation based on 3 sections
+      // 1. Milky Way shifting & slow background rotation
+      bgMesh.rotation.z = time * 0.0006;
+
+      // 2. Volumetric atmospheric glow rotations
+      atmosMesh.rotation.y = -time * 0.006;
+      atmosMesh.rotation.z = time * 0.003;
+
+      // 3. Earth active profile & pulsating sunrise glow
       let earthActive = 0;
+      const pulseFactor = 0.85 + Math.sin(time * 0.45) * 0.08;
+
       if (tVal < 0.33) {
         // Hero: active and stationary
         earthActive = 1.0;
         earthMesh.position.set(0, 0, 0);
         sunriseGlow.position.set(2.8, -1.8, -1.0);
-        sunriseMat.opacity = 0.65;
+        sunriseMat.opacity = 0.62 * pulseFactor;
       } else if (tVal < 0.66) {
         // What I Build: slide down and out
         const slide = (tVal - 0.33) / 0.33;
         earthActive = 1.0 - slide;
         earthMesh.position.set(-slide * 8, -slide * 8, 0);
         sunriseGlow.position.set(2.8 - slide * 8, -1.8 - slide * 8, -1.0);
-        sunriseMat.opacity = 0.65 * (1.0 - slide);
+        sunriseMat.opacity = 0.62 * (1.0 - slide) * pulseFactor;
       } else {
         // Contact: slide back in on the right
         const slide = (tVal - 0.66) / 0.34;
         earthActive = slide;
         earthMesh.position.set(1.5 + (1.0 - slide) * 3.0, -0.8, 0);
         sunriseGlow.position.set(4.3 + (1.0 - slide) * 3.0, -2.6, -1.0);
-        // Sunrise becomes brighter on contact scene!
-        sunriseMat.opacity = 0.95 * slide;
+        // Sunrise becomes brighter on contact scene
+        sunriseMat.opacity = 0.92 * slide * pulseFactor;
       }
-      earthMesh.scale.set(earthActive * baseZoom, earthActive * baseZoom, earthActive * baseZoom);
+
+      // Earth camera proximity scale zoom on scroll progress
+      if (tVal >= 0.66) {
+        const zoomSlide = (tVal - 0.66) / 0.34;
+        const scaleVal = earthActive * (1.0 + zoomSlide * 0.18) * baseZoom;
+        earthMesh.scale.set(scaleVal, scaleVal, scaleVal);
+      } else {
+        earthMesh.scale.set(earthActive * baseZoom, earthActive * baseZoom, earthActive * baseZoom);
+      }
 
       // ----------------------------------------------------
       // STARFIELD TWINKLE & TRAVEL SPEED ANIMATION

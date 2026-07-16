@@ -266,9 +266,9 @@ export default function Home() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full pointer-events-auto">
-                {SERVICES.map((service) => (
+                {SERVICES.map((service, idx) => (
                   <TiltCard key={service.title}>
-                    <div className="glass-panel p-8 rounded-3xl border border-white/5 hover:border-white/20 hover:bg-white/[0.03] transition-all duration-500 flex flex-col justify-between h-44 text-left relative group">
+                    <div className={`glass-card p-8 rounded-3xl border border-white/5 hover:border-white/20 hover:bg-white/[0.03] transition-all duration-500 flex flex-col justify-between h-44 text-left relative group float-card-${idx}`}>
                       <div className="absolute inset-0 shimmer-line opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
                       
                       <h3 className="text-lg md:text-xl font-black uppercase tracking-wider text-white group-hover:logo-shine-text transition-colors">
@@ -296,13 +296,13 @@ export default function Home() {
               {/* Empty spacing for header alignment */}
               <div className="h-4" />
 
-              {/* Main Content Card */}
-              <div className="flex flex-col items-center text-center max-w-2xl relative z-20">
+              {/* Main Content Card - Floating Glass Panel */}
+              <div className="glass-card p-8 md:p-12 rounded-[36px] flex flex-col items-center text-center max-w-2xl w-full relative z-20 float-card-0 border border-white/5 shadow-2xl">
                 <span className="font-pinyon text-3xl md:text-5xl text-white/80 lowercase tracking-normal block mb-6">
                   let's build something unforgettable.
                 </span>
                 
-                <h2 className="text-4xl md:text-7xl font-black uppercase tracking-premium leading-none text-white font-sans mt-2">
+                <h2 className="text-4xl md:text-6xl font-black uppercase tracking-premium leading-none text-white font-sans mt-2">
                   CHRISBUILDS
                 </h2>
                 
@@ -311,15 +311,16 @@ export default function Home() {
                 </p>
 
                 {/* Direct Contact Links */}
-                <div className="grid grid-cols-2 gap-4 mt-12 w-full max-w-lg pointer-events-auto">
+                <div className="grid grid-cols-2 gap-4 mt-10 w-full pointer-events-auto">
                   {contactLinks.map((item) => (
                     <TiltCard key={item.label}>
                       <a
                         href={item.href}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="glass-panel p-6 rounded-2xl border border-white/5 hover:border-white/20 hover:bg-white/[0.04] transition-all flex items-center gap-3 w-full h-full"
+                        className="glass-card p-6 rounded-2xl border border-white/5 hover:border-white/20 hover:bg-white/[0.04] transition-all flex items-center gap-3 w-full h-full group relative overflow-hidden"
                       >
+                        <div className="absolute inset-0 shimmer-line opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
                         <div className="p-1.5 bg-white/5 rounded-lg border border-white/10">
                           {item.icon}
                         </div>
