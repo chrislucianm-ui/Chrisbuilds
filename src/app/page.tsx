@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { motion, useInView, AnimatePresence } from "framer-motion";
+import { motion, useInView, AnimatePresence, useMotionValue, useTransform, useSpring } from "framer-motion";
 import { ArrowUpRight, Mail, Phone, MessageSquare, Send } from "lucide-react";
 import LoadingScreen from "@/components/LoadingScreen";
 import { gsap } from "gsap";
@@ -41,13 +41,50 @@ const SERVICES: Service[] = [
   }
 ];
 
+function TiltCard({ children, className }: { children: React.ReactNode; className?: string }) {
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+
+  // Smooth springs to avoid jittery movements
+  const rotateX = useSpring(useTransform(y, [-0.5, 0.5], [8, -8]), { damping: 25, stiffness: 150 });
+  const rotateY = useSpring(useTransform(x, [-0.5, 0.5], [-8, 8]), { damping: 25, stiffness: 150 });
+
+  const handleMouseMove = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+    const mouseX = event.clientX - rect.left - width / 2;
+    const mouseY = event.clientY - rect.top - height / 2;
+    x.set(mouseX / width);
+    y.set(mouseY / height);
+  };
+
+  const handleMouseLeave = () => {
+    x.set(0);
+    y.set(0);
+  };
+
+  return (
+    <motion.div
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
 export default function Home() {
   const [loadingComplete, setLoadingComplete] = useState(false);
   const [triggerSweep, setTriggerSweep] = useState(false);
   const [mousePos, setMousePos] = useState({ x: -200, y: -200 });
   const [isMobile, setIsMobile] = useState(false);
+  const [activeSection, setActiveSection] = useState<'home' | 'services' | 'contact'>('home');
   const heroBgDesktopRef = useRef<HTMLImageElement>(null);
   const heroBgMobileRef = useRef<HTMLImageElement>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -111,6 +148,16 @@ export default function Home() {
         ease: "power2.out",
         overwrite: "auto",
       });
+
+      if (gridRef.current) {
+        gsap.to(gridRef.current, {
+          x: xPercent * 15,
+          y: -currentScrollY * 0.15 + yPercent * 10,
+          duration: 2.0,
+          ease: "power2.out",
+          overwrite: "auto",
+        });
+      }
     };
 
     // Scroll parallax listener
@@ -122,6 +169,15 @@ export default function Home() {
         ease: "power1.out",
         overwrite: "auto",
       });
+
+      if (gridRef.current) {
+        gsap.to(gridRef.current, {
+          y: -currentScrollY * 0.15,
+          duration: 0.8,
+          ease: "power1.out",
+          overwrite: "auto",
+        });
+      }
     };
 
     window.addEventListener("mousemove", handleMouseMove);
@@ -130,6 +186,33 @@ export default function Home() {
       anim.kill();
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("scroll", handleScroll);
+    };
+  }, [loadingComplete]);
+
+  useEffect(() => {
+    if (!loadingComplete) return;
+
+    const sections = ["home", "services", "contact"];
+    const observers = sections.map((id) => {
+      const el = document.getElementById(id);
+      if (!el) return null;
+
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) {
+            setActiveSection(id as any);
+          }
+        },
+        { threshold: 0.2, rootMargin: "-20% 0px -20% 0px" }
+      );
+      observer.observe(el);
+      return { observer, el };
+    });
+
+    return () => {
+      observers.forEach((obs) => {
+        if (obs) obs.observer.unobserve(obs.el);
+      });
     };
   }, [loadingComplete]);
 
@@ -149,8 +232,23 @@ export default function Home() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1.0 }}
-            className="relative min-h-screen bg-black text-white selection:bg-white/10 selection:text-white luxury-grid"
+            className="relative min-h-screen bg-black text-white selection:bg-white/10 selection:text-white"
           >
+            {/* Dynamic Parallax Grid Layer */}
+            <div 
+              ref={gridRef}
+              className="fixed inset-0 z-[-1] pointer-events-none luxury-grid opacity-[0.22]"
+            />
+
+            {/* Cinematic Radial Ambient Lighting Overlay */}
+            <div 
+              className="fixed inset-0 z-[-1] pointer-events-none transition-all duration-1000 ease-out"
+              style={{
+                background: `radial-gradient(circle at 50% ${activeSection === 'home' ? '25%' : activeSection === 'services' ? '50%' : '75%'}, rgba(255, 255, 255, 0.015) 0%, transparent 60%)`,
+                opacity: loadingComplete ? 1 : 0
+              }}
+            />
+
             {/* Cinematic Faint Silver Light Sweep Overlay */}
             {triggerSweep && (
               <motion.div
@@ -377,40 +475,47 @@ function WhatIBuildSection() {
       <div className="max-w-5xl mx-auto">
         {/* Title */}
         <div className="flex flex-col items-center mb-20 text-center">
-          <h2 className="text-3xl md:text-5xl font-black uppercase tracking-premium text-white">
+          <motion.h2
+            initial={{ opacity: 0, filter: "blur(12px)", y: 25 }}
+            whileInView={{ opacity: 1, filter: "blur(0px)", y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+            className="text-3xl md:text-5xl font-black uppercase tracking-premium text-white"
+          >
             WHAT I BUILD
-          </h2>
+          </motion.h2>
           <div className="silver-divider max-w-[120px] mt-6" />
         </div>
 
         {/* Services List - 2x2 Premium Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {SERVICES.map((service, idx) => (
-            <motion.div
-              key={service.id}
-              initial={{ opacity: 0, y: 35 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 1.0, delay: idx * 0.15, ease: [0.76, 0, 0.24, 1] }}
-              className="brushed-chrome rounded-3xl p-10 flex flex-col gap-6 text-left relative overflow-hidden group hover:scale-[1.01] hover:border-white/20 transition-all duration-500 border border-white/5 shadow-2xl"
-            >
-              {/* Subtle metallic shimmer moving across the card on hover */}
-              <div className="absolute inset-0 shimmer-line opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+            <TiltCard key={service.id} className="h-full">
+              <motion.div
+                initial={{ opacity: 0, filter: "blur(8px)", y: 25 }}
+                animate={inView ? { opacity: 1, filter: "blur(0px)", y: 0 } : {}}
+                transition={{ duration: 1.0, delay: idx * 0.15, ease: [0.16, 1, 0.3, 1] }}
+                className="brushed-chrome rounded-3xl p-10 flex flex-col gap-6 text-left relative overflow-hidden group hover:border-white/20 transition-all duration-500 border border-white/5 shadow-2xl h-full"
+              >
+                {/* Subtle metallic shimmer moving across the card on hover */}
+                <div className="absolute inset-0 shimmer-line opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
 
-              {/* Elegant bold sans-serif heading */}
-              <h3 className="text-xl md:text-2xl font-black uppercase tracking-wider text-white group-hover:logo-shine-text transition-all duration-300">
-                {service.title}
-              </h3>
+                {/* Elegant bold sans-serif heading */}
+                <h3 className="text-xl md:text-2xl font-black uppercase tracking-wider text-white group-hover:logo-shine-text transition-all duration-300">
+                  {service.title}
+                </h3>
 
-              {/* One-sentence premium copy */}
-              <p className="text-[11px] text-white/40 tracking-[0.18em] leading-relaxed flex-grow font-mono uppercase">
-                {service.description}
-              </p>
+                {/* One-sentence premium copy */}
+                <p className="text-[11px] text-white/40 tracking-[0.18em] leading-relaxed flex-grow font-mono uppercase">
+                  {service.description}
+                </p>
 
-              {/* Refined capability tags */}
-              <div className="font-mono text-[9px] uppercase tracking-[0.25em] text-white/30 pt-4 border-t border-white/5 relative z-10">
-                {service.specs.join(" • ")}
-              </div>
-            </motion.div>
+                {/* Refined capability tags */}
+                <div className="font-mono text-[9px] uppercase tracking-[0.25em] text-white/30 pt-4 border-t border-white/5 relative z-10">
+                  {service.specs.join(" • ")}
+                </div>
+              </motion.div>
+            </TiltCard>
           ))}
         </div>
       </div>
@@ -462,47 +567,54 @@ function ContactSectionBlock() {
         
         {/* Title */}
         <div className="flex flex-col items-center mb-20 text-center">
-          <h2 className="text-3xl md:text-5xl font-black uppercase tracking-premium text-white">
+          <motion.h2
+            initial={{ opacity: 0, filter: "blur(12px)", y: 25 }}
+            whileInView={{ opacity: 1, filter: "blur(0px)", y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+            className="text-3xl md:text-5xl font-black uppercase tracking-premium text-white"
+          >
             GET IN TOUCH
-          </h2>
+          </motion.h2>
           <div className="silver-divider max-w-[120px] mt-6" />
         </div>
 
         <motion.div
-          initial={{ opacity: 0, y: 25 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8 }}
+          initial={{ opacity: 0, filter: "blur(12px)", y: 25 }}
+          animate={inView ? { opacity: 1, filter: "blur(0px)", y: 0 } : {}}
+          transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
           className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto text-left"
         >
           {contactLinks.map((item) => (
-            <a
-              key={item.label}
-              href={item.href}
-              className="glass-panel p-8 rounded-3xl flex items-center gap-4 group relative overflow-hidden border border-white/5 shadow-2xl hover:scale-[1.01] hover:border-white/20 transition-all duration-500"
-            >
-              {/* Subtle metallic shimmer moving across the card on hover */}
-              <div className="absolute inset-0 shimmer-line opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+            <TiltCard key={item.label}>
+              <a
+                href={item.href}
+                className="glass-panel p-8 rounded-3xl flex items-center gap-4 group relative overflow-hidden border border-white/5 shadow-2xl hover:border-white/20 transition-all duration-500 w-full h-full flex"
+              >
+                {/* Subtle metallic shimmer moving across the card on hover */}
+                <div className="absolute inset-0 shimmer-line opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
 
-              <div className="p-2 bg-white/5 border border-white/10 rounded-xl group-hover:scale-105 transition-transform duration-300 relative z-10">
-                {item.icon}
-              </div>
-              <div className="flex flex-col font-mono relative z-10">
-                <span className="text-[8px] text-white/30 uppercase tracking-[0.25em] font-medium">
-                  {item.label}
-                </span>
-                <span className="text-[11px] text-white/60 tracking-wide font-light break-all mt-1 group-hover:text-white transition-colors">
-                  {item.value}
-                </span>
-              </div>
-            </a>
+                <div className="p-2 bg-white/5 border border-white/10 rounded-xl group-hover:scale-105 transition-transform duration-300 relative z-10 w-fit">
+                  {item.icon}
+                </div>
+                <div className="flex flex-col font-mono relative z-10">
+                  <span className="text-[8px] text-white/30 uppercase tracking-[0.25em] font-medium">
+                    {item.label}
+                  </span>
+                  <span className="text-[11px] text-white/60 tracking-wide font-light break-all mt-1 group-hover:text-white transition-colors">
+                    {item.value}
+                  </span>
+                </div>
+              </a>
+            </TiltCard>
           ))}
         </motion.div>
 
         {/* Action Button */}
         <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8, delay: 0.2 }}
+          initial={{ opacity: 0, filter: "blur(8px)", y: 15 }}
+          animate={inView ? { opacity: 1, filter: "blur(0px)", y: 0 } : {}}
+          transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
           className="mt-12 flex justify-center"
         >
           <a
