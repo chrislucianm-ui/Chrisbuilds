@@ -155,7 +155,7 @@ export default function Home() {
       <LoadingScreen onComplete={() => setLoadingComplete(true)} />
 
       {loadingComplete && (
-        <div className="relative min-h-screen bg-black text-white selection:bg-white/10 selection:text-white overflow-x-hidden font-sans">
+        <div className="relative min-h-screen text-white selection:bg-white/10 selection:text-white overflow-x-hidden font-sans">
           
           {/* Continuous Fixed WebGL Background Canvas */}
           <HeroBackgroundCanvas 
