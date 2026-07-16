@@ -90,16 +90,41 @@ export default function Home() {
     };
   }, [loadingComplete, activeProject]);
 
-  // Calculate active scene index (7 scenes total)
-  const activeSceneIndex = Math.min(6, Math.floor(scrollProgress * 7.2));
+  // Scene centers (7 scenes spread evenly between 0.0 and 1.0)
+  const centers = [0.07, 0.22, 0.36, 0.54, 0.68, 0.82, 0.95];
 
-  // Scene 2 sub-progress steps
+  const getSceneStyle = (index: number) => {
+    const center = centers[index];
+    const dist = Math.abs(scrollProgress - center);
+    const opacity = Math.max(0, 1 - dist * 6.8); // sharp smooth fade
+    const blur = Math.min(16, dist * 120); // smooth blur transition
+    const yOffset = (scrollProgress - center) * -60; // subtle floating depth float
+
+    return {
+      opacity,
+      filter: `blur(${blur}px)`,
+      transform: `translateY(${yOffset}px)`,
+      pointerEvents: opacity > 0.1 ? ("auto" as const) : ("none" as const),
+      display: opacity > 0 ? ("flex" as const) : ("none" as const),
+      transition: "opacity 150ms ease-out, filter 150ms ease-out, transform 150ms ease-out"
+    };
+  };
+
+  // Scene 2 typewriter transition steps
   const scene2Progress = (scrollProgress - 0.15) / 0.15; // 0 to 1
-  const scene2Step = Math.min(2, Math.floor(scene2Progress * 3.2));
+  const stepOpacity0 = Math.max(0, 1 - Math.abs(scene2Progress - 0.16) * 6);
+  const stepOpacity1 = Math.max(0, 1 - Math.abs(scene2Progress - 0.50) * 6);
+  const stepOpacity2 = Math.max(0, 1 - Math.abs(scene2Progress - 0.83) * 6);
 
-  // Scene 4 sub-progress steps
+  // Scene 4 capability reveal steps
   const scene4Progress = (scrollProgress - 0.45) / 0.15; // 0 to 1
-  const showScene4Details = scene4Progress >= 0.5;
+  const showScene4Details = scene4Progress >= 0.65;
+  const ringOpacity0 = Math.max(0, 1 - Math.abs(scene4Progress - 0.15) * 6);
+  const ringOpacity1 = Math.max(0, 1 - Math.abs(scene4Progress - 0.35) * 6);
+  const ringOpacity2 = Math.max(0, 1 - Math.abs(scene4Progress - 0.55) * 6);
+  const gridOpacity = Math.max(0, (scene4Progress - 0.70) * 6.5);
+
+  const activeSceneIndex = Math.min(6, Math.floor(scrollProgress * 7.2));
 
   const contactLinks = [
     { label: "Email", value: "chrisbuilds.dev@gmail.com", href: "mailto:chrisbuilds.dev@gmail.com?subject=Project Inquiry", icon: <Mail className="w-4 h-4 text-white/40" strokeWidth={1} /> },
@@ -139,340 +164,282 @@ export default function Home() {
           {/* Sticky Cinematic Text Overlays */}
           <div className="relative z-10 w-full h-[700vh] pointer-events-none">
             
-            <AnimatePresence mode="wait">
-              
-              {/* SCENE 1: ARRIVAL */}
-              {activeSceneIndex === 0 && (
-                <motion.div
-                  key="scene1"
-                  initial={{ opacity: 0, filter: "blur(12px)" }}
-                  animate={{ opacity: 1, filter: "blur(0px)" }}
-                  exit={{ opacity: 0, filter: "blur(12px)" }}
-                  transition={{ duration: 0.8, ease: "easeOut" }}
-                  className="fixed inset-0 flex flex-col items-center justify-center p-6 text-center"
-                >
-                  <span className="text-[10px] text-white/30 uppercase tracking-[0.35em] font-mono mb-6">
-                    Arrival
-                  </span>
-                  <h1 className="text-5xl md:text-8xl font-black uppercase tracking-premium leading-[0.9] text-white max-w-4xl">
-                    WE BUILD DIGITAL<br />
-                    <span className="logo-shine-text">EXPERIENCES.</span>
-                  </h1>
-                  <span className="mt-8 font-cursive text-xl md:text-2xl text-white/50 tracking-wider">
-                    that people remember.
-                  </span>
-                  <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
-                    <span className="text-[8px] uppercase tracking-[0.25em] text-white/20 font-mono">
-                      Scroll to travel
-                    </span>
-                    <div className="w-[1px] h-10 bg-gradient-to-b from-white/20 to-transparent" />
-                  </div>
-                </motion.div>
-              )}
+            {/* SCENE 1: ARRIVAL */}
+            <div
+              style={getSceneStyle(0)}
+              className="fixed inset-0 flex flex-col items-center justify-center p-6 text-center"
+            >
+              <span className="text-[10px] text-white/30 uppercase tracking-[0.35em] font-mono mb-6">
+                Arrival
+              </span>
+              <h1 className="text-5xl md:text-8xl font-black uppercase tracking-premium leading-[0.9] text-white max-w-4xl">
+                WE BUILD DIGITAL<br />
+                <span className="logo-shine-text">EXPERIENCES.</span>
+              </h1>
+              <span className="mt-8 font-cursive text-xl md:text-2xl text-white/50 tracking-wider">
+                that people remember.
+              </span>
+              <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
+                <span className="text-[8px] uppercase tracking-[0.25em] text-white/20 font-mono">
+                  Scroll to travel
+                </span>
+                <div className="w-[1px] h-10 bg-gradient-to-b from-white/20 to-transparent" />
+              </div>
+            </div>
 
-              {/* SCENE 2: WHO WE ARE */}
-              {activeSceneIndex === 1 && (
-                <motion.div
-                  key="scene2"
-                  initial={{ opacity: 0, filter: "blur(12px)" }}
-                  animate={{ opacity: 1, filter: "blur(0px)" }}
-                  exit={{ opacity: 0, filter: "blur(12px)" }}
-                  transition={{ duration: 0.8 }}
-                  className="fixed inset-0 flex flex-col items-center justify-center p-6 text-center"
+            {/* SCENE 2: WHO WE ARE */}
+            <div
+              style={getSceneStyle(1)}
+              className="fixed inset-0 flex flex-col items-center justify-center p-6 text-center"
+            >
+              <span className="text-[10px] text-white/30 uppercase tracking-[0.35em] font-mono mb-8">
+                Vision
+              </span>
+              <div className="flex flex-col gap-6 items-center justify-center">
+                <h2 
+                  style={{ opacity: stepOpacity0, filter: `blur(${(1 - stepOpacity0) * 16}px)`, transition: "opacity 150ms ease-out, filter 150ms ease-out" }}
+                  className="text-2xl md:text-5xl font-black uppercase tracking-premium max-w-3xl text-white"
                 >
-                  <span className="text-[10px] text-white/30 uppercase tracking-[0.35em] font-mono mb-8">
-                    Vision
-                  </span>
-                  <div className="min-h-[120px] flex items-center justify-center">
-                    <AnimatePresence mode="wait">
-                      {scene2Step === 0 && (
-                        <motion.h2
-                          key="step0"
-                          initial={{ opacity: 0, filter: "blur(8px)", y: 15 }}
-                          animate={{ opacity: 1, filter: "blur(0px)", y: 0 }}
-                          exit={{ opacity: 0, filter: "blur(8px)", y: -15 }}
-                          className="text-3xl md:text-6xl font-black uppercase tracking-premium max-w-3xl text-white"
-                        >
-                          We don't build websites.
-                        </motion.h2>
-                      )}
-                      {scene2Step === 1 && (
-                        <motion.h2
-                          key="step1"
-                          initial={{ opacity: 0, filter: "blur(8px)", y: 15 }}
-                          animate={{ opacity: 1, filter: "blur(0px)", y: 0 }}
-                          exit={{ opacity: 0, filter: "blur(8px)", y: -15 }}
-                          className="text-3xl md:text-6xl font-black uppercase tracking-premium max-w-3xl text-white"
-                        >
-                          We build first impressions.
-                        </motion.h2>
-                      )}
-                      {scene2Step >= 2 && (
-                        <motion.h2
-                          key="step2"
-                          initial={{ opacity: 0, filter: "blur(8px)", y: 15 }}
-                          animate={{ opacity: 1, filter: "blur(0px)", y: 0 }}
-                          exit={{ opacity: 0, filter: "blur(8px)", y: -15 }}
-                          className="text-3xl md:text-6xl font-black uppercase tracking-premium max-w-4xl text-white"
-                        >
-                          Luxury is an experience,<br />
-                          <span className="logo-shine-text">not a feature.</span>
-                        </motion.h2>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                </motion.div>
-              )}
+                  We don't build websites.
+                </h2>
+                <h2 
+                  style={{ opacity: stepOpacity1, filter: `blur(${(1 - stepOpacity1) * 16}px)`, transition: "opacity 150ms ease-out, filter 150ms ease-out" }}
+                  className="text-2xl md:text-5xl font-black uppercase tracking-premium max-w-3xl text-white/60"
+                >
+                  We build first impressions.
+                </h2>
+                <h2 
+                  style={{ opacity: stepOpacity2, filter: `blur(${(1 - stepOpacity2) * 16}px)`, transition: "opacity 150ms ease-out, filter 150ms ease-out" }}
+                  className="text-2xl md:text-5xl font-black uppercase tracking-premium max-w-4xl text-white leading-none"
+                >
+                  Luxury is an experience,<br />
+                  <span className="logo-shine-text">not a feature.</span>
+                </h2>
+              </div>
+            </div>
 
-              {/* SCENE 3: WHAT WE BUILD */}
-              {activeSceneIndex === 2 && (
-                <motion.div
-                  key="scene3"
-                  initial={{ opacity: 0, filter: "blur(12px)" }}
-                  animate={{ opacity: 1, filter: "blur(0px)" }}
-                  exit={{ opacity: 0, filter: "blur(12px)" }}
-                  transition={{ duration: 0.8 }}
-                  className="fixed inset-0 flex flex-col justify-center px-8 md:px-24"
-                >
-                  <div className="max-w-4xl">
-                    <span className="text-[10px] text-white/30 uppercase tracking-[0.35em] font-mono mb-6 block">
-                      Capabilities
-                    </span>
-                    <h2 className="text-4xl md:text-7xl font-black uppercase tracking-premium text-white leading-none mb-12">
-                      WHAT WE BUILD
-                    </h2>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-6 max-w-3xl pointer-events-auto">
-                      {[
-                        "Premium Websites",
-                        "Web Applications",
-                        "Mobile Applications",
-                        "AI Solutions",
-                        "Automations",
-                        "Branding"
-                      ].map((service) => (
-                        <div 
-                          key={service} 
-                          className="glass-panel p-6 rounded-2xl border border-white/5 hover:border-white/20 hover:bg-white/[0.04] transition-all duration-500 group"
-                        >
-                          <h3 className="font-sans font-bold text-white tracking-wider uppercase text-xs">
-                            {service}
-                          </h3>
-                          <div className="silver-divider max-w-[30px] mt-3 group-hover:max-w-[60px]" />
-                        </div>
-                      ))}
+            {/* SCENE 3: WHAT WE BUILD */}
+            <div
+              style={getSceneStyle(2)}
+              className="fixed inset-0 flex flex-col justify-center px-8 md:px-24"
+            >
+              <div className="max-w-4xl">
+                <span className="text-[10px] text-white/30 uppercase tracking-[0.35em] font-mono mb-6 block">
+                  Capabilities
+                </span>
+                <h2 className="text-4xl md:text-7xl font-black uppercase tracking-premium text-white leading-none mb-12">
+                  WHAT WE BUILD
+                </h2>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-6 max-w-3xl pointer-events-auto">
+                  {[
+                    "Premium Websites",
+                    "Web Applications",
+                    "Mobile Applications",
+                    "AI Solutions",
+                    "Automations",
+                    "Branding"
+                  ].map((service) => (
+                    <div 
+                      key={service} 
+                      className="glass-panel p-6 rounded-2xl border border-white/5 hover:border-white/20 hover:bg-white/[0.04] transition-all duration-500 group"
+                    >
+                      <h3 className="font-sans font-bold text-white tracking-wider uppercase text-xs">
+                        {service}
+                      </h3>
+                      <div className="silver-divider max-w-[30px] mt-3 group-hover:max-w-[60px]" />
                     </div>
-                  </div>
-                </motion.div>
-              )}
+                  ))}
+                </div>
+              </div>
+            </div>
 
-              {/* SCENE 4: THE CRAFT */}
-              {activeSceneIndex === 3 && (
-                <motion.div
-                  key="scene4"
-                  initial={{ opacity: 0, filter: "blur(12px)" }}
-                  animate={{ opacity: 1, filter: "blur(0px)" }}
-                  exit={{ opacity: 0, filter: "blur(12px)" }}
-                  transition={{ duration: 0.8 }}
-                  className="fixed inset-0 flex flex-col items-center justify-center p-6 text-center"
+            {/* SCENE 4: THE CRAFT */}
+            <div
+              style={getSceneStyle(3)}
+              className="fixed inset-0 flex flex-col items-center justify-center p-6 text-center"
+            >
+              <span className="text-[10px] text-white/30 uppercase tracking-[0.35em] font-mono mb-6">
+                The Craft
+              </span>
+
+              <div className="relative w-full max-w-3xl min-h-[220px] flex items-center justify-center">
+                
+                {/* Editorial headers */}
+                <div 
+                  style={{ opacity: 1.0 - gridOpacity, filter: `blur(${(gridOpacity) * 16}px)`, pointerEvents: 1.0 - gridOpacity > 0.1 ? "auto" : "none", display: gridOpacity < 0.95 ? "flex" : "none", transition: "opacity 150ms ease-out, filter 150ms ease-out" }}
+                  className="flex flex-col gap-4 text-center absolute"
                 >
-                  <span className="text-[10px] text-white/30 uppercase tracking-[0.35em] font-mono mb-6">
-                    The Craft
-                  </span>
-
-                  <div className="min-h-[220px] flex items-center justify-center">
-                    <AnimatePresence mode="wait">
-                      {!showScene4Details ? (
-                        <motion.div 
-                          key="craftHeader"
-                          initial={{ opacity: 0, y: 15 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -15 }}
-                          className="flex flex-col gap-4"
-                        >
-                          <h2 className="text-2xl md:text-5xl font-black uppercase tracking-premium text-white leading-tight">
-                            Crafted with precision.<br />
-                            Designed with purpose.<br />
-                            Built to perform.
-                          </h2>
-                        </motion.div>
-                      ) : (
-                        <motion.div 
-                          key="craftGrid"
-                          initial={{ opacity: 0, filter: "blur(8px)", y: 15 }}
-                          animate={{ opacity: 1, filter: "blur(0px)", y: 0 }}
-                          exit={{ opacity: 0, filter: "blur(8px)", y: -15 }}
-                          className="grid grid-cols-2 md:grid-cols-3 gap-6 max-w-3xl pointer-events-auto"
-                        >
-                          {[
-                            "UI/UX Design",
-                            "Performance",
-                            "Scalability",
-                            "Premium Design Systems",
-                            "Automation",
-                            "Optimization"
-                          ].map((item) => (
-                            <div 
-                              key={item} 
-                              className="glass-panel p-5 rounded-2xl border border-white/5 hover:border-white/20 transition-all duration-300 flex flex-col justify-between h-28 text-left"
-                            >
-                              <span className="text-[8px] text-white/20 font-mono uppercase tracking-[0.2em]">01 / Precision</span>
-                              <h4 className="font-bold text-white text-xs tracking-wider uppercase">{item}</h4>
-                            </div>
-                          ))}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                </motion.div>
-              )}
-
-              {/* SCENE 5: PHILOSOPHY */}
-              {activeSceneIndex === 4 && (
-                <motion.div
-                  key="scene5"
-                  initial={{ opacity: 0, filter: "blur(12px)" }}
-                  animate={{ opacity: 1, filter: "blur(0px)" }}
-                  exit={{ opacity: 0, filter: "blur(12px)" }}
-                  transition={{ duration: 0.8 }}
-                  className="fixed inset-0 flex flex-col items-center justify-center p-6 text-center"
-                >
-                  <span className="text-[10px] text-white/30 uppercase tracking-[0.35em] font-mono mb-8">
-                    Philosophy
-                  </span>
-                  <h2 className="text-3xl md:text-6xl font-black uppercase tracking-premium leading-tight text-white max-w-4xl">
-                    Every pixel matters.<br />
-                    Every interaction tells a story.<br />
-                    <span className="logo-shine-text">Every experience leaves an impression.</span>
+                  <h2 
+                    style={{ opacity: ringOpacity0, filter: `blur(${(1 - ringOpacity0) * 12}px)`, transition: "opacity 150ms ease-out, filter 150ms ease-out" }}
+                    className="text-xl md:text-4xl font-black uppercase tracking-premium text-white"
+                  >
+                    Crafted with precision.
                   </h2>
-                </motion.div>
-              )}
+                  <h2 
+                    style={{ opacity: ringOpacity1, filter: `blur(${(1 - ringOpacity1) * 12}px)`, transition: "opacity 150ms ease-out, filter 150ms ease-out" }}
+                    className="text-xl md:text-4xl font-black uppercase tracking-premium text-white/75"
+                  >
+                    Designed with purpose.
+                  </h2>
+                  <h2 
+                    style={{ opacity: ringOpacity2, filter: `blur(${(1 - ringOpacity2) * 12}px)`, transition: "opacity 150ms ease-out, filter 150ms ease-out" }}
+                    className="text-xl md:text-4xl font-black uppercase tracking-premium text-white/50"
+                  >
+                    Built to perform.
+                  </h2>
+                </div>
 
-              {/* SCENE 6: FEATURED WORK */}
-              {activeSceneIndex === 5 && (
-                <motion.div
-                  key="scene6"
-                  initial={{ opacity: 0, filter: "blur(12px)" }}
-                  animate={{ opacity: 1, filter: "blur(0px)" }}
-                  exit={{ opacity: 0, filter: "blur(12px)" }}
-                  transition={{ duration: 0.8 }}
-                  className="fixed inset-0 flex flex-col justify-center px-8 md:px-24"
+                {/* Capabilities Grid */}
+                <div 
+                  style={{ opacity: gridOpacity, filter: `blur(${(1 - gridOpacity) * 12}px)`, pointerEvents: gridOpacity > 0.1 ? "auto" : "none", display: gridOpacity > 0.05 ? "grid" : "none", transition: "opacity 150ms ease-out, filter 150ms ease-out" }}
+                  className="grid grid-cols-2 md:grid-cols-3 gap-6 w-full pointer-events-auto"
                 >
-                  <div className="max-w-4xl pointer-events-auto">
-                    <span className="text-[10px] text-white/30 uppercase tracking-[0.35em] font-mono mb-6 block">
-                      Showcase
-                    </span>
-                    <h2 className="text-4xl md:text-7xl font-black uppercase tracking-premium text-white leading-none mb-12">
-                      FEATURED WORK
-                    </h2>
-                    
-                    <div className="flex flex-col gap-6 max-w-xl">
-                      {PROJECTS.map((project, idx) => (
-                        <div
-                          key={project.title}
-                          onMouseEnter={() => setHoveredProjectIndex(idx)}
-                          onMouseLeave={() => setHoveredProjectIndex(null)}
-                          onClick={() => setActiveProject(project)}
-                          className="glass-panel p-6 rounded-2xl border border-white/5 hover:border-white/20 hover:bg-white/[0.04] transition-all duration-300 cursor-pointer flex justify-between items-center group"
-                        >
-                          <div className="flex flex-col">
-                            <span className="text-[8px] text-white/30 uppercase font-mono tracking-widest">{project.category}</span>
-                            <h3 className="text-xl font-bold uppercase tracking-wider text-white mt-1 group-hover:text-white transition-colors">
-                              {project.title}
-                            </h3>
-                          </div>
-                          <ArrowUpRight className="w-5 h-5 text-white/30 group-hover:text-white group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
-                        </div>
-                      ))}
+                  {[
+                    "UI/UX Design",
+                    "Performance",
+                    "Scalability",
+                    "Premium Design Systems",
+                    "Automation",
+                    "Optimization"
+                  ].map((item) => (
+                    <div 
+                      key={item} 
+                      className="glass-panel p-5 rounded-2xl border border-white/5 hover:border-white/20 transition-all duration-300 flex flex-col justify-between h-28 text-left"
+                    >
+                      <span className="text-[8px] text-white/20 font-mono uppercase tracking-[0.2em]">01 / Precision</span>
+                      <h4 className="font-bold text-white text-xs tracking-wider uppercase">{item}</h4>
                     </div>
-                  </div>
-                </motion.div>
-              )}
+                  ))}
+                </div>
+              </div>
+            </div>
 
-              {/* SCENE 7: CONTACT */}
-              {activeSceneIndex === 6 && (
-                <motion.div
-                  key="scene7"
-                  initial={{ opacity: 0, filter: "blur(12px)" }}
-                  animate={{ opacity: 1, filter: "blur(0px)" }}
-                  exit={{ opacity: 0, filter: "blur(12px)" }}
-                  transition={{ duration: 0.8 }}
-                  className="fixed inset-0 flex flex-col md:flex-row items-center justify-between p-8 md:p-24 gap-12"
-                >
-                  <div className="flex flex-col text-left max-w-xl">
-                    <span className="text-[10px] text-white/30 uppercase tracking-[0.35em] font-mono mb-6">
-                      Collaborate
-                    </span>
-                    <h2 className="text-4xl md:text-6xl font-black uppercase tracking-premium leading-none text-white max-w-md">
-                      Let's build something unforgettable.
-                    </h2>
-                    <h3 className="mt-8 text-lg font-bold tracking-widest uppercase">
-                      ChrisBuilds
-                    </h3>
-                    <p className="text-[10px] text-white/30 uppercase tracking-widest font-mono mt-1">
-                      Luxury Digital Experiences Crafted For Tomorrow.
-                    </p>
+            {/* SCENE 5: PHILOSOPHY */}
+            <div
+              style={getSceneStyle(4)}
+              className="fixed inset-0 flex flex-col items-center justify-center p-6 text-center"
+            >
+              <span className="text-[10px] text-white/30 uppercase tracking-[0.35em] font-mono mb-8">
+                Philosophy
+              </span>
+              <h2 className="text-3xl md:text-6xl font-black uppercase tracking-premium leading-tight text-white max-w-4xl">
+                Every pixel matters.<br />
+                Every interaction tells a story.<br />
+                <span className="logo-shine-text">Every experience leaves an impression.</span>
+              </h2>
+            </div>
 
-                    {/* Social/Communication Grid */}
-                    <div className="grid grid-cols-2 gap-4 mt-8 pointer-events-auto">
-                      {contactLinks.map((item) => (
-                        <a
-                          key={item.label}
-                          href={item.href}
-                          className="glass-panel p-4 rounded-xl border border-white/5 hover:border-white/20 transition-all flex items-center gap-3"
-                        >
-                          <div className="p-1.5 bg-white/5 rounded-lg border border-white/10">
-                            {item.icon}
-                          </div>
-                          <div className="flex flex-col">
-                            <span className="text-[7px] text-white/30 uppercase tracking-widest font-mono">{item.label}</span>
-                            <span className="text-[10px] text-white/60 tracking-wider font-light mt-0.5 truncate max-w-[140px]">{item.value}</span>
-                          </div>
-                        </a>
-                      ))}
+            {/* SCENE 6: FEATURED WORK */}
+            <div
+              style={getSceneStyle(5)}
+              className="fixed inset-0 flex flex-col justify-center px-8 md:px-24"
+            >
+              <div className="max-w-4xl pointer-events-auto">
+                <span className="text-[10px] text-white/30 uppercase tracking-[0.35em] font-mono mb-6 block">
+                  Showcase
+                </span>
+                <h2 className="text-4xl md:text-7xl font-black uppercase tracking-premium text-white leading-none mb-12">
+                  FEATURED WORK
+                </h2>
+                
+                <div className="flex flex-col gap-6 max-w-xl">
+                  {PROJECTS.map((project, idx) => (
+                    <div
+                      key={project.title}
+                      onMouseEnter={() => setHoveredProjectIndex(idx)}
+                      onMouseLeave={() => setHoveredProjectIndex(null)}
+                      onClick={() => setActiveProject(project)}
+                      className="glass-panel p-6 rounded-2xl border border-white/5 hover:border-white/20 hover:bg-white/[0.04] transition-all duration-300 cursor-pointer flex justify-between items-center group"
+                    >
+                      <div className="flex flex-col">
+                        <span className="text-[8px] text-white/30 uppercase font-mono tracking-widest">{project.category}</span>
+                        <h3 className="text-xl font-bold uppercase tracking-wider text-white mt-1 group-hover:text-white transition-colors">
+                          {project.title}
+                        </h3>
+                      </div>
+                      <ArrowUpRight className="w-5 h-5 text-white/30 group-hover:text-white group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
                     </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* SCENE 7: CONTACT */}
+            <div
+              style={getSceneStyle(6)}
+              className="fixed inset-0 flex flex-col md:flex-row items-center justify-between p-8 md:p-24 gap-12"
+            >
+              <div className="flex flex-col text-left max-w-xl">
+                <span className="text-[10px] text-white/30 uppercase tracking-[0.35em] font-mono mb-6">
+                  Collaborate
+                </span>
+                <h2 className="text-4xl md:text-6xl font-black uppercase tracking-premium leading-none text-white max-w-md">
+                  Let's build something unforgettable.
+                </h2>
+                <h3 className="mt-8 text-lg font-bold tracking-widest uppercase">
+                  ChrisBuilds
+                </h3>
+                <p className="text-[10px] text-white/30 uppercase tracking-widest font-mono mt-1">
+                  Luxury Digital Experiences Crafted For Tomorrow.
+                </p>
+
+                {/* Social/Communication Grid */}
+                <div className="grid grid-cols-2 gap-4 mt-8 pointer-events-auto">
+                  {contactLinks.map((item) => (
+                    <a
+                      key={item.label}
+                      href={item.href}
+                      className="glass-panel p-4 rounded-xl border border-white/5 hover:border-white/20 transition-all flex items-center gap-3"
+                    >
+                      <div className="p-1.5 bg-white/5 rounded-lg border border-white/10">
+                        {item.icon}
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-[7px] text-white/30 uppercase tracking-widest font-mono">{item.label}</span>
+                        <span className="text-[10px] text-white/60 tracking-wider font-light mt-0.5 truncate max-w-[140px]">{item.value}</span>
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              </div>
+
+              {/* Premium floating glass contact form */}
+              <div className="w-full max-w-md glass-panel p-8 rounded-3xl border border-white/10 shadow-2xl pointer-events-auto">
+                <h4 className="font-mono text-[9px] uppercase tracking-[0.3em] text-white/40 mb-6">Send a Direct Message</h4>
+                <form className="flex flex-col gap-5" onSubmit={(e) => e.preventDefault()}>
+                  <div className="flex flex-col gap-2">
+                    <label className="text-[7px] text-white/40 uppercase tracking-[0.2em] font-mono">Your Name</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. Chris Lucian" 
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs text-white placeholder-white/25 focus:border-white/30 focus:outline-none transition-colors"
+                    />
                   </div>
-
-                  {/* Premium floating glass contact form */}
-                  <div className="w-full max-w-md glass-panel p-8 rounded-3xl border border-white/10 shadow-2xl pointer-events-auto">
-                    <h4 className="font-mono text-[9px] uppercase tracking-[0.3em] text-white/40 mb-6">Send a Direct Message</h4>
-                    <form className="flex flex-col gap-5" onSubmit={(e) => e.preventDefault()}>
-                      <div className="flex flex-col gap-2">
-                        <label className="text-[7px] text-white/40 uppercase tracking-[0.2em] font-mono">Your Name</label>
-                        <input 
-                          type="text" 
-                          placeholder="e.g. Chris Lucian" 
-                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs text-white placeholder-white/25 focus:border-white/30 focus:outline-none transition-colors"
-                        />
-                      </div>
-                      <div className="flex flex-col gap-2">
-                        <label className="text-[7px] text-white/40 uppercase tracking-[0.2em] font-mono">Your Email</label>
-                        <input 
-                          type="email" 
-                          placeholder="e.g. client@luxury.com" 
-                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs text-white placeholder-white/25 focus:border-white/30 focus:outline-none transition-colors"
-                        />
-                      </div>
-                      <div className="flex flex-col gap-2">
-                        <label className="text-[7px] text-white/40 uppercase tracking-[0.2em] font-mono">Project Details</label>
-                        <textarea 
-                          rows={3} 
-                          placeholder="Tell us about your project vision..." 
-                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs text-white placeholder-white/25 focus:border-white/30 focus:outline-none transition-colors resize-none"
-                        />
-                      </div>
-                      <button 
-                        type="submit" 
-                        className="btn-luxury w-full py-4.5 rounded-xl mt-3 flex items-center justify-center gap-2 cursor-pointer"
-                      >
-                        Transmit Proposal <ArrowUpRight className="w-4 h-4" />
-                      </button>
-                    </form>
+                  <div className="flex flex-col gap-2">
+                    <label className="text-[7px] text-white/40 uppercase tracking-[0.2em] font-mono">Your Email</label>
+                    <input 
+                      type="email" 
+                      placeholder="e.g. client@luxury.com" 
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs text-white placeholder-white/25 focus:border-white/30 focus:outline-none transition-colors"
+                    />
                   </div>
-
-                </motion.div>
-              )}
-
-            </AnimatePresence>
+                  <div className="flex flex-col gap-2">
+                    <label className="text-[7px] text-white/40 uppercase tracking-[0.2em] font-mono">Project Details</label>
+                    <textarea 
+                      rows={3} 
+                      placeholder="Tell us about your project vision..." 
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs text-white placeholder-white/25 focus:border-white/30 focus:outline-none transition-colors resize-none"
+                    />
+                  </div>
+                  <button 
+                    type="submit" 
+                    className="btn-luxury w-full py-4.5 rounded-xl mt-3 flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    Transmit Proposal <ArrowUpRight className="w-4 h-4" />
+                  </button>
+                </form>
+              </div>
+            </div>
 
           </div>
 

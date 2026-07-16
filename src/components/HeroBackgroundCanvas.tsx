@@ -51,14 +51,14 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
     renderer.toneMappingExposure = 1.0;
 
     // 2. Add Lighting (Volumetric direction lights for chrome/glass specs)
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.08);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.1);
     scene.add(ambientLight);
 
-    const mainLight = new THREE.DirectionalLight(0xffffff, 1.8);
+    const mainLight = new THREE.DirectionalLight(0xffffff, 2.0);
     mainLight.position.set(10, 5, 10);
     scene.add(mainLight);
 
-    const secondaryLight = new THREE.DirectionalLight(0xffffff, 0.6);
+    const secondaryLight = new THREE.DirectionalLight(0xffffff, 0.8);
     secondaryLight.position.set(-10, -5, -5);
     scene.add(secondaryLight);
 
@@ -82,8 +82,8 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
 
     const starTexture = createStarTexture();
 
-    // 4. Starfield setup (1500 points)
-    const starCount = isMobile ? 600 : 1500;
+    // 4. Starfield setup (1800 points)
+    const starCount = isMobile ? 800 : 1800;
     const starGeom = new THREE.BufferGeometry();
     const starPositions = new Float32Array(starCount * 3);
     const starSpeeds = new Float32Array(starCount);
@@ -91,7 +91,6 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
     for (let i = 0; i < starCount; i++) {
       starPositions[i * 3] = (Math.random() - 0.5) * 120;
       starPositions[i * 3 + 1] = (Math.random() - 0.5) * 80;
-      // Spread stars far back
       starPositions[i * 3 + 2] = -Math.random() * 120;
       starSpeeds[i] = 0.05 + Math.random() * 0.15;
     }
@@ -108,8 +107,51 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
     const starField = new THREE.Points(starGeom, starMat);
     scene.add(starField);
 
-    // 5. Realistic Digital Grid Earth Sphere
-    // Draw Earth landmasses & grid onto canvas programmatically
+    // 5. Ambient Nebula Planes (Keeps background active and volumetric)
+    const createNebulaTexture = (color: string) => {
+      const size = 256;
+      const nCanvas = document.createElement("canvas");
+      nCanvas.width = size;
+      nCanvas.height = size;
+      const ctx = nCanvas.getContext("2d");
+      if (ctx) {
+        const grad = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+        grad.addColorStop(0, color);
+        grad.addColorStop(0.5, "rgba(255, 255, 255, 0.005)");
+        grad.addColorStop(1, "rgba(0, 0, 0, 0)");
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, size, size);
+      }
+      return new THREE.CanvasTexture(nCanvas);
+    };
+
+    const nebulaTexture1 = createNebulaTexture("rgba(255, 255, 255, 0.02)");
+    const nebulaTexture2 = createNebulaTexture("rgba(200, 200, 200, 0.012)");
+
+    const nebulaGeom = new THREE.PlaneGeometry(100, 100);
+    const nebulaMat1 = new THREE.MeshBasicMaterial({
+      map: nebulaTexture1,
+      transparent: true,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+      opacity: 0.8,
+    });
+    const nebulaMat2 = new THREE.MeshBasicMaterial({
+      map: nebulaTexture2,
+      transparent: true,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+      opacity: 0.8,
+    });
+
+    const nebula1 = new THREE.Mesh(nebulaGeom, nebulaMat1);
+    nebula1.position.set(-15, 10, -90);
+    const nebula2 = new THREE.Mesh(nebulaGeom, nebulaMat2);
+    nebula2.position.set(15, -10, -90);
+
+    scene.add(nebula1, nebula2);
+
+    // 6. Realistic Digital Grid Earth Sphere
     const earthCanvas = document.createElement("canvas");
     earthCanvas.width = 1024;
     earthCanvas.height = 512;
@@ -118,7 +160,6 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
       earthCtx.fillStyle = "#000000";
       earthCtx.fillRect(0, 0, 1024, 512);
 
-      // Draw stylized continents
       earthCtx.fillStyle = "#ffffff";
       const continentBlobs = [
         { x: 300, y: 200, r: 90 }, { x: 380, y: 220, r: 70 },
@@ -133,7 +174,6 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
         earthCtx.fill();
       });
 
-      // Destination-in composition locks grid to landmass blobs only
       earthCtx.globalCompositeOperation = "destination-in";
       earthCtx.strokeStyle = "#ffffff";
       earthCtx.lineWidth = 1.5;
@@ -165,7 +205,6 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
       opacity: 0.95,
     });
     const earthMesh = new THREE.Mesh(earthGeom, earthMat);
-    earthMesh.position.set(0, 0, 0);
     scene.add(earthMesh);
 
     // Glowing Atmospheric Outer Shell
@@ -216,10 +255,9 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
       opacity: 0.65,
     });
     const sunriseGlow = new THREE.Mesh(sunriseGeom, sunriseMat);
-    sunriseGlow.position.set(2.8, -1.8, -1.0);
     scene.add(sunriseGlow);
 
-    // 6. Scene 3 Floating Glass Geometries
+    // 7. Scene 3 Floating Glass Geometries
     const glassGroup = new THREE.Group();
     scene.add(glassGroup);
 
@@ -237,23 +275,21 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
     });
 
     const serviceShapes = [
-      new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.6, 1.6), glassMat), // Websites
-      new THREE.Mesh(new THREE.OctahedronGeometry(1.2), glassMat), // Web Apps
-      new THREE.Mesh(new THREE.TorusKnotGeometry(0.7, 0.22, 100, 16), glassMat), // Mobile
-      new THREE.Mesh(new THREE.IcosahedronGeometry(1.2), glassMat), // AI Solutions
-      new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.8, 1.8, 32), glassMat), // Automations
-      new THREE.Mesh(new THREE.TorusGeometry(0.9, 0.35, 16, 100), glassMat) // Branding
+      new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.6, 1.6), glassMat),
+      new THREE.Mesh(new THREE.OctahedronGeometry(1.2), glassMat),
+      new THREE.Mesh(new THREE.TorusKnotGeometry(0.7, 0.22, 100, 16), glassMat),
+      new THREE.Mesh(new THREE.IcosahedronGeometry(1.2), glassMat),
+      new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.8, 1.8, 32), glassMat),
+      new THREE.Mesh(new THREE.TorusGeometry(0.9, 0.35, 16, 100), glassMat)
     ];
 
-    // Position in a wide hexagonal arrangement in Z-depth
     serviceShapes.forEach((shape, i) => {
       const angle = (i / serviceShapes.length) * Math.PI * 2;
       shape.position.set(Math.cos(angle) * 7.5, Math.sin(angle) * 4.5, -30);
-      shape.scale.set(0, 0, 0); // start hidden
       glassGroup.add(shape);
     });
 
-    // 7. Scene 4 Concentric Chrome & Glass Rings
+    // 8. Scene 4 Concentric Chrome & Glass Rings
     const ringsGroup = new THREE.Group();
     scene.add(ringsGroup);
 
@@ -268,14 +304,13 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
     const ring3 = new THREE.Mesh(new THREE.TorusGeometry(3.0, 0.06, 16, 100), chromeMat);
 
     ringsGroup.add(ring1, ring2, ring3);
-    ringsGroup.position.set(0, 0, -32); // Positioned for fly-through
+    ringsGroup.position.set(0, 0, -32);
 
-    // 8. Scene 6 Orbiting Holographic Project Cards
+    // 9. Scene 6 Orbiting Holographic Project Cards
     const projectsGroup = new THREE.Group();
     scene.add(projectsGroup);
 
     const projectCardGeom = new THREE.PlaneGeometry(3.4, 2.2);
-    // Dynamic canvas texture for holographic borders
     const createProjectCardTexture = (title: string, label: string) => {
       const cardCanvas = document.createElement("canvas");
       cardCanvas.width = 512;
@@ -285,18 +320,15 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
         ctx.fillStyle = "rgba(0, 0, 0, 0.95)";
         ctx.fillRect(0, 0, 512, 320);
 
-        // Thin glow border
         ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
         ctx.lineWidth = 4;
         ctx.strokeRect(8, 8, 496, 304);
 
-        // Title text
         ctx.fillStyle = "#ffffff";
         ctx.font = "bold 26px var(--font-geist-sans), sans-serif";
         ctx.letterSpacing = "0.08em";
         ctx.fillText(title.toUpperCase(), 35, 150);
 
-        // Label details
         ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
         ctx.font = "14px var(--font-geist-mono), monospace";
         ctx.fillText(label.toUpperCase(), 35, 195);
@@ -316,19 +348,42 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
       projectsGroup.add(card.mesh);
     });
 
-    // 9. Interactive Mouse Parallax coordinates
+    // 10. Spline Paths for Cinematic Continuity
+    const cameraPath = new THREE.CatmullRomCurve3([
+      new THREE.Vector3(0, 0, 10),      // Scene 1: Arrival
+      new THREE.Vector3(0, 2.5, 18),    // Scene 2: Vision
+      new THREE.Vector3(-3.0, 0, 28),   // Scene 3: Capabilities
+      new THREE.Vector3(0, 0, 24),      // Scene 4: Ring Approach
+      new THREE.Vector3(0, 0, -25),     // Scene 4: Ring Exit
+      new THREE.Vector3(0, 0, -42),     // Scene 5: Philosophy Warp
+      new THREE.Vector3(0, 0, -50),     // Scene 6: Featured Projects
+      new THREE.Vector3(2.2, -0.6, 11)  // Scene 7: Contact Earth
+    ]);
+
+    const targetPath = new THREE.CatmullRomCurve3([
+      new THREE.Vector3(0, 0, 0),       // Scene 1
+      new THREE.Vector3(-3.5, 0.5, 0),  // Scene 2
+      new THREE.Vector3(0, 0, -30),     // Scene 3
+      new THREE.Vector3(0, 0, -32),     // Scene 4
+      new THREE.Vector3(0, 0, -32),     // Scene 4
+      new THREE.Vector3(0, 0, -80),     // Scene 5
+      new THREE.Vector3(0, 0, -65),     // Scene 6
+      new THREE.Vector3(1.5, -0.6, 0)   // Scene 7
+    ]);
+
+    // 11. Interactive Mouse Parallax coordinates
     const mouse = { x: 0, y: 0 };
     const targetCamera = { x: 0, y: 0 };
 
     const handleMouseMove = (e: MouseEvent) => {
       mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
       mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
-      targetCamera.x = mouse.x * 0.5;
-      targetCamera.y = mouse.y * 0.35;
+      targetCamera.x = mouse.x * 0.55;
+      targetCamera.y = mouse.y * 0.4;
     };
     window.addEventListener("mousemove", handleMouseMove);
 
-    // 10. Animation Loop
+    // 12. Animation Loop
     let animationFrameId: number;
     let lerpedScroll = 0;
     const clock = new THREE.Clock();
@@ -341,159 +396,114 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
       // Smooth scroll lerping for liquid-fluid transitions
       lerpedScroll += (scrollRef.current - lerpedScroll) * 0.05;
 
-      // ----------------------------------------------------
-      // WEBGL SCROLL TIMELINE PHYSICS
-      // ----------------------------------------------------
+      const tVal = Math.max(0.0, Math.min(1.0, lerpedScroll));
 
-      // Camera base zoom & float drift
+      // Query spline paths for continuous position and target coordinates
+      const camPos = cameraPath.getPointAt(tVal);
+      const lookTarget = targetPath.getPointAt(tVal);
+
+      camera.position.copy(camPos);
+      
+      // Inject micro mouse-relative drift coordinates
+      camera.position.x += targetCamera.x;
+      camera.position.y += targetCamera.y;
+      
+      camera.lookAt(lookTarget);
+
       const baseZoom = 1.0 + Math.sin(time * 0.08) * 0.008;
 
-      // Reset positions to handle parallax overlays cleanly
-      earthMesh.position.set(0, 0, 0);
-      glassGroup.position.set(0, 0, 0);
-      ringsGroup.position.set(0, 0, 0);
-      projectsGroup.position.set(0, 0, 0);
+      // ----------------------------------------------------
+      // WEBGL MESH ACTIVATION BELL CURVES
+      // ----------------------------------------------------
 
-      // Section thresholds
-      if (lerpedScroll < 0.15) {
-        // Scene 1: Earth close up
-        const t = lerpedScroll / 0.15;
-        camera.position.set(targetCamera.x, targetCamera.y, 9.5 + t * 4.5);
-        earthMesh.scale.set(baseZoom, baseZoom, baseZoom);
-        earthMesh.position.x = -t * 1.5; // slow shift left
-        sunriseGlow.position.x = 2.8 - t * 1.5;
-
-        // Hide other items
-        glassGroup.scale.set(0, 0, 0);
-        ringsGroup.scale.set(0, 0, 0);
-        projectsGroup.scale.set(0, 0, 0);
-
-      } else if (lerpedScroll >= 0.15 && lerpedScroll < 0.30) {
-        // Scene 2: Pulling away from Earth
-        const t = (lerpedScroll - 0.15) / 0.15;
-        camera.position.set(targetCamera.x, targetCamera.y, 14.0 + t * 14.0);
-        earthMesh.position.x = -1.5 - t * 10; // Earth slides off-screen left
-        sunriseGlow.position.x = 1.3 - t * 10;
-        
-        glassGroup.scale.set(0, 0, 0);
-        ringsGroup.scale.set(0, 0, 0);
-        projectsGroup.scale.set(0, 0, 0);
-
-      } else if (lerpedScroll >= 0.30 && lerpedScroll < 0.45) {
-        // Scene 3: Entering the Galaxy, floating Glass Services
-        const t = (lerpedScroll - 0.30) / 0.15;
-        camera.position.set(targetCamera.x, targetCamera.y, 28.0 - t * 4.0);
-        earthMesh.position.x = -11.5 - t * 15; // completely hide Earth
-
-        // Float and scale services glass objects
-        glassGroup.scale.set(1, 1, 1);
-        serviceShapes.forEach((shape, i) => {
-          const baseScale = 1.0 + Math.sin(time + i) * 0.05;
-          const s = t * baseScale;
-          shape.scale.set(s, s, s);
-          // spin
-          shape.rotation.x = time * 0.1 + i;
-          shape.rotation.y = time * 0.15 + i;
-        });
-
-        ringsGroup.scale.set(0, 0, 0);
-        projectsGroup.scale.set(0, 0, 0);
-
-      } else if (lerpedScroll >= 0.45 && lerpedScroll < 0.60) {
-        // Scene 4: Flying through Chrome/Glass Rings
-        const t = (lerpedScroll - 0.45) / 0.15;
-        // Fade service glass shapes
-        serviceShapes.forEach((shape) => {
-          const s = (1.0 - t);
-          shape.scale.set(s, s, s);
-        });
-
-        // Camera flies right through rings at Z=-32. Z moves 24 to -42.
-        camera.position.set(targetCamera.x, targetCamera.y, 24.0 - t * 66.0);
-        
-        ringsGroup.scale.set(1, 1, 1);
-        // Spin concentric rings
-        ring1.rotation.y = time * 0.18;
-        ring1.rotation.z = time * 0.08;
-        ring2.rotation.y = -time * 0.12;
-        ring2.rotation.z = -time * 0.14;
-        ring3.rotation.y = time * 0.22;
-
-        projectsGroup.scale.set(0, 0, 0);
-
-      } else if (lerpedScroll >= 0.60 && lerpedScroll < 0.75) {
-        // Scene 5: Speed-warp / philosophy
-        const t = (lerpedScroll - 0.60) / 0.15;
-        ringsGroup.scale.set(0, 0, 0);
-        projectsGroup.scale.set(0, 0, 0);
-
-        // Keep camera steady while star speed increases
-        camera.position.set(targetCamera.x, targetCamera.y, -42.0 - t * 8.0);
-
-      } else if (lerpedScroll >= 0.75 && lerpedScroll < 0.90) {
-        // Scene 6: Featured Orbiting Projects
-        const t = (lerpedScroll - 0.75) / 0.15;
-        camera.position.set(targetCamera.x, targetCamera.y, -50.0 - t * 4.0);
-
-        // Show orbiting project panels
-        projectsGroup.scale.set(1, 1, 1);
-        
-        projectCards.forEach((card, idx) => {
-          const orbitalRadius = 8.5;
-          const speedFactor = time * 0.08;
-          const currentAngle = card.angle + speedFactor;
-          
-          let cardX = Math.cos(currentAngle) * orbitalRadius;
-          let cardY = Math.sin(currentAngle) * 2.8;
-          let cardZ = -65 + Math.sin(currentAngle) * 4;
-
-          const isHovered = hoveredIndexRef.current === idx;
-          if (isHovered) {
-            // Lerp selected project card to center-focus in front of camera
-            card.mesh.position.x += (targetCamera.x - card.mesh.position.x) * 0.12;
-            card.mesh.position.y += (targetCamera.y - card.mesh.position.y) * 0.12;
-            card.mesh.position.z += (camera.position.z - 4.5 - card.mesh.position.z) * 0.12;
-            
-            // Align rotation directly to camera face
-            card.mesh.rotation.set(0, 0, 0);
-          } else {
-            // Normal orbit movement
-            card.mesh.position.set(cardX, cardY, cardZ);
-            card.mesh.rotation.y = Math.sin(time * 0.15 + idx) * 0.08;
-            card.mesh.rotation.x = Math.cos(time * 0.1 + idx) * 0.08;
-          }
-        });
-
-      } else if (lerpedScroll >= 0.90) {
-        // Scene 7: Contact orbit back
-        const t = (lerpedScroll - 0.90) / 0.10;
-        projectsGroup.scale.set(0, 0, 0);
-
-        // Transition camera from project coordinate system back to Earth close orbit
-        camera.position.set(
-          targetCamera.x + (1.0 - t) * 0,
-          targetCamera.y + (1.0 - t) * 0,
-          -54.0 + t * 65.5 // Z moves from -54 to 11.5
-        );
-
-        // Scale and align Earth back
-        earthMesh.position.set(1.5, -0.8, 0); // Position on the right side of Contact overlay
-        earthMesh.scale.set(baseZoom, baseZoom, baseZoom);
-        sunriseGlow.position.set(4.3, -2.6, -1.0);
+      // 1. Earth mesh active profile
+      let earthActive = 0;
+      if (tVal < 0.30) {
+        earthActive = Math.cos((tVal / 0.30) * Math.PI * 0.5);
+        const slideT = tVal / 0.30;
+        earthMesh.position.set(-slideT * 3.5, 0, 0);
+        sunriseGlow.position.set(2.8 - slideT * 3.5, -1.8, -1.0);
+      } else if (tVal > 0.85) {
+        earthActive = Math.sin(((tVal - 0.85) / 0.15) * Math.PI * 0.5);
+        const slideT = (tVal - 0.85) / 0.15;
+        earthMesh.position.set(1.5 + (1.0 - slideT) * 2.0, -0.8, 0);
+        sunriseGlow.position.set(4.3 + (1.0 - slideT) * 2.0, -2.6, -1.0);
+      } else {
+        // Safe offscreen coordinates while inactive
+        earthMesh.position.set(999, 999, 999);
       }
+      earthMesh.scale.set(earthActive * baseZoom, earthActive * baseZoom, earthActive * baseZoom);
+
+      // 2. Services shapes active profile (peaks at 0.36)
+      const shapeCenter = 0.36;
+      const shapeRadius = 0.10;
+      const distToShape = Math.abs(tVal - shapeCenter);
+      let shapeScale = 0;
+      if (distToShape < shapeRadius) {
+        shapeScale = Math.cos((distToShape / shapeRadius) * Math.PI * 0.5);
+      }
+      glassGroup.scale.set(shapeScale, shapeScale, shapeScale);
+      serviceShapes.forEach((shape, i) => {
+        shape.rotation.x = time * 0.12 + i;
+        shape.rotation.y = time * 0.18 + i;
+      });
+
+      // 3. Chrome/Glass rings active profile (peaks at 0.54)
+      const ringCenter = 0.54;
+      const ringRadius = 0.12;
+      const distToRing = Math.abs(tVal - ringCenter);
+      let ringScale = 0;
+      if (distToRing < ringRadius) {
+        ringScale = Math.cos((distToRing / ringRadius) * Math.PI * 0.5);
+      }
+      ringsGroup.scale.set(ringScale, ringScale, ringScale);
+      ring1.rotation.y = time * 0.15;
+      ring1.rotation.z = time * 0.08;
+      ring2.rotation.y = -time * 0.10;
+      ring2.rotation.z = -time * 0.12;
+      ring3.rotation.y = time * 0.20;
+
+      // 4. Projects cards active profile (peaks at 0.82)
+      const projCenter = 0.82;
+      const projRadius = 0.10;
+      const distToProj = Math.abs(tVal - projCenter);
+      let projScale = 0;
+      if (distToProj < projRadius) {
+        projScale = Math.cos((distToProj / projRadius) * Math.PI * 0.5);
+      }
+      projectsGroup.scale.set(projScale, projScale, projScale);
+
+      projectCards.forEach((card, idx) => {
+        const orbitalRadius = 8.5;
+        const speedFactor = time * 0.08;
+        const currentAngle = card.angle + speedFactor;
+
+        let cardX = Math.cos(currentAngle) * orbitalRadius;
+        let cardY = Math.sin(currentAngle) * 2.8;
+        let cardZ = -65 + Math.sin(currentAngle) * 4;
+
+        const isHovered = hoveredIndexRef.current === idx;
+        if (isHovered && projScale > 0) {
+          card.mesh.position.x += (targetCamera.x - card.mesh.position.x) * 0.12;
+          card.mesh.position.y += (targetCamera.y - card.mesh.position.y) * 0.12;
+          card.mesh.position.z += (camera.position.z - 4.5 - card.mesh.position.z) * 0.12;
+          card.mesh.rotation.set(0, 0, 0);
+        } else {
+          card.mesh.position.set(cardX, cardY, cardZ);
+          card.mesh.rotation.y = Math.sin(time * 0.15 + idx) * 0.08;
+          card.mesh.rotation.x = Math.cos(time * 0.1 + idx) * 0.08;
+        }
+      });
 
       // ----------------------------------------------------
       // STARFIELD TWINKLE & TRAVEL SPEED ANIMATION
       // ----------------------------------------------------
       const posArr = starGeom.attributes.position.array as Float32Array;
-      const isWarpSpeed = lerpedScroll >= 0.60 && lerpedScroll < 0.75;
+      const isWarpSpeed = tVal >= 0.60 && tVal < 0.75;
       const warpSpeedFactor = isWarpSpeed ? 12.0 : 1.0;
 
       for (let i = 0; i < starCount; i++) {
-        // Stars translate towards camera along Z
         posArr[i * 3 + 2] += starSpeeds[i] * warpSpeedFactor;
-        
-        // Reset stars passing the viewport
         if (posArr[i * 3 + 2] > 15) {
           posArr[i * 3 + 2] = -120;
           posArr[i * 3] = (Math.random() - 0.5) * 120;
@@ -502,8 +512,12 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
       }
       starGeom.attributes.position.needsUpdate = true;
 
-      // Soft twinkle glow modulation
+      // Twinkle glow
       starMat.opacity = 0.5 + Math.sin(time * 0.5) * 0.25;
+
+      // Rotate nebulas slowly
+      nebula1.rotation.z = time * 0.005;
+      nebula2.rotation.z = -time * 0.003;
 
       // Gently rotate Earth
       earthMesh.rotation.y = time * 0.015;
@@ -513,7 +527,6 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
 
     animate();
 
-    // 11. Responsive resize handler
     const handleResize = () => {
       if (!containerRef.current) return;
       const w = containerRef.current.clientWidth;
@@ -551,6 +564,11 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
         c.mesh.material.dispose();
         if (c.mesh.material.map) c.mesh.material.map.dispose();
       });
+      nebulaGeom.dispose();
+      nebulaMat1.dispose();
+      nebulaMat2.dispose();
+      nebulaTexture1.dispose();
+      nebulaTexture2.dispose();
     };
   }, []);
 
