@@ -198,117 +198,7 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
       (star.mesh.material as THREE.LineBasicMaterial).opacity = 0.95;
     };
 
-    // 8. Realistic Digital Grid Earth Sphere (High Contrast)
-    const earthCanvas = document.createElement("canvas");
-    earthCanvas.width = 1024;
-    earthCanvas.height = 512;
-    const earthCtx = earthCanvas.getContext("2d");
-    if (earthCtx) {
-      earthCtx.fillStyle = "#000000";
-      earthCtx.fillRect(0, 0, 1024, 512);
-
-      earthCtx.fillStyle = "#ffffff";
-      const continentBlobs = [
-        { x: 300, y: 200, r: 90 }, { x: 380, y: 220, r: 70 },
-        { x: 650, y: 180, r: 85 }, { x: 740, y: 220, r: 75 }, { x: 600, y: 250, r: 60 },
-        { x: 220, y: 350, r: 80 }, { x: 300, y: 320, r: 60 },
-        { x: 800, y: 360, r: 70 }, { x: 850, y: 320, r: 50 },
-        { x: 500, y: 120, r: 40 }, { x: 450, y: 80, r: 60 }
-      ];
-      continentBlobs.forEach(blob => {
-        earthCtx.beginPath();
-        earthCtx.arc(blob.x, blob.y, blob.r, 0, Math.PI * 2);
-        earthCtx.fill();
-      });
-
-      earthCtx.globalCompositeOperation = "destination-in";
-      earthCtx.strokeStyle = "#ffffff";
-      earthCtx.lineWidth = 1.5;
-      for (let y = 0; y < 512; y += 10) {
-        earthCtx.beginPath();
-        earthCtx.moveTo(0, y);
-        earthCtx.lineTo(1024, y);
-        earthCtx.stroke();
-      }
-      for (let x = 0; x < 1024; x += 10) {
-        earthCtx.beginPath();
-        earthCtx.moveTo(x, 0);
-        earthCtx.lineTo(x, 512);
-        earthCtx.stroke();
-      }
-      earthCtx.globalCompositeOperation = "source-over";
-    }
-
-    const earthTexture = new THREE.CanvasTexture(earthCanvas);
-    const earthGeom = new THREE.SphereGeometry(3.5, 64, 64);
-    const earthMat = new THREE.MeshStandardMaterial({
-      color: 0x0c0c0c,
-      roughness: 0.12,
-      metalness: 0.95,
-      bumpMap: earthTexture,
-      bumpScale: 0.08,
-      alphaMap: earthTexture,
-      transparent: true,
-      opacity: 0.95,
-    });
-    const earthMesh = new THREE.Mesh(earthGeom, earthMat);
-    // Position earth stationary on left center
-    earthMesh.position.set(-1.8, 0, 0);
-    scene.add(earthMesh);
-
-    // Glowing Atmospheric Outer Shell (Sharp intensity gradient)
-    const atmosGeom = new THREE.SphereGeometry(3.68, 64, 64);
-    const atmosMat = new THREE.ShaderMaterial({
-      vertexShader: `
-        varying vec3 vNormal;
-        void main() {
-          vNormal = normalize(normalMatrix * normal);
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-        }
-      `,
-      fragmentShader: `
-        varying vec3 vNormal;
-        void main() {
-          float intensity = pow(0.72 - dot(vNormal, vec3(0, 0, 1.0)), 2.8);
-          gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0) * intensity * 0.45;
-        }
-      `,
-      blending: THREE.AdditiveBlending,
-      side: THREE.BackSide,
-      transparent: true,
-      depthWrite: false,
-    });
-    const atmosMesh = new THREE.Mesh(atmosGeom, atmosMat);
-    earthMesh.add(atmosMesh);
-
-    // Volumetric Sunrise Glow behind Curvature (Pure white gold accent)
-    const sunriseGlowCanvas = document.createElement("canvas");
-    sunriseGlowCanvas.width = 128;
-    sunriseGlowCanvas.height = 128;
-    const sunriseCtx = sunriseGlowCanvas.getContext("2d");
-    if (sunriseCtx) {
-      const grad = sunriseCtx.createRadialGradient(64, 64, 0, 64, 64, 64);
-      grad.addColorStop(0, "rgba(255, 255, 255, 0.35)");
-      grad.addColorStop(0.3, "rgba(255, 245, 230, 0.12)");
-      grad.addColorStop(1, "rgba(255, 255, 255, 0)");
-      sunriseCtx.fillStyle = grad;
-      sunriseCtx.fillRect(0, 0, 128, 128);
-    }
-    const sunriseTexture = new THREE.CanvasTexture(sunriseGlowCanvas);
-    const sunriseGeom = new THREE.PlaneGeometry(16, 12);
-    const sunriseMat = new THREE.MeshBasicMaterial({
-      map: sunriseTexture,
-      transparent: true,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
-      opacity: 0.65,
-    });
-    const sunriseGlow = new THREE.Mesh(sunriseGeom, sunriseMat);
-    // Align with earth position
-    sunriseGlow.position.set(1.0, -1.8, -1.0);
-    scene.add(sunriseGlow);
-
-    // 9. Interactive Mouse coordinates
+    // 8. Interactive Mouse coordinates
     const mouse = new THREE.Vector2(0, 0);
     const targetCamera = { x: 0, y: 0 };
 
@@ -321,6 +211,40 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
       }
     };
     window.addEventListener("mousemove", handleMouseMove);
+
+    // 9. Resize & WebGL Aspect-Correct Cover scale function
+    const updateBgScale = () => {
+      if (!containerRef.current) return;
+      const w = containerRef.current.clientWidth;
+      const h = containerRef.current.clientHeight;
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h);
+
+      // Frustum viewport dimensions at Z = -140
+      const distance = 140;
+      const vFov = camera.fov * Math.PI / 180;
+      const visibleHeight = 2 * Math.tan(vFov / 2) * distance;
+      const visibleWidth = visibleHeight * camera.aspect;
+
+      // Image aspect ratios matching files exactly
+      const imageAspect = isMobile ? (1080 / 1920) : (3840 / 2160);
+
+      if (camera.aspect > imageAspect) {
+        // Fit width, adjust height scale
+        const scaleX = visibleWidth / 320;
+        const scaleY = (visibleWidth / imageAspect) / 200;
+        bgMesh.scale.set(scaleX, scaleY, 1);
+      } else {
+        // Fit height, adjust width scale
+        const scaleX = (visibleHeight * imageAspect) / 320;
+        const scaleY = visibleHeight / 200;
+        bgMesh.scale.set(scaleX, scaleY, 1);
+      }
+    };
+
+    updateBgScale();
+    window.addEventListener("resize", updateBgScale);
 
     // 10. Animation Loop
     let animationFrameId: number;
@@ -337,8 +261,8 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
 
       const tVal = Math.max(0.0, Math.min(1.0, lerpedScroll));
 
-      // 1. Fixed camera positioning with Y-parallax scroll drift
-      camera.position.set(0, -tVal * 4.5, 10);
+      // Fixed camera positioning with Y-parallax scroll drift
+      camera.position.set(0, -tVal * 4.0, 10);
 
       // Inject camera breathing animation
       camera.position.y += Math.sin(time * 0.45) * 0.05;
@@ -350,30 +274,14 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
         camera.position.y += targetCamera.y;
       }
       
-      camera.lookAt(0, -tVal * 4.5, 0);
+      camera.lookAt(0, -tVal * 4.0, 0);
 
-      // Parallax-offset the huge background backdrop mesh to keep it centered and realistic
+      // Parallax-offset the huge background backdrop plane to keep it centered and realistic
       bgMesh.position.x = camera.position.x * 0.95;
       bgMesh.position.y = camera.position.y * 0.95 - tVal * 2.0;
 
-      const baseZoom = 1.0 + Math.sin(time * 0.08) * 0.008;
-
-      // ----------------------------------------------------
-      // WEBGL BACKGROUND ANIMATIONS
-      // ----------------------------------------------------
-
       // Milky Way shifting & slow background rotation
-      bgMesh.rotation.z = time * 0.0004;
-
-      // Volumetric atmospheric glow rotations
-      atmosMesh.rotation.y = -time * 0.006;
-      atmosMesh.rotation.z = time * 0.003;
-
-      // Pulsating sunrise glow
-      const pulseFactor = 0.85 + Math.sin(time * 0.45) * 0.08;
-      sunriseMat.opacity = 0.62 * pulseFactor;
-
-      earthMesh.scale.set(baseZoom, baseZoom, baseZoom);
+      bgMesh.rotation.z = time * 0.0003;
 
       // ----------------------------------------------------
       // STARFIELD TWINKLE & TRAVEL SPEED ANIMATION
@@ -414,7 +322,7 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
       particlesGeom.attributes.position.needsUpdate = true;
 
       // ----------------------------------------------------
-      // UPDATE SHOOTING STARS (Rare occurrence factor 0.004)
+      // UPDATE SHOOTING STARS (Rare occurrence factor 0.003)
       // ----------------------------------------------------
       shootingStars.forEach(star => {
         if (star.life < star.maxLife) {
@@ -427,34 +335,21 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
             (star.mesh.material as THREE.LineBasicMaterial).opacity = (star.maxLife - star.life) / 10;
           }
         } else {
-          if (Math.random() < 0.004) {
+          if (Math.random() < 0.003) {
             triggerShootingStar(star);
           }
         }
       });
-
-      // Gently rotate Earth
-      earthMesh.rotation.y = time * 0.012;
 
       renderer.render(scene, camera);
     };
 
     animate();
 
-    const handleResize = () => {
-      if (!containerRef.current) return;
-      const w = containerRef.current.clientWidth;
-      const h = containerRef.current.clientHeight;
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
-      renderer.setSize(w, h);
-    };
-    window.addEventListener("resize", handleResize);
-
     return () => {
       cancelAnimationFrame(animationFrameId);
       window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("resize", updateBgScale);
       renderer.dispose();
 
       starGeom.dispose();
@@ -470,14 +365,6 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
           s.mesh.material.dispose();
         }
       });
-      earthGeom.dispose();
-      earthMat.dispose();
-      earthTexture.dispose();
-      atmosGeom.dispose();
-      atmosMat.dispose();
-      sunriseGeom.dispose();
-      sunriseMat.dispose();
-      sunriseTexture.dispose();
       bgGeom.dispose();
       bgMat.dispose();
       bgTexture.dispose();
