@@ -35,11 +35,11 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
     const scene = new THREE.Scene();
 
     const camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 1000);
-    camera.position.set(0, 0, 12);
+    camera.position.set(0, 0, 10);
 
     const renderer = new THREE.WebGLRenderer({
       canvas,
-      antialias: !isMobile,
+      antialias: !isMobile, // Disable antialiasing on mobile for massive rendering speedup
       alpha: false,
       powerPreference: "high-performance",
     });
@@ -57,9 +57,12 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
     mainLight.position.set(12, 8, 12);
     scene.add(mainLight);
 
+    // Skip adding secondary light on mobile to simplify shader computations
     const secondaryLight = new THREE.DirectionalLight(0xffffff, 1.2);
     secondaryLight.position.set(-12, -8, -6);
-    scene.add(secondaryLight);
+    if (!isMobile) {
+      scene.add(secondaryLight);
+    }
 
     // 3. Crisp 4K Space Backdrop Plane (Milky Way & Space Horizon)
     const textureLoader = new THREE.TextureLoader();
@@ -98,8 +101,8 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
 
     const starTexture = createStarTexture();
 
-    // 5. Starfield setup (1800 points - Sharp, High-Contrast)
-    const starCount = isMobile ? 800 : 1800;
+    // 5. Starfield setup (Sharp, High-Contrast; Reduced count on mobile)
+    const starCount = isMobile ? 600 : 1800;
     const starGeom = new THREE.BufferGeometry();
     const starPositions = new Float32Array(starCount * 3);
     const starSpeeds = new Float32Array(starCount);
@@ -123,8 +126,8 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
     const starField = new THREE.Points(starGeom, starMat);
     scene.add(starField);
 
-    // 6. Foreground Interactive Particles (React to mouse movement)
-    const particleCount = isMobile ? 80 : 220;
+    // 6. Foreground Particles (Reduced count on mobile)
+    const particleCount = isMobile ? 60 : 220;
     const particlesGeom = new THREE.BufferGeometry();
     const particlePositions = new Float32Array(particleCount * 3);
     const particleVelocities = new Float32Array(particleCount * 3);
@@ -152,7 +155,7 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
     scene.add(particlesMesh);
 
     // 7. Shooting Stars (Dynamic light streaks)
-    const shootingStarCount = 3;
+    const shootingStarCount = isMobile ? 1 : 3;
     const shootingStars: {
       mesh: THREE.Line;
       vx: number;
@@ -355,7 +358,7 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
     ringsGroup.add(ring1, ring2, ring3);
     ringsGroup.position.set(0, 0, -32);
 
-    // 11. Scene 6 Orbiting Holographic Project Cards
+    // 11. Scene 5 Orbiting Holographic Project Cards
     const projectsGroup = new THREE.Group();
     scene.add(projectsGroup);
 
@@ -397,16 +400,15 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
       projectsGroup.add(card.mesh);
     });
 
-    // 12. Spline Paths for Cinematic Continuity
+    // 12. Spline Paths for Cinematic Continuity (6 control points for 6 scenes)
     const cameraPath = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(0, 0, 10),      // Scene 1: Arrival
-      new THREE.Vector3(0, 2.5, 18),    // Scene 2: Vision
-      new THREE.Vector3(-3.0, 0, 28),   // Scene 3: Capabilities
-      new THREE.Vector3(0, 0, 24),      // Scene 4: Ring Approach
-      new THREE.Vector3(0, 0, -25),     // Scene 4: Ring Exit
-      new THREE.Vector3(0, 0, -42),     // Scene 5: Philosophy Warp
-      new THREE.Vector3(0, 0, -50),     // Scene 6: Featured Projects
-      new THREE.Vector3(2.2, -0.6, 11)  // Scene 7: Contact Earth
+      new THREE.Vector3(0, 0, 10),      // Scene 1: Arrival (t = 0.0)
+      new THREE.Vector3(0, 2.0, 18),    // Scene 2: Philosophy (t = 0.22)
+      new THREE.Vector3(-3.0, 0, 28),   // Scene 3: Services (t = 0.37)
+      new THREE.Vector3(0, 0, 24),      // Scene 4: Craft approach (t = 0.48)
+      new THREE.Vector3(0, 0, -25),     // Scene 4: Craft exit (t = 0.58)
+      new THREE.Vector3(0, 0, -50),     // Scene 5: Featured Projects (t = 0.70)
+      new THREE.Vector3(2.2, -0.6, 11)  // Scene 6: Contact Earth (t = 0.95)
     ]);
 
     const targetPath = new THREE.CatmullRomCurve3([
@@ -415,9 +417,8 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
       new THREE.Vector3(0, 0, -30),     // Scene 3
       new THREE.Vector3(0, 0, -32),     // Scene 4
       new THREE.Vector3(0, 0, -32),     // Scene 4
-      new THREE.Vector3(0, 0, -80),     // Scene 5
-      new THREE.Vector3(0, 0, -65),     // Scene 6
-      new THREE.Vector3(1.5, -0.6, 0)   // Scene 7
+      new THREE.Vector3(0, 0, -65),     // Scene 5
+      new THREE.Vector3(1.5, -0.6, 0)   // Scene 6
     ]);
 
     // 13. Interactive Mouse Parallax coordinates
@@ -425,6 +426,7 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
     const targetCamera = { x: 0, y: 0 };
 
     const handleMouseMove = (e: MouseEvent) => {
+      if (isMobile) return; // Skip mouse coordinates on mobile
       mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
       mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
       targetCamera.x = mouse.x * 0.55;
@@ -453,9 +455,11 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
 
       camera.position.copy(camPos);
       
-      // Inject micro mouse-relative drift coordinates
-      camera.position.x += targetCamera.x;
-      camera.position.y += targetCamera.y;
+      // Inject micro mouse-relative drift coordinates (desktop only)
+      if (!isMobile) {
+        camera.position.x += targetCamera.x;
+        camera.position.y += targetCamera.y;
+      }
       
       camera.lookAt(lookTarget);
 
@@ -469,16 +473,16 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
       // WEBGL MESH ACTIVATION BELL CURVES
       // ----------------------------------------------------
 
-      // 1. Earth mesh active profile
+      // 1. Earth mesh active profile (Hero: < 0.15, Contact: > 0.80)
       let earthActive = 0;
-      if (tVal < 0.30) {
-        earthActive = Math.cos((tVal / 0.30) * Math.PI * 0.5);
-        const slideT = tVal / 0.30;
+      if (tVal < 0.15) {
+        earthActive = Math.cos((tVal / 0.15) * Math.PI * 0.5);
+        const slideT = tVal / 0.15;
         earthMesh.position.set(-slideT * 3.5, 0, 0);
         sunriseGlow.position.set(2.8 - slideT * 3.5, -1.8, -1.0);
-      } else if (tVal > 0.85) {
-        earthActive = Math.sin(((tVal - 0.85) / 0.15) * Math.PI * 0.5);
-        const slideT = (tVal - 0.85) / 0.15;
+      } else if (tVal > 0.80) {
+        earthActive = Math.sin(((tVal - 0.80) / 0.20) * Math.PI * 0.5);
+        const slideT = (tVal - 0.80) / 0.20;
         earthMesh.position.set(1.5 + (1.0 - slideT) * 2.0, -0.8, 0);
         sunriseGlow.position.set(4.3 + (1.0 - slideT) * 2.0, -2.6, -1.0);
       } else {
@@ -487,9 +491,9 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
       }
       earthMesh.scale.set(earthActive * baseZoom, earthActive * baseZoom, earthActive * baseZoom);
 
-      // 2. Services shapes active profile (peaks at 0.36)
-      const shapeCenter = 0.36;
-      const shapeRadius = 0.10;
+      // 2. Services shapes active profile (peaks at 0.375)
+      const shapeCenter = 0.375;
+      const shapeRadius = 0.075;
       const distToShape = Math.abs(tVal - shapeCenter);
       let shapeScale = 0;
       if (distToShape < shapeRadius) {
@@ -503,9 +507,9 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
         shape.position.y = Math.sin(time + i) * 0.3 + (i / serviceShapes.length) * 2.0 - 1.0;
       });
 
-      // 3. Chrome/Glass rings active profile (peaks at 0.54)
-      const ringCenter = 0.54;
-      const ringRadius = 0.12;
+      // 3. Chrome/Glass rings active profile (peaks at 0.525)
+      const ringCenter = 0.525;
+      const ringRadius = 0.075;
       const distToRing = Math.abs(tVal - ringCenter);
       let ringScale = 0;
       if (distToRing < ringRadius) {
@@ -518,8 +522,8 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
       ring2.rotation.z = -time * 0.12;
       ring3.rotation.y = time * 0.20;
 
-      // 4. Projects cards active profile (peaks at 0.82)
-      const projCenter = 0.82;
+      // 4. Projects cards active profile (peaks at 0.70)
+      const projCenter = 0.70;
       const projRadius = 0.10;
       const distToProj = Math.abs(tVal - projCenter);
       let projScale = 0;
@@ -571,7 +575,7 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
       starMat.opacity = 0.75 + Math.sin(time * 0.5) * 0.2;
 
       // ----------------------------------------------------
-      // FOREGROUND PARTICLES DRIFT WITH MOUSE
+      // FOREGROUND PARTICLES DRIFT (Desktop Only coordinates)
       // ----------------------------------------------------
       const fpArr = particlesGeom.attributes.position.array as Float32Array;
       for (let i = 0; i < particleCount; i++) {
@@ -579,9 +583,10 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
         fpArr[i * 3 + 1] += particleVelocities[i * 3 + 1];
         fpArr[i * 3 + 2] += particleVelocities[i * 3 + 2];
 
-        // Repel/attract based on targetCamera (mouse coordinates)
-        fpArr[i * 3] += (targetCamera.x * 2.0 - fpArr[i * 3]) * 0.001;
-        fpArr[i * 3 + 1] += (targetCamera.y * 1.5 - fpArr[i * 3 + 1]) * 0.001;
+        if (!isMobile) {
+          fpArr[i * 3] += (targetCamera.x * 2.0 - fpArr[i * 3]) * 0.001;
+          fpArr[i * 3 + 1] += (targetCamera.y * 1.5 - fpArr[i * 3 + 1]) * 0.001;
+        }
 
         // Wrap around boundaries
         if (Math.abs(fpArr[i * 3]) > 25) fpArr[i * 3] = -fpArr[i * 3];

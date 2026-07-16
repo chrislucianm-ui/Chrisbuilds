@@ -90,39 +90,59 @@ export default function Home() {
     };
   }, [loadingComplete, activeProject]);
 
-  // Scene centers (7 scenes spread evenly between 0.0 and 1.0)
-  const centers = [0.07, 0.22, 0.36, 0.54, 0.68, 0.82, 0.95];
+  // 6 distinct, non-overlapping scene boundaries
+  const getSceneOpacity = (index: number) => {
+    const ranges = [
+      { start: 0.0, end: 0.15 }, // Index 0: Hero Scene
+      { start: 0.15, end: 0.30 }, // Index 1: Philosophy / Vision Scene
+      { start: 0.30, end: 0.45 }, // Index 2: Services Scene
+      { start: 0.45, end: 0.60 }, // Index 3: Craft Scene
+      { start: 0.60, end: 0.80 }, // Index 4: Featured Work Scene
+      { start: 0.80, end: 1.0 }   // Index 5: Contact Scene
+    ];
+
+    const { start, end } = ranges[index];
+    if (scrollProgress < start || scrollProgress > end) return 0;
+
+    const buffer = 0.025; // dead-zone buffer to completely clear elements between scene steps
+    if (scrollProgress < start + buffer) {
+      return (scrollProgress - start) / buffer; // fade in
+    } else if (scrollProgress > end - buffer) {
+      return (end - scrollProgress) / buffer; // fade out
+    } else {
+      return 1.0;
+    }
+  };
 
   const getSceneStyle = (index: number) => {
-    const center = centers[index];
-    const dist = Math.abs(scrollProgress - center);
-    const opacity = Math.max(0, 1 - dist * 6.8); // sharp smooth fade
-    const yOffset = (scrollProgress - center) * -50; // subtle floating depth float
+    const op = getSceneOpacity(index);
+    const blur = (1.0 - op) * 12; // GPU-accelerated blur-to-sharp reveal
+    const yOffset = (1.0 - op) * 15; // subtle upward translation reveal
 
     return {
-      opacity,
+      opacity: op,
+      filter: `blur(${blur}px)`,
       transform: `translateY(${yOffset}px)`,
-      pointerEvents: opacity > 0.1 ? ("auto" as const) : ("none" as const),
-      display: opacity > 0 ? ("flex" as const) : ("none" as const),
-      transition: "opacity 150ms ease-out, transform 150ms ease-out"
+      pointerEvents: op > 0.1 ? ("auto" as const) : ("none" as const),
+      display: op > 0 ? ("flex" as const) : ("none" as const),
+      transition: "opacity 200ms ease-out, filter 200ms ease-out, transform 200ms ease-out"
     };
   };
 
-  // Scene 2 typewriter transition steps
+  // Scene 1 typewriter transition steps (Philosophy: 0.15 to 0.30)
   const scene2Progress = (scrollProgress - 0.15) / 0.15; // 0 to 1
-  const stepOpacity0 = Math.max(0, 1 - Math.abs(scene2Progress - 0.16) * 6);
-  const stepOpacity1 = Math.max(0, 1 - Math.abs(scene2Progress - 0.50) * 6);
-  const stepOpacity2 = Math.max(0, 1 - Math.abs(scene2Progress - 0.83) * 6);
+  const stepOpacity0 = Math.max(0, 1 - Math.abs(scene2Progress - 0.16) * 7.5);
+  const stepOpacity1 = Math.max(0, 1 - Math.abs(scene2Progress - 0.50) * 7.5);
+  const stepOpacity2 = Math.max(0, 1 - Math.abs(scene2Progress - 0.83) * 7.5);
 
-  // Scene 4 capability reveal steps
+  // Scene 3 capability reveal steps (Craft: 0.45 to 0.60)
   const scene4Progress = (scrollProgress - 0.45) / 0.15; // 0 to 1
-  const showScene4Details = scene4Progress >= 0.65;
-  const ringOpacity0 = Math.max(0, 1 - Math.abs(scene4Progress - 0.15) * 6);
-  const ringOpacity1 = Math.max(0, 1 - Math.abs(scene4Progress - 0.35) * 6);
-  const ringOpacity2 = Math.max(0, 1 - Math.abs(scene4Progress - 0.55) * 6);
+  const ringOpacity0 = Math.max(0, 1 - Math.abs(scene4Progress - 0.16) * 8);
+  const ringOpacity1 = Math.max(0, 1 - Math.abs(scene4Progress - 0.50) * 8);
+  const ringOpacity2 = Math.max(0, 1 - Math.abs(scene4Progress - 0.82) * 8);
   const gridOpacity = Math.max(0, (scene4Progress - 0.70) * 6.5);
 
-  const activeSceneIndex = Math.min(6, Math.floor(scrollProgress * 7.2));
+  const activeSceneIndex = Math.min(5, Math.floor(scrollProgress * 6.1));
 
   const contactLinks = [
     { label: "Email", value: "chrisbuilds.dev@gmail.com", href: "mailto:chrisbuilds.dev@gmail.com?subject=Project Inquiry", icon: <Mail className="w-4 h-4 text-white/40" strokeWidth={1} /> },
@@ -146,10 +166,10 @@ export default function Home() {
 
           {/* Fixed Scroll Navigation Indicator */}
           <div className="fixed top-1/2 right-8 -translate-y-1/2 z-50 hidden md:flex flex-col gap-5">
-            {Array.from({ length: 7 }).map((_, i) => (
+            {Array.from({ length: 6 }).map((_, i) => (
               <button
                 key={i}
-                onClick={() => window.scrollTo({ top: (i / 7) * (document.documentElement.scrollHeight - window.innerHeight), behavior: "smooth" })}
+                onClick={() => window.scrollTo({ top: (i / 6) * (document.documentElement.scrollHeight - window.innerHeight), behavior: "smooth" })}
                 className={`w-1.5 h-1.5 rounded-full transition-all duration-500 border ${
                   activeSceneIndex === i 
                     ? "bg-white border-white scale-125 shadow-[0_0_10px_#fff]" 
@@ -185,30 +205,56 @@ export default function Home() {
               </div>
             </div>
 
-            {/* SCENE 2: WHO WE ARE */}
+            {/* SCENE 2: PHILOSOPHY */}
             <div
               style={getSceneStyle(1)}
               className="fixed inset-0 flex flex-col items-center justify-center p-6 text-center"
             >
               <span className="text-[10px] text-white/30 uppercase tracking-[0.35em] font-mono mb-8">
-                Vision
+                Philosophy
               </span>
-              <div className="flex flex-col gap-6 items-center justify-center">
+              <div className="flex flex-col gap-6 items-center justify-center relative w-full max-w-4xl min-h-[160px]">
+                
+                {/* Statement 1 */}
                 <h2 
-                  style={{ opacity: stepOpacity0, transition: "opacity 150ms ease-out" }}
-                  className="text-2xl md:text-5xl font-black uppercase tracking-premium max-w-3xl text-white font-sans"
+                  style={{
+                    opacity: stepOpacity0,
+                    filter: `blur(${(1.0 - stepOpacity0) * 12}px)`,
+                    transform: `translateY(${(1.0 - stepOpacity0) * 15}px)`,
+                    display: stepOpacity0 > 0.01 ? "block" : "none",
+                    transition: "opacity 180ms ease-out, filter 180ms ease-out, transform 180ms ease-out"
+                  }}
+                  className="text-2xl md:text-5xl font-black uppercase tracking-premium max-w-3xl text-white font-sans absolute"
                 >
-                  We don't build websites.
+                  We don't build websites.<br />
+                  <span className="text-white/60">We build first impressions.</span>
                 </h2>
+
+                {/* Statement 2 */}
                 <h2 
-                  style={{ opacity: stepOpacity1, transition: "opacity 150ms ease-out" }}
-                  className="text-2xl md:text-5xl font-black uppercase tracking-premium max-w-3xl text-white/60 font-sans"
+                  style={{
+                    opacity: stepOpacity1,
+                    filter: `blur(${(1.0 - stepOpacity1) * 12}px)`,
+                    transform: `translateY(${(1.0 - stepOpacity1) * 15}px)`,
+                    display: stepOpacity1 > 0.01 ? "block" : "none",
+                    transition: "opacity 180ms ease-out, filter 180ms ease-out, transform 180ms ease-out"
+                  }}
+                  className="text-2xl md:text-5xl font-black uppercase tracking-premium max-w-3xl text-white font-serif absolute"
                 >
-                  We build first impressions.
+                  <span className="font-pinyon text-3xl md:text-5xl text-white/80 lowercase tracking-normal block mb-4">Every pixel matters.</span>
+                  Every interaction tells a story.
                 </h2>
+
+                {/* Statement 3 */}
                 <h2 
-                  style={{ opacity: stepOpacity2, transition: "opacity 150ms ease-out" }}
-                  className="text-2xl md:text-5xl font-black uppercase tracking-premium max-w-4xl text-white leading-none font-serif"
+                  style={{
+                    opacity: stepOpacity2,
+                    filter: `blur(${(1.0 - stepOpacity2) * 12}px)`,
+                    transform: `translateY(${(1.0 - stepOpacity2) * 15}px)`,
+                    display: stepOpacity2 > 0.01 ? "block" : "none",
+                    transition: "opacity 180ms ease-out, filter 180ms ease-out, transform 180ms ease-out"
+                  }}
+                  className="text-2xl md:text-5xl font-black uppercase tracking-premium max-w-4xl text-white leading-none font-serif absolute"
                 >
                   <span className="font-pinyon text-3xl md:text-5xl text-white/80 lowercase tracking-normal block mb-4">Luxury is an experience,</span>
                   <span className="logo-shine-text">not a feature.</span>
@@ -216,7 +262,7 @@ export default function Home() {
               </div>
             </div>
 
-            {/* SCENE 3: WHAT WE BUILD */}
+            {/* SCENE 3: SERVICES */}
             <div
               style={getSceneStyle(2)}
               className="fixed inset-0 flex flex-col justify-center px-8 md:px-24"
@@ -268,19 +314,37 @@ export default function Home() {
                   className="flex flex-col gap-4 text-center absolute"
                 >
                   <h2 
-                    style={{ opacity: ringOpacity0, transition: "opacity 150ms ease-out" }}
+                    style={{
+                      opacity: ringOpacity0,
+                      filter: `blur(${(1.0 - ringOpacity0) * 12}px)`,
+                      transform: `translateY(${(1.0 - ringOpacity0) * 15}px)`,
+                      display: ringOpacity0 > 0.01 ? "block" : "none",
+                      transition: "opacity 180ms ease-out, filter 180ms ease-out, transform 180ms ease-out"
+                    }}
                     className="text-xl md:text-4xl font-black uppercase tracking-premium text-white font-serif"
                   >
                     <span className="font-pinyon text-2xl md:text-4xl text-white/80 lowercase tracking-normal block mb-2">Crafted with precision.</span>
                   </h2>
                   <h2 
-                    style={{ opacity: ringOpacity1, transition: "opacity 150ms ease-out" }}
+                    style={{
+                      opacity: ringOpacity1,
+                      filter: `blur(${(1.0 - ringOpacity1) * 12}px)`,
+                      transform: `translateY(${(1.0 - ringOpacity1) * 15}px)`,
+                      display: ringOpacity1 > 0.01 ? "block" : "none",
+                      transition: "opacity 180ms ease-out, filter 180ms ease-out, transform 180ms ease-out"
+                    }}
                     className="text-xl md:text-4xl font-black uppercase tracking-premium text-white/75 font-serif"
                   >
                     <span className="font-pinyon text-2xl md:text-4xl text-white/60 lowercase tracking-normal block mb-2 font-light">Designed to be remembered.</span>
                   </h2>
                   <h2 
-                    style={{ opacity: ringOpacity2, transition: "opacity 150ms ease-out" }}
+                    style={{
+                      opacity: ringOpacity2,
+                      filter: `blur(${(1.0 - ringOpacity2) * 12}px)`,
+                      transform: `translateY(${(1.0 - ringOpacity2) * 15}px)`,
+                      display: ringOpacity2 > 0.01 ? "block" : "none",
+                      transition: "opacity 180ms ease-out, filter 180ms ease-out, transform 180ms ease-out"
+                    }}
                     className="text-xl md:text-4xl font-black uppercase tracking-premium text-white/50 font-sans"
                   >
                     Built to perform.
@@ -312,24 +376,9 @@ export default function Home() {
               </div>
             </div>
 
-            {/* SCENE 5: PHILOSOPHY */}
+            {/* SCENE 5: FEATURED WORK */}
             <div
               style={getSceneStyle(4)}
-              className="fixed inset-0 flex flex-col items-center justify-center p-6 text-center"
-            >
-              <span className="text-[10px] text-white/30 uppercase tracking-[0.35em] font-mono mb-8">
-                Philosophy
-              </span>
-              <h2 className="text-3xl md:text-6xl font-black uppercase tracking-premium leading-tight text-white max-w-4xl font-serif">
-                <span className="font-pinyon text-4xl md:text-6xl text-white/80 lowercase tracking-normal block mb-4">Every pixel matters.</span>
-                Every interaction tells a story.<br />
-                <span className="logo-shine-text">Every experience leaves an impression.</span>
-              </h2>
-            </div>
-
-            {/* SCENE 6: FEATURED WORK */}
-            <div
-              style={getSceneStyle(5)}
               className="fixed inset-0 flex flex-col justify-center px-8 md:px-24"
             >
               <div className="max-w-4xl pointer-events-auto">
@@ -362,9 +411,9 @@ export default function Home() {
               </div>
             </div>
 
-            {/* SCENE 7: CONTACT */}
+            {/* SCENE 6: CONTACT */}
             <div
-              style={getSceneStyle(6)}
+              style={getSceneStyle(5)}
               className="fixed inset-0 flex flex-col md:flex-row items-center justify-between p-8 md:p-24 gap-12"
             >
               <div className="flex flex-col text-left max-w-xl">
@@ -467,7 +516,7 @@ export default function Home() {
                   <span className="text-[9px] text-white/30 uppercase tracking-[0.3em] font-mono block mb-2">
                     {activeProject.category}
                   </span>
-                  <h3 className="text-3xl font-black uppercase tracking-premium text-white leading-tight mb-6">
+                  <h3 className="text-3xl font-black uppercase tracking-premium text-white leading-tight mb-6 font-sans">
                     {activeProject.title}
                   </h3>
 
