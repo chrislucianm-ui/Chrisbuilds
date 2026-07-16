@@ -252,6 +252,8 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
       opacity: 0.95,
     });
     const earthMesh = new THREE.Mesh(earthGeom, earthMat);
+    // Position earth stationary on left center
+    earthMesh.position.set(-1.8, 0, 0);
     scene.add(earthMesh);
 
     // Glowing Atmospheric Outer Shell (Sharp intensity gradient)
@@ -299,169 +301,28 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
       transparent: true,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
-      opacity: 0.75,
+      opacity: 0.65,
     });
     const sunriseGlow = new THREE.Mesh(sunriseGeom, sunriseMat);
+    // Align with earth position
+    sunriseGlow.position.set(1.0, -1.8, -1.0);
     scene.add(sunriseGlow);
 
-    // ----------------------------------------------------
-    // POPULATE LIVING SPACE UNIVERSE WITH REAL 3D OBJECTS
-    // ----------------------------------------------------
-
-    // A. Orbiting Chrome Rings in background
-    const chromeMat = new THREE.MeshStandardMaterial({
-      color: 0xffffff,
-      metalness: 1.0,
-      roughness: 0.02,
-    });
-    const ringsGroup = new THREE.Group();
-    const ring1 = new THREE.Mesh(new THREE.TorusGeometry(12.0, 0.1, 16, 100), chromeMat);
-    const ring2 = new THREE.Mesh(new THREE.TorusGeometry(18.0, 0.08, 16, 100), chromeMat);
-    ringsGroup.add(ring1, ring2);
-    ringsGroup.position.set(0, 0, -45);
-    scene.add(ringsGroup);
-
-    // B. Floating Refractive Glass Crystals
-    const glassMat = new THREE.MeshPhysicalMaterial({
-      color: 0xffffff,
-      transparent: true,
-      opacity: 0.22,
-      roughness: 0.02,
-      metalness: 0.1,
-      transmission: 0.98,
-      ior: 1.62,
-      thickness: 1.8,
-      side: THREE.DoubleSide,
-      depthWrite: true,
-    });
-    const crystalsGroup = new THREE.Group();
-    const crystalGeom = new THREE.OctahedronGeometry(0.35);
-    const crystals = Array.from({ length: 6 }).map((_, idx) => {
-      const mesh = new THREE.Mesh(crystalGeom, glassMat);
-      const angle = (idx / 6) * Math.PI * 2;
-      mesh.position.set(
-        Math.cos(angle) * (14 + Math.random() * 5),
-        Math.sin(angle) * (7 + Math.random() * 3),
-        -Math.random() * 30 - 20
-      );
-      crystalsGroup.add(mesh);
-      return {
-        mesh,
-        rotSpeedX: 0.008 + Math.random() * 0.015,
-        rotSpeedY: 0.008 + Math.random() * 0.015,
-        floatOffset: idx * 1.8
-      };
-    });
-    scene.add(crystalsGroup);
-
-    // C. Satellites / Moons far in background
-    const satMat = new THREE.MeshStandardMaterial({
-      color: 0x141414,
-      roughness: 0.85,
-      metalness: 0.1
-    });
-    const satGeom = new THREE.SphereGeometry(0.4, 16, 16);
-    const sat1 = new THREE.Mesh(satGeom, satMat);
-    sat1.position.set(-22, 12, -90);
-    const sat2 = new THREE.Mesh(satGeom, satMat);
-    sat2.position.set(24, -12, -75);
-    scene.add(sat1, sat2);
-
-    // D. Four Volumetric 3D Glass Display Panels for Page 2
-    const cardsGroup = new THREE.Group();
-    scene.add(cardsGroup);
-
-    const createCardTexture = (title: string, desc: string) => {
-      const cardCanvas = document.createElement("canvas");
-      cardCanvas.width = 512;
-      cardCanvas.height = 340;
-      const ctx = cardCanvas.getContext("2d");
-      if (ctx) {
-        ctx.fillStyle = "rgba(10, 10, 10, 0.95)";
-        ctx.fillRect(0, 0, 512, 340);
-
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
-        ctx.lineWidth = 4;
-        ctx.strokeRect(8, 8, 496, 324);
-
-        ctx.fillStyle = "#ffffff";
-        ctx.font = "bold 26px sans-serif";
-        ctx.fillText(title.toUpperCase(), 35, 140);
-
-        ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
-        ctx.font = "14px monospace";
-        ctx.fillText(desc.toUpperCase(), 35, 190);
-
-        ctx.fillStyle = "rgba(255, 255, 255, 0.15)";
-        ctx.font = "10px monospace";
-        ctx.fillText("01 / PRECISION", 35, 260);
-      }
-      const tex = new THREE.CanvasTexture(cardCanvas);
-      tex.generateMipmaps = false;
-      tex.minFilter = THREE.LinearFilter;
-      return tex;
-    };
-
-    const cardGeom = new THREE.BoxGeometry(3.6, 2.4, 0.14);
-    const servicesData = [
-      { title: "Premium Websites", desc: "Crafted to leave a lasting impression.", x: -4.0, y: 1.9 },
-      { title: "Web Applications", desc: "Powerful systems. Beautifully experienced.", x: 4.0, y: 1.9 },
-      { title: "Mobile Applications", desc: "Designed for every touch.", x: -4.0, y: -1.9 },
-      { title: "AI Solutions", desc: "Intelligence, seamlessly integrated.", x: 4.0, y: -1.9 }
-    ];
-
-    const cardMeshes = servicesData.map((data, i) => {
-      const frontTex = createCardTexture(data.title, data.desc);
-      const frontMat = new THREE.MeshPhysicalMaterial({
-        map: frontTex,
-        roughness: 0.1,
-        metalness: 0.1,
-        clearcoat: 1.0,
-        clearcoatRoughness: 0.1
-      });
-      const mats = [glassMat, glassMat, glassMat, glassMat, frontMat, glassMat];
-      const mesh = new THREE.Mesh(cardGeom, mats);
-      mesh.position.set(data.x, data.y, -30);
-      mesh.userData = { index: i, baseX: data.x, baseY: data.y };
-      cardsGroup.add(mesh);
-      return mesh;
-    });
-
-    // E. 3D Glass Contact Form Backplate
-    const contactPanelGeom = new THREE.BoxGeometry(11.2, 7.8, 0.18);
-    const contactPanelMesh = new THREE.Mesh(contactPanelGeom, glassMat);
-    contactPanelMesh.position.set(999, 999, 999); // Offscreen until Page 3
-    scene.add(contactPanelMesh);
-
-    // 9. Spline Paths for Cinematic Continuity (3 control points for 3 scenes)
-    const cameraPath = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(0, 0, 10),      // Scene 1: Hero (t = 0.0)
-      new THREE.Vector3(0, 2.0, 18),    // Scene 2: What I Build (t = 0.5)
-      new THREE.Vector3(2.2, -0.6, 11)  // Scene 3: Contact Earth (t = 1.0)
-    ]);
-
-    const targetPath = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(0, 0, 0),       // Scene 1
-      new THREE.Vector3(-2.0, 1.0, 0),  // Scene 2
-      new THREE.Vector3(1.5, -0.6, 0)   // Scene 3
-    ]);
-
-    // 10. Interactive Mouse coordinates & Raycasting
+    // 9. Interactive Mouse coordinates
     const mouse = new THREE.Vector2(0, 0);
     const targetCamera = { x: 0, y: 0 };
-    const raycaster = new THREE.Raycaster();
 
     const handleMouseMove = (e: MouseEvent) => {
       mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
       mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
       if (!isMobile) {
-        targetCamera.x = mouse.x * 0.55;
-        targetCamera.y = mouse.y * 0.4;
+        targetCamera.x = mouse.x * 0.45;
+        targetCamera.y = mouse.y * 0.3;
       }
     };
     window.addEventListener("mousemove", handleMouseMove);
 
-    // 11. Animation Loop
+    // 10. Animation Loop
     let animationFrameId: number;
     let lerpedScroll = 0;
     const clock = new THREE.Clock();
@@ -471,20 +332,17 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
 
       const time = clock.getElapsedTime();
 
-      // Smooth scroll lerping for liquid-fluid transitions
+      // Smooth scroll lerping for parallax drift
       lerpedScroll += (scrollRef.current - lerpedScroll) * 0.05;
 
       const tVal = Math.max(0.0, Math.min(1.0, lerpedScroll));
 
-      // Query spline paths for continuous position and target coordinates
-      const camPos = cameraPath.getPointAt(tVal);
-      const lookTarget = targetPath.getPointAt(tVal);
+      // 1. Fixed camera positioning with Y-parallax scroll drift
+      camera.position.set(0, -tVal * 4.5, 10);
 
-      camera.position.copy(camPos);
-      
       // Inject camera breathing animation
-      camera.position.y += Math.sin(time * 0.5) * 0.08;
-      camera.position.z += Math.sin(time * 0.05) * 0.25;
+      camera.position.y += Math.sin(time * 0.45) * 0.05;
+      camera.position.z += Math.sin(time * 0.05) * 0.2;
 
       // Inject micro mouse-relative drift coordinates (desktop only)
       if (!isMobile) {
@@ -492,144 +350,37 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
         camera.position.y += targetCamera.y;
       }
       
-      camera.lookAt(lookTarget);
+      camera.lookAt(0, -tVal * 4.5, 0);
 
       // Parallax-offset the huge background backdrop mesh to keep it centered and realistic
       bgMesh.position.x = camera.position.x * 0.95;
-      bgMesh.position.y = camera.position.y * 0.95;
+      bgMesh.position.y = camera.position.y * 0.95 - tVal * 2.0;
 
       const baseZoom = 1.0 + Math.sin(time * 0.08) * 0.008;
 
       // ----------------------------------------------------
-      // WEBGL MESH ACTIVATION BELL CURVES
+      // WEBGL BACKGROUND ANIMATIONS
       // ----------------------------------------------------
 
-      // 1. Milky Way shifting & slow background rotation
-      bgMesh.rotation.z = time * 0.0006;
+      // Milky Way shifting & slow background rotation
+      bgMesh.rotation.z = time * 0.0004;
 
-      // 2. Volumetric atmospheric glow rotations
+      // Volumetric atmospheric glow rotations
       atmosMesh.rotation.y = -time * 0.006;
       atmosMesh.rotation.z = time * 0.003;
 
-      // 3. Earth active profile & pulsating sunrise glow
-      let earthActive = 0;
+      // Pulsating sunrise glow
       const pulseFactor = 0.85 + Math.sin(time * 0.45) * 0.08;
+      sunriseMat.opacity = 0.62 * pulseFactor;
 
-      if (tVal < 0.33) {
-        // Hero: active and stationary
-        earthActive = 1.0;
-        earthMesh.position.set(0, 0, 0);
-        sunriseGlow.position.set(2.8, -1.8, -1.0);
-        sunriseMat.opacity = 0.62 * pulseFactor;
-      } else if (tVal < 0.66) {
-        // What I Build: slide down and out
-        const slide = (tVal - 0.33) / 0.33;
-        earthActive = 1.0 - slide;
-        earthMesh.position.set(-slide * 8, -slide * 8, 0);
-        sunriseGlow.position.set(2.8 - slide * 8, -1.8 - slide * 8, -1.0);
-        sunriseMat.opacity = 0.62 * (1.0 - slide) * pulseFactor;
-      } else {
-        // Contact: slide back in on the right
-        const slide = (tVal - 0.66) / 0.34;
-        earthActive = slide;
-        earthMesh.position.set(1.5 + (1.0 - slide) * 3.0, -0.8, 0);
-        sunriseGlow.position.set(4.3 + (1.0 - slide) * 3.0, -2.6, -1.0);
-        // Sunrise becomes brighter on contact scene
-        sunriseMat.opacity = 0.92 * slide * pulseFactor;
-      }
-
-      // Earth camera proximity scale zoom on scroll progress
-      if (tVal >= 0.66) {
-        const zoomSlide = (tVal - 0.66) / 0.34;
-        const scaleVal = earthActive * (1.0 + zoomSlide * 0.18) * baseZoom;
-        earthMesh.scale.set(scaleVal, scaleVal, scaleVal);
-      } else {
-        earthMesh.scale.set(earthActive * baseZoom, earthActive * baseZoom, earthActive * baseZoom);
-      }
-
-      // 4. Torus rings rotation
-      ringsGroup.rotation.y = time * 0.015;
-      ringsGroup.rotation.x = time * 0.008;
-
-      // 5. Glass crystals rotation & floating
-      crystals.forEach((c) => {
-        c.mesh.rotation.x += c.rotSpeedX;
-        c.mesh.rotation.y += c.rotSpeedY;
-        c.mesh.position.y += Math.sin(time * 0.5 + c.floatOffset) * 0.003;
-      });
-
-      // 6. Far satellites drift
-      sat1.position.x += Math.sin(time * 0.03) * 0.005;
-      sat2.position.x -= Math.sin(time * 0.02) * 0.005;
-
-      // 7. Raycast 3D display panel hover check (Desktop only)
-      let hoveredCardIndex: number | null = null;
-      if (!isMobile && tVal >= 0.33 && tVal <= 0.66) {
-        raycaster.setFromCamera(mouse, camera);
-        const intersects = raycaster.intersectObjects(cardsGroup.children);
-        if (intersects.length > 0) {
-          const mesh = intersects[0].object as THREE.Mesh;
-          if (mesh.userData && typeof mesh.userData.index === "number") {
-            hoveredCardIndex = mesh.userData.index;
-          }
-        }
-      }
-
-      // 8. Position, scale, and rotate Page 2 Display Panels
-      let cardActiveScale = 0;
-      if (tVal >= 0.33 && tVal <= 0.66) {
-        cardActiveScale = Math.cos(((tVal - 0.5) / 0.165) * Math.PI * 0.5);
-      }
-      cardsGroup.scale.set(cardActiveScale, cardActiveScale, cardActiveScale);
-      cardsGroup.position.z = (1.0 - cardActiveScale) * -15;
-
-      cardMeshes.forEach((mesh) => {
-        const isHovered = hoveredCardIndex === mesh.userData.index;
-        const targetScale = isHovered ? 1.05 : 1.0;
-        const targetRotX = isHovered ? mouse.y * 0.12 : 0;
-        const targetRotY = isHovered ? mouse.x * 0.12 : 0;
-
-        // Smoothly scale hovered meshes
-        mesh.scale.x += (targetScale - mesh.scale.x) * 0.15;
-        mesh.scale.y += (targetScale - mesh.scale.y) * 0.15;
-        mesh.scale.z += (targetScale - mesh.scale.z) * 0.15;
-
-        // Apply organic floating cycle to rotation
-        const floatRotX = Math.sin(time * 0.6 + mesh.userData.index) * 0.03;
-        const floatRotY = Math.cos(time * 0.4 + mesh.userData.index) * 0.03;
-
-        mesh.rotation.x += (targetRotX + floatRotX - mesh.rotation.x) * 0.12;
-        mesh.rotation.y += (targetRotY + floatRotY - mesh.rotation.y) * 0.12;
-      });
-
-      // 9. Position Page 3 Contact glass backplate relative to camera
-      if (tVal >= 0.66) {
-        const contactActive = (tVal - 0.66) / 0.34;
-        
-        // Project panel directly in front of camera
-        const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
-        const targetPos = camera.position.clone().add(forward.multiplyScalar(4.6));
-        
-        contactPanelMesh.position.copy(targetPos);
-        contactPanelMesh.quaternion.copy(camera.quaternion);
-        
-        // Add slow float drift
-        contactPanelMesh.position.y += Math.sin(time * 0.5) * 0.08;
-        
-        contactPanelMesh.scale.set(contactActive, contactActive, contactActive);
-      } else {
-        contactPanelMesh.position.set(999, 999, 999);
-      }
+      earthMesh.scale.set(baseZoom, baseZoom, baseZoom);
 
       // ----------------------------------------------------
       // STARFIELD TWINKLE & TRAVEL SPEED ANIMATION
       // ----------------------------------------------------
       const posArr = starGeom.attributes.position.array as Float32Array;
-      const isWarpSpeed = tVal >= 0.33 && tVal < 0.66;
-      const warpSpeedFactor = isWarpSpeed ? 8.0 : 1.0;
-
       for (let i = 0; i < starCount; i++) {
-        posArr[i * 3 + 2] += starSpeeds[i] * warpSpeedFactor;
+        posArr[i * 3 + 2] += starSpeeds[i] * 0.8;
         if (posArr[i * 3 + 2] > 15) {
           posArr[i * 3 + 2] = -120;
           posArr[i * 3] = (Math.random() - 0.5) * 120;
@@ -663,7 +414,7 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
       particlesGeom.attributes.position.needsUpdate = true;
 
       // ----------------------------------------------------
-      // UPDATE SHOOTING STARS
+      // UPDATE SHOOTING STARS (Rare occurrence factor 0.004)
       // ----------------------------------------------------
       shootingStars.forEach(star => {
         if (star.life < star.maxLife) {
@@ -676,14 +427,14 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
             (star.mesh.material as THREE.LineBasicMaterial).opacity = (star.maxLife - star.life) / 10;
           }
         } else {
-          if (Math.random() < 0.008) {
+          if (Math.random() < 0.004) {
             triggerShootingStar(star);
           }
         }
       });
 
       // Gently rotate Earth
-      earthMesh.rotation.y = time * 0.015;
+      earthMesh.rotation.y = time * 0.012;
 
       renderer.render(scene, camera);
     };
@@ -730,25 +481,6 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
       bgGeom.dispose();
       bgMat.dispose();
       bgTexture.dispose();
-      chromeMat.dispose();
-      ring1.geometry.dispose();
-      ring2.geometry.dispose();
-      glassMat.dispose();
-      crystalGeom.dispose();
-      satGeom.dispose();
-      satMat.dispose();
-      cardGeom.dispose();
-      cardMeshes.forEach((mesh) => {
-        mesh.geometry.dispose();
-        if (Array.isArray(mesh.material)) {
-          mesh.material.forEach((mat) => {
-            mat.dispose();
-            if ("map" in mat && mat.map) mat.map.dispose();
-          });
-        }
-      });
-      contactPanelGeom.dispose();
-      contactPanelMesh.geometry.dispose();
     };
   }, []);
 
