@@ -1,35 +1,11 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
-import { ArrowUpRight, Mail, Phone, MessageSquare, Send } from "lucide-react";
+import { ArrowUpRight, Mail, MessageSquare } from "lucide-react";
 import LoadingScreen from "@/components/LoadingScreen";
 import HeroBackgroundCanvas from "@/components/HeroBackgroundCanvas";
 import Lenis from "lenis";
-
-interface ServiceCard {
-  title: string;
-  description: string;
-}
-
-const SERVICES: ServiceCard[] = [
-  {
-    title: "Premium Websites",
-    description: "Crafted to leave a lasting impression."
-  },
-  {
-    title: "Web Applications",
-    description: "Powerful systems. Beautifully experienced."
-  },
-  {
-    title: "Mobile Applications",
-    description: "Designed for every touch."
-  },
-  {
-    title: "AI Solutions",
-    description: "Intelligence, seamlessly integrated."
-  }
-];
 
 function TiltCard({ children, className }: { children: React.ReactNode; className?: string }) {
   const x = useMotionValue(0);
@@ -253,9 +229,13 @@ export default function Home() {
             {/* PAGE 2: WHAT I BUILD */}
             <div
               style={getSceneStyle(1)}
-              className="fixed inset-0 flex flex-col justify-center px-6 md:px-16 max-w-5xl mx-auto"
+              className="fixed inset-0 flex flex-col justify-between p-8 md:p-24 items-center"
             >
-              <div className="w-full text-center mb-12">
+              {/* Empty top padding */}
+              <div className="h-4" />
+
+              {/* Title Section (Floating, high contrast, clean) */}
+              <div className="w-full text-center max-w-xl">
                 <span className="text-[10px] text-white/30 uppercase tracking-[0.35em] font-mono mb-4 block">
                   Capabilities
                 </span>
@@ -265,27 +245,8 @@ export default function Home() {
                 <div className="silver-divider max-w-[80px] mx-auto mt-4" />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full pointer-events-auto">
-                {SERVICES.map((service, idx) => (
-                  <TiltCard key={service.title}>
-                    <div className={`glass-card p-8 rounded-3xl border border-white/5 hover:border-white/20 hover:bg-white/[0.03] transition-all duration-500 flex flex-col justify-between h-44 text-left relative group float-card-${idx}`}>
-                      <div className="absolute inset-0 shimmer-line opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
-                      
-                      <h3 className="text-lg md:text-xl font-black uppercase tracking-wider text-white group-hover:logo-shine-text transition-colors">
-                        {service.title}
-                      </h3>
-                      
-                      <p className="text-[10px] text-white/40 tracking-[0.18em] leading-relaxed font-mono uppercase mt-4">
-                        {service.description}
-                      </p>
-
-                      <div className="border-t border-white/5 pt-4 text-[7px] text-white/20 font-mono uppercase tracking-[0.2em]">
-                        01 / Precision
-                      </div>
-                    </div>
-                  </TiltCard>
-                ))}
-              </div>
+              {/* Empty space below where the real 3D cards render */}
+              <div className="h-12" />
             </div>
 
             {/* PAGE 3: LET'S BUILD SOMETHING UNFORGETTABLE */}
