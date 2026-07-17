@@ -6,11 +6,6 @@ import { Mail, MessageSquare } from "lucide-react";
 import LoadingScreen from "@/components/LoadingScreen";
 import Lenis from "lenis";
 import Image from "next/image";
-import dynamic from "next/dynamic";
-
-const ThreeCanvas = dynamic(() => import("@/components/ThreeCanvas"), {
-  ssr: false,
-});
 
 interface ServiceCard {
   title: string;
@@ -32,44 +27,9 @@ const SERVICES: ServiceCard[] = [
   },
   {
     title: "AI Solutions",
-    description: "Futuristic AGI Core core sphere surrounded by floating neural particles. Custom cognitive model tuning."
+    description: "Intelligence, seamlessly integrated. Cognitive neural models and custom model tuning."
   }
 ];
-
-function TiltCard({ children, className }: { children: React.ReactNode; className?: string }) {
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-
-  // Smooth springs for high-end luxury tilt mechanics
-  const rotateX = useSpring(useTransform(y, [-0.5, 0.5], [6, -6]), { damping: 25, stiffness: 150 });
-  const rotateY = useSpring(useTransform(x, [-0.5, 0.5], [-6, 6]), { damping: 25, stiffness: 150 });
-
-  const handleMouseMove = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    const rect = event.currentTarget.getBoundingClientRect();
-    const width = rect.width;
-    const height = rect.height;
-    const mouseX = event.clientX - rect.left - width / 2;
-    const mouseY = event.clientY - rect.top - height / 2;
-    x.set(mouseX / width);
-    y.set(mouseY / height);
-  };
-
-  const handleMouseLeave = () => {
-    x.set(0);
-    y.set(0);
-  };
-
-  return (
-    <motion.div
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
-      className={className}
-    >
-      {children}
-    </motion.div>
-  );
-}
 
 export default function Home() {
   const [loadingComplete, setLoadingComplete] = useState(false);
@@ -77,13 +37,14 @@ export default function Home() {
 
   // Framer Motion native useScroll hook tracks progress on the GPU without triggering any React state changes or re-renders
   const { scrollYProgress } = useScroll();
-  const yParallax = useTransform(scrollYProgress, [0, 1], ["0%", "-12%"]);
 
-  // Parallax offsets for planets (Desktop Only)
-  const yPlanet1 = useTransform(scrollYProgress, [0, 0.4], [0, -45]);
-  const yPlanet2 = useTransform(scrollYProgress, [0.1, 0.6], [45, -45]);
-  const yPlanet3 = useTransform(scrollYProgress, [0.3, 0.8], [45, -45]);
-  const yPlanet4 = useTransform(scrollYProgress, [0.5, 1.0], [45, 0]);
+  // Continuous space background scroll pan (Desktop Only):
+  // Pans the Earth horizon down out of view in the middle, and pulls it back up as the user approaches Contact at the bottom
+  const yBackdrop = useTransform(
+    scrollYProgress,
+    [0, 0.4, 0.6, 1],
+    ["0%", "-25%", "-25%", "0%"]
+  );
 
   // Detect mobile device layout on mount to optimize scroll and animations
   useEffect(() => {
@@ -169,24 +130,38 @@ export default function Home() {
       {loadingComplete && (
         <div className="relative min-h-screen text-white selection:bg-white/10 selection:text-white overflow-x-hidden font-sans">
           
-          {/* Continuous Fixed Background Parallax (Desktop Only, Optimized with next/image WebP compression and GPU values) */}
+          {/* Continuous Fixed Background Parallax (Desktop Only, WebP compressed, GPU-mapped) */}
           <div className="fixed inset-0 w-full h-full z-0 pointer-events-none overflow-hidden bg-black hidden md:block">
             <motion.div 
               style={{
-                y: yParallax,
+                y: yBackdrop,
                 scale: 1.15
               }}
               className="w-full h-[115%] absolute top-0 left-0"
             >
               <Image
                 src="/hero-bg-desktop.png"
-                alt="Cinematic Space Background"
+                alt="Cinematic Space Background Desktop"
                 fill
                 priority
                 sizes="100vw"
                 className="object-cover object-center"
               />
             </motion.div>
+          </div>
+
+          {/* Continuous Fixed Background (Mobile Only, Static, WebP compressed to guarantee 60 FPS) */}
+          <div className="fixed inset-0 w-full h-full z-0 pointer-events-none overflow-hidden bg-black block md:hidden">
+            <div className="w-full h-full absolute top-0 left-0">
+              <Image
+                src="/hero-bg-mobile.png"
+                alt="Cinematic Space Background Mobile"
+                fill
+                priority
+                sizes="100vw"
+                className="object-cover object-center"
+              />
+            </div>
           </div>
 
           {/* Header Brand */}
@@ -220,18 +195,6 @@ export default function Home() {
               id="home"
               className="min-h-screen flex flex-col justify-center items-center md:items-start px-6 md:px-12 lg:px-16 text-center md:text-left relative z-10 max-w-7xl mx-auto w-full"
             >
-              {/* Mobile-only background (Static, 100vh, full bleed, optimized with next/image WebP compression) */}
-              <div className="absolute inset-0 w-screen h-screen -z-10 block md:hidden left-1/2 -translate-x-1/2 pointer-events-none">
-                <Image
-                  src="/hero-bg-mobile.png"
-                  alt="Cinematic Space Background Mobile"
-                  fill
-                  priority
-                  sizes="100vw"
-                  className="object-cover object-center"
-                />
-              </div>
-
               {/* main Editorial Heading with Staggered Entrance (Bypassed on mobile to avoid layout shifts) */}
               <motion.h1 
                 initial={isMobileDevice ? {} : { opacity: 0, y: 30 }}
@@ -288,135 +251,48 @@ export default function Home() {
               </div>
             </section>
 
-            {/* PAGE 2: WHAT I BUILD (LUXURY DIGITAL SHOWCASE - 4 FULL SCREEN CELESTIAL SECTIONS) */}
-            <div id="services" className="w-full relative z-10">
-              
-              {/* Capability 1: Premium Websites */}
-              <section className="min-h-screen w-full max-w-7xl mx-auto px-6 md:px-12 flex flex-col md:flex-row items-center justify-between relative overflow-hidden py-24">
-                {/* Local space dust/twinkle particles */}
-                <div className="absolute inset-0 pointer-events-none overflow-hidden select-none -z-10 hidden md:block">
-                  <div className="twinkle-star top-1/4 left-10" />
-                  <div className="twinkle-star top-3/4 right-12" style={{ animationDelay: "2s" }} />
-                </div>
-                
-                {/* Left Content */}
-                <motion.div 
-                  initial={isMobileDevice ? {} : { opacity: 0, x: -30 }}
-                  whileInView={isMobileDevice ? {} : { opacity: 1, x: 0 }}
-                  viewport={{ once: true, margin: "-12%" }}
-                  transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
-                  className="flex flex-col text-center md:text-left items-center md:items-start max-w-xl z-10 md:w-1/2"
-                >
-                  <span className="font-serif italic text-2xl md:text-4xl text-white/25 mb-4 block">01</span>
-                  <h3 className="text-4xl sm:text-5xl md:text-7xl font-black uppercase text-luxury-gloss leading-none tracking-wider heading-glow-strong">
-                    PREMIUM<br />WEBSITES
-                  </h3>
-                  <p className="text-[10px] md:text-xs text-white/40 tracking-[0.2em] leading-relaxed font-mono uppercase mt-6 max-w-sm">
-                    {SERVICES[0].description}
-                  </p>
-                </motion.div>
+            {/* PAGE 2: WHAT I BUILD (LUXURY DIGITAL SHOWCASE - TYPOGRAPHY STAGE FLOW) */}
+            <section
+              id="services"
+              className="py-32 px-6 md:px-12 max-w-5xl mx-auto w-full flex flex-col justify-center relative select-none"
+            >
+              <div className="w-full text-center mb-32">
+                <span className="font-mono text-[8px] uppercase tracking-[0.25em] text-white/30 block mb-4">
+                  Capabilities Showcase
+                </span>
+                <h2 className="text-3xl md:text-5xl font-black uppercase tracking-premium text-white leading-none heading-glow">
+                  WHAT I BUILD
+                </h2>
+              </div>
 
-                {/* Right Planet: Earth-like planet with sunrise glow */}
-                <motion.div 
-                  style={isMobileDevice ? {} : { y: yPlanet1 }}
-                  className="relative w-72 h-72 sm:w-96 sm:h-96 md:w-[480px] md:h-[480px] flex items-center justify-center mt-12 md:mt-0 md:w-1/2 select-none pointer-events-none"
-                >
-                  <div className="w-64 h-64 sm:w-80 sm:h-80 md:w-[400px] md:h-[400px] relative">
-                    <ThreeCanvas type="earth" />
-                  </div>
-                </motion.div>
-              </section>
+              <div className="flex flex-col gap-36 md:gap-48 w-full relative z-10">
+                {SERVICES.map((service, idx) => (
+                  <motion.div
+                    key={service.title}
+                    initial={isMobileDevice ? { opacity: 0, y: 15 } : { opacity: 0, y: 35, filter: "blur(12px)" }}
+                    whileInView={isMobileDevice ? { opacity: 1, y: 0 } : { opacity: 1, y: 0, filter: "blur(0px)" }}
+                    viewport={{ once: true, margin: "-12%" }}
+                    transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
+                    className="flex flex-col items-center justify-center text-center w-full max-w-3xl mx-auto"
+                  >
+                    {/* Chapter index label */}
+                    <span className="font-serif italic text-xl md:text-2xl text-white/20 tracking-wider mb-6 block">
+                      Chapter 0{idx + 1}
+                    </span>
 
-              {/* Capability 2: Web Applications */}
-              <section className="min-h-screen w-full max-w-7xl mx-auto px-6 md:px-12 flex flex-col md:flex-row-reverse items-center justify-between relative overflow-hidden py-24">
-                {/* Right Content */}
-                <motion.div 
-                  initial={isMobileDevice ? {} : { opacity: 0, x: 30 }}
-                  whileInView={isMobileDevice ? {} : { opacity: 1, x: 0 }}
-                  viewport={{ once: true, margin: "-12%" }}
-                  transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
-                  className="flex flex-col text-center md:text-right items-center md:items-end max-w-xl z-10 md:w-1/2"
-                >
-                  <span className="font-serif italic text-2xl md:text-4xl text-white/25 mb-4 block">02</span>
-                  <h3 className="text-4xl sm:text-5xl md:text-7xl font-black uppercase text-luxury-gloss leading-none tracking-wider heading-glow-strong">
-                    WEB<br />APPLICATIONS
-                  </h3>
-                  <p className="text-[10px] md:text-xs text-white/40 tracking-[0.2em] leading-relaxed font-mono uppercase mt-6 max-w-sm">
-                    {SERVICES[1].description}
-                  </p>
-                </motion.div>
+                    {/* Premium Bold Heading with Soft white glow */}
+                    <h3 className="text-4xl sm:text-5xl md:text-7xl font-black uppercase text-luxury-gloss leading-tight tracking-wider heading-glow-strong">
+                      {service.title}
+                    </h3>
 
-                {/* Left Planet: Saturn-inspired metallic ring planet */}
-                <motion.div 
-                  style={isMobileDevice ? {} : { y: yPlanet2 }}
-                  className="relative w-72 h-72 sm:w-80 sm:h-80 md:w-[420px] md:h-[420px] flex items-center justify-center mt-12 md:mt-0 md:w-1/2 select-none pointer-events-none"
-                >
-                  <div className="w-64 h-64 sm:w-80 sm:h-80 md:w-[380px] md:h-[380px] relative">
-                    <ThreeCanvas type="saturn" />
-                  </div>
-                </motion.div>
-              </section>
-
-              {/* Capability 3: Mobile Applications */}
-              <section className="min-h-screen w-full max-w-7xl mx-auto px-6 md:px-12 flex flex-col md:flex-row items-center justify-between relative overflow-hidden py-24">
-                {/* Left Content */}
-                <motion.div 
-                  initial={isMobileDevice ? {} : { opacity: 0, x: -30 }}
-                  whileInView={isMobileDevice ? {} : { opacity: 1, x: 0 }}
-                  viewport={{ once: true, margin: "-12%" }}
-                  transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
-                  className="flex flex-col text-center md:text-left items-center md:items-start max-w-xl z-10 md:w-1/2"
-                >
-                  <span className="font-serif italic text-2xl md:text-4xl text-white/25 mb-4 block">03</span>
-                  <h3 className="text-4xl sm:text-5xl md:text-7xl font-black uppercase text-luxury-gloss leading-none tracking-wider heading-glow-strong">
-                    MOBILE<br />APPLICATIONS
-                  </h3>
-                  <p className="text-[10px] md:text-xs text-white/40 tracking-[0.2em] leading-relaxed font-mono uppercase mt-6 max-w-sm">
-                    {SERVICES[2].description}
-                  </p>
-                </motion.div>
-
-                {/* Right Planet: Illuminated planet with city lights */}
-                <motion.div 
-                  style={isMobileDevice ? {} : { y: yPlanet3 }}
-                  className="relative w-72 h-72 sm:w-80 sm:h-80 md:w-[420px] md:h-[420px] flex items-center justify-center mt-12 md:mt-0 md:w-1/2 select-none pointer-events-none"
-                >
-                  <div className="w-64 h-64 sm:w-80 sm:h-80 md:w-[380px] md:h-[380px] relative">
-                    <ThreeCanvas type="mobile" />
-                  </div>
-                </motion.div>
-              </section>
-
-              {/* Capability 4: AI Solutions */}
-              <section className="min-h-screen w-full max-w-7xl mx-auto px-6 md:px-12 flex flex-col md:flex-row-reverse items-center justify-between relative overflow-hidden py-24">
-                {/* Right Content */}
-                <motion.div 
-                  initial={isMobileDevice ? {} : { opacity: 0, x: 30 }}
-                  whileInView={isMobileDevice ? {} : { opacity: 1, x: 0 }}
-                  viewport={{ once: true, margin: "-12%" }}
-                  transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
-                  className="flex flex-col text-center md:text-right items-center md:items-end max-w-xl z-10 md:w-1/2"
-                >
-                  <span className="font-serif italic text-2xl md:text-4xl text-white/25 mb-4 block">04</span>
-                  <h3 className="text-4xl sm:text-5xl md:text-7xl font-black uppercase text-luxury-gloss leading-none tracking-wider heading-glow-strong">
-                    AI<br />SOLUTIONS
-                  </h3>
-                  <p className="text-[10px] md:text-xs text-white/40 tracking-[0.2em] leading-relaxed font-mono uppercase mt-6 max-w-sm">
-                    {SERVICES[3].description}
-                  </p>
-                </motion.div>
-
-                {/* Left Planet: Chrome-black AGI core */}
-                <motion.div 
-                  style={isMobileDevice ? {} : { y: yPlanet4 }}
-                  className="relative w-72 h-72 sm:w-80 sm:h-80 md:w-[420px] md:h-[420px] flex items-center justify-center mt-12 md:mt-0 md:w-1/2 select-none pointer-events-none"
-                >
-                  <div className="w-64 h-64 sm:w-80 sm:h-80 md:w-[380px] md:h-[380px] relative">
-                    <ThreeCanvas type="ai" />
-                  </div>
-                </motion.div>
-              </section>
-            </div>
+                    {/* Luxury Minimalist Caption Description */}
+                    <p className="text-[11px] sm:text-xs md:text-sm text-white/50 tracking-[0.2em] leading-relaxed font-mono uppercase mt-8 max-w-xl">
+                      {service.description}
+                    </p>
+                  </motion.div>
+                ))}
+              </div>
+            </section>
 
             {/* PAGE 3: LET'S BUILD SOMETHING UNFORGETTABLE */}
             <section
