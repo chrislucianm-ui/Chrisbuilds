@@ -23,13 +23,16 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
     if (!canvasRef.current || !containerRef.current) return;
 
     const canvas = canvasRef.current;
-    const container = containerRef.current;
     const isMobile = window.innerWidth < 768;
+
+    // Use window.innerWidth/Height to avoid 0x0 size on client mount
+    const width = window.innerWidth;
+    const height = window.innerHeight;
 
     // 1. Scene & Setup (Fog-free, pitch black base)
     const scene = new THREE.Scene();
 
-    const camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 1000);
+    const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
     camera.position.set(0, 0, 10);
 
     const renderer = new THREE.WebGLRenderer({
@@ -38,7 +41,7 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
       alpha: false,
       powerPreference: "high-performance",
     });
-    renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.setSize(width, height);
     renderer.setPixelRatio(isMobile ? 1.0 : Math.min(window.devicePixelRatio, 1.5));
     renderer.setClearColor(0x000000, 1.0);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -68,7 +71,9 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, size, size);
       }
-      return new THREE.CanvasTexture(starCanvas);
+      const tex = new THREE.CanvasTexture(starCanvas);
+      tex.needsUpdate = true;
+      return tex;
     };
 
     const starTexture = createStarTexture();
@@ -124,7 +129,9 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, size, size);
       }
-      return new THREE.CanvasTexture(dustCanvas);
+      const tex = new THREE.CanvasTexture(dustCanvas);
+      tex.needsUpdate = true;
+      return tex;
     };
 
     const dustTexture = createDustTexture();
@@ -297,7 +304,8 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
     }
 
     const earthTexture = new THREE.CanvasTexture(earthCanvas);
-    const earthGeom = new THREE.SphereGeometry(12.0, 64, 64);
+    earthTexture.needsUpdate = true;
+    const earthGeom = new THREE.SphereGeometry(24.0, 64, 64);
     const earthMat = new THREE.MeshStandardMaterial({
       color: 0x020204, // Deep space dark black-blue base
       roughness: 0.22,
@@ -306,30 +314,25 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
       bumpScale: 0.04,
     });
     const earthMesh = new THREE.Mesh(earthGeom, earthMat);
-    // Position Earth massive in bottom-left corner
-    earthMesh.position.set(-9.5, -9.0, -2.0);
+    // Position Earth massive in bottom-left corner and deeper (Z = -10) to prevent clipping
+    earthMesh.position.set(-18.0, -18.0, -10.0);
     scene.add(earthMesh);
 
-    // Realistic Atmospheric Scattering Shell (Soft silver/blue rim glow)
-    const atmosGeom = new THREE.SphereGeometry(12.24, 64, 64);
+    // Atmospheric Scattering Shell (Clamped base value to avoid NaN compile errors)
+    const atmosGeom = new THREE.SphereGeometry(24.48, 64, 64);
     const atmosMat = new THREE.ShaderMaterial({
       vertexShader: `
         varying vec3 vNormal;
-        varying vec3 vViewPos;
         void main() {
           vNormal = normalize(normalMatrix * normal);
-          vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-          vViewPos = -mvPosition.xyz;
-          gl_Position = projectionMatrix * mvPosition;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
         }
       `,
       fragmentShader: `
         varying vec3 vNormal;
-        varying vec3 vViewPos;
         void main() {
-          vec3 viewDir = normalize(vViewPos);
-          float intensity = pow(0.68 - dot(vNormal, viewDir), 3.5);
-          // Soft silver-blue atmosphere scattering color
+          // Clamp dot product inside max(0.0, ...) to prevent NaN context crashes
+          float intensity = pow(max(0.0, 0.68 - dot(vNormal, vec3(0, 0, 1.0))), 3.5);
           vec3 color = vec3(0.68, 0.80, 0.95);
           gl_FragColor = vec4(color, 1.0) * intensity * 0.42;
         }
@@ -394,9 +397,8 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
 
     // 11. Resize logic
     const handleResize = () => {
-      if (!containerRef.current) return;
-      const w = containerRef.current.clientWidth;
-      const h = containerRef.current.clientHeight;
+      const w = window.innerWidth;
+      const h = window.innerHeight;
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
       renderer.setSize(w, h);
