@@ -317,3 +317,15 @@ html, body {
   text-shadow: 0 0 50px rgba(255, 255, 255, 0.18);
 }
 
+.heading-glow-strong {
+  text-shadow: 
+    0 0 15px rgba(255, 255, 255, 0.15),
+    0 0 45px rgba(255, 255, 255, 0.08);
+}
+
+.text-luxury-gloss {
+  background: linear-gradient(180deg, #ffffff 40%, #e2e8f0 70%, #94a3b8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+

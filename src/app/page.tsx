@@ -224,19 +224,49 @@ export default function Home() {
                 className="absolute inset-0 w-screen h-screen bg-cover bg-center bg-no-repeat -z-10 block md:hidden left-1/2 -translate-x-1/2 pointer-events-none"
               />
 
-              <span className="text-[10px] text-white/30 uppercase tracking-[0.35em] font-mono mb-6">
+              <motion.span 
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 0.35, y: 0 }}
+                transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
+                className="text-[10px] text-white uppercase tracking-[0.4em] font-mono mb-6"
+              >
                 Arrival
-              </span>
-              <h1 className="text-5xl md:text-8xl font-black uppercase tracking-premium leading-[0.9] text-white max-w-4xl font-sans heading-glow">
-                WE BUILD DIGITAL<br />
-                <span className="logo-shine-text">EXPERIENCES.</span>
-              </h1>
-              <span className="mt-8 font-pinyon text-3xl md:text-4xl text-white/60 tracking-normal">
-                that people remember.
-              </span>
+              </motion.span>
 
-              {/* Centered Buttons matching original layout */}
-              <div className="flex flex-row items-center justify-center md:justify-start gap-4 mt-10 w-full">
+              {/* main Editorial Heading with Staggered Entrance */}
+              <motion.h1 
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
+                className="flex flex-col gap-2 md:gap-4 text-center md:text-left font-sans select-none tracking-[0.06em] md:tracking-[0.10em] max-w-4xl"
+              >
+                {/* Line 1: Larger and extremely bold with luxurious glass-metallic vertical gradient */}
+                <span className="text-4xl sm:text-5xl md:text-8xl font-black uppercase text-luxury-gloss leading-none tracking-wider heading-glow-strong">
+                  WE BUILD DIGITAL
+                </span>
+                {/* Line 2: 15% smaller than Line 1, bold and impactful with sliding shine effect */}
+                <span className="text-[30px] sm:text-[42px] md:text-[80px] font-black uppercase logo-shine-text leading-none tracking-widest mt-1">
+                  EXPERIENCES.
+                </span>
+              </motion.h1>
+
+              {/* Luxury cursive signature with subtle glow and opacity fade-in */}
+              <motion.span 
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 0.85, y: 0 }}
+                transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1], delay: 0.6 }}
+                className="mt-8 font-pinyon text-3xl md:text-5xl text-white tracking-wide heading-glow block"
+              >
+                that people remember.
+              </motion.span>
+
+              {/* Centered Buttons matching original layout with staggered entry */}
+              <motion.div 
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1], delay: 0.9 }}
+                className="flex flex-row items-center justify-center md:justify-start gap-4 mt-10 w-full"
+              >
                 <button
                   onClick={() => scrollToSection("#services")}
                   className="btn-luxury px-9 py-4 rounded-full w-44 md:w-auto cursor-pointer"
@@ -249,7 +279,7 @@ export default function Home() {
                 >
                   LET'S TALK
                 </button>
-              </div>
+              </motion.div>
 
               <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 pointer-events-none select-none">
                 <span className="text-[8px] uppercase tracking-[0.25em] text-white/20 font-mono">
