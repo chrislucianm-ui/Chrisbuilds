@@ -6,6 +6,11 @@ import { Mail, MessageSquare } from "lucide-react";
 import LoadingScreen from "@/components/LoadingScreen";
 import Lenis from "lenis";
 import Image from "next/image";
+import dynamic from "next/dynamic";
+
+const ThreeCanvas = dynamic(() => import("@/components/ThreeCanvas"), {
+  ssr: false,
+});
 
 interface ServiceCard {
   title: string;
@@ -27,7 +32,7 @@ const SERVICES: ServiceCard[] = [
   },
   {
     title: "AI Solutions",
-    description: "Intelligence, seamlessly integrated. Cognitive systems and custom model tuning."
+    description: "Futuristic AGI Core core sphere surrounded by floating neural particles. Custom cognitive model tuning."
   }
 ];
 
@@ -316,14 +321,8 @@ export default function Home() {
                   style={isMobileDevice ? {} : { y: yPlanet1 }}
                   className="relative w-72 h-72 sm:w-96 sm:h-96 md:w-[480px] md:h-[480px] flex items-center justify-center mt-12 md:mt-0 md:w-1/2 select-none pointer-events-none"
                 >
-                  <div className="w-64 h-64 sm:w-80 sm:h-80 md:w-[400px] md:h-[400px] relative overflow-hidden">
-                    <Image
-                      src="/images/planet-websites.png"
-                      alt="Premium Websites Planet"
-                      fill
-                      sizes="(max-width: 768px) 256px, 400px"
-                      className="object-contain"
-                    />
+                  <div className="w-64 h-64 sm:w-80 sm:h-80 md:w-[400px] md:h-[400px] relative">
+                    <ThreeCanvas type="earth" />
                   </div>
                 </motion.div>
               </section>
@@ -347,19 +346,13 @@ export default function Home() {
                   </p>
                 </motion.div>
 
-                {/* Left Planet: Saturn-inspired metallic ring planet with slow rotation */}
+                {/* Left Planet: Saturn-inspired metallic ring planet */}
                 <motion.div 
                   style={isMobileDevice ? {} : { y: yPlanet2 }}
                   className="relative w-72 h-72 sm:w-80 sm:h-80 md:w-[420px] md:h-[420px] flex items-center justify-center mt-12 md:mt-0 md:w-1/2 select-none pointer-events-none"
                 >
-                  <div className="w-64 h-64 sm:w-80 sm:h-80 md:w-[380px] md:h-[380px] relative overflow-hidden">
-                    <Image
-                      src="/images/planet-webapps.png"
-                      alt="Web Applications Planet"
-                      fill
-                      sizes="(max-width: 768px) 256px, 380px"
-                      className="object-contain animate-[spin_40s_linear_infinite]"
-                    />
+                  <div className="w-64 h-64 sm:w-80 sm:h-80 md:w-[380px] md:h-[380px] relative">
+                    <ThreeCanvas type="saturn" />
                   </div>
                 </motion.div>
               </section>
@@ -388,14 +381,8 @@ export default function Home() {
                   style={isMobileDevice ? {} : { y: yPlanet3 }}
                   className="relative w-72 h-72 sm:w-80 sm:h-80 md:w-[420px] md:h-[420px] flex items-center justify-center mt-12 md:mt-0 md:w-1/2 select-none pointer-events-none"
                 >
-                  <div className="w-64 h-64 sm:w-80 sm:h-80 md:w-[380px] md:h-[380px] relative overflow-hidden">
-                    <Image
-                      src="/images/planet-mobile.png"
-                      alt="Mobile Applications Planet"
-                      fill
-                      sizes="(max-width: 768px) 256px, 380px"
-                      className="object-contain animate-[spin_55s_linear_infinite]"
-                    />
+                  <div className="w-64 h-64 sm:w-80 sm:h-80 md:w-[380px] md:h-[380px] relative">
+                    <ThreeCanvas type="mobile" />
                   </div>
                 </motion.div>
               </section>
@@ -419,19 +406,13 @@ export default function Home() {
                   </p>
                 </motion.div>
 
-                {/* Left Planet: Chrome-black AI sphere */}
+                {/* Left Planet: Chrome-black AGI core */}
                 <motion.div 
                   style={isMobileDevice ? {} : { y: yPlanet4 }}
                   className="relative w-72 h-72 sm:w-80 sm:h-80 md:w-[420px] md:h-[420px] flex items-center justify-center mt-12 md:mt-0 md:w-1/2 select-none pointer-events-none"
                 >
-                  <div className="w-64 h-64 sm:w-80 sm:h-80 md:w-[380px] md:h-[380px] relative overflow-hidden">
-                    <Image
-                      src="/images/planet-ai.png"
-                      alt="AI Solutions Sphere"
-                      fill
-                      sizes="(max-width: 768px) 256px, 380px"
-                      className="object-contain"
-                    />
+                  <div className="w-64 h-64 sm:w-80 sm:h-80 md:w-[380px] md:h-[380px] relative">
+                    <ThreeCanvas type="ai" />
                   </div>
                 </motion.div>
               </section>
