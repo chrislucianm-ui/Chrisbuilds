@@ -2,9 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
-import { ArrowUpRight, Mail, MessageSquare } from "lucide-react";
+import { Mail, MessageSquare } from "lucide-react";
 import LoadingScreen from "@/components/LoadingScreen";
-import HeroBackgroundCanvas from "@/components/HeroBackgroundCanvas";
 import Lenis from "lenis";
 
 interface ServiceCard {
@@ -157,11 +156,16 @@ export default function Home() {
       {loadingComplete && (
         <div className="relative min-h-screen text-white selection:bg-white/10 selection:text-white overflow-x-hidden font-sans">
           
-          {/* Continuous Fixed WebGL Background Canvas */}
-          <HeroBackgroundCanvas 
-            scrollProgress={scrollProgress} 
-            hoveredProjectIndex={null} 
-          />
+          {/* Continuous Fixed Background Parallax */}
+          <div className="fixed inset-0 w-full h-full -z-10 pointer-events-none overflow-hidden bg-black">
+            <div 
+              style={{
+                transform: `translateY(-${scrollProgress * 12}%) scale(1.15)`,
+                transition: "transform 150ms cubic-bezier(0.1, 0.8, 0.2, 1)",
+              }}
+              className="w-full h-[115%] absolute top-0 left-0 bg-[url('/hero-bg-mobile.png')] md:bg-[url('/hero-bg-desktop.png')] bg-cover bg-center bg-no-repeat"
+            />
+          </div>
 
           {/* Fixed Scroll Navigation Dots */}
           <div className="fixed top-1/2 right-8 -translate-y-1/2 z-50 hidden md:flex flex-col gap-5">
