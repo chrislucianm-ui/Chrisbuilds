@@ -130,39 +130,7 @@ export default function Home() {
       {loadingComplete && (
         <div className="relative min-h-screen text-white selection:bg-white/10 selection:text-white overflow-x-hidden font-sans">
           
-          {/* Continuous Fixed Background Parallax (Desktop Only, WebP compressed, GPU-mapped) */}
-          <div className="fixed inset-0 w-full h-full z-0 pointer-events-none overflow-hidden bg-black hidden md:block">
-            <motion.div 
-              style={{
-                y: yBackdrop,
-                scale: 1.15
-              }}
-              className="w-full h-[115%] absolute top-0 left-0"
-            >
-              <Image
-                src="/images/continuous-space.png"
-                alt="Cinematic Space Background Desktop"
-                fill
-                priority
-                sizes="100vw"
-                className="object-cover object-center"
-              />
-            </motion.div>
-          </div>
 
-          {/* Continuous Fixed Background (Mobile Only, Static, WebP compressed to guarantee 60 FPS) */}
-          <div className="fixed inset-0 w-full h-full z-0 pointer-events-none overflow-hidden bg-black block md:hidden">
-            <div className="w-full h-full absolute top-0 left-0">
-              <Image
-                src="/images/continuous-space.png"
-                alt="Cinematic Space Background Mobile"
-                fill
-                priority
-                sizes="100vw"
-                className="object-cover object-center"
-              />
-            </div>
-          </div>
 
           {/* Header Brand */}
           <header className="absolute top-0 left-0 right-0 z-40 py-8 px-6 md:px-12 flex justify-between items-center max-w-7xl mx-auto">
