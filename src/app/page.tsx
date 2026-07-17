@@ -5,6 +5,7 @@ import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { Mail, MessageSquare } from "lucide-react";
 import LoadingScreen from "@/components/LoadingScreen";
 import Lenis from "lenis";
+import Image from "next/image";
 
 interface ServiceCard {
   title: string;
@@ -68,15 +69,23 @@ function TiltCard({ children, className }: { children: React.ReactNode; classNam
 export default function Home() {
   const [loadingComplete, setLoadingComplete] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [isMobileDevice, setIsMobileDevice] = useState(false);
 
-  // Initialize Lenis smooth scroll
+  // Detect mobile device layout on mount to optimize scroll and animations
+  useEffect(() => {
+    setIsMobileDevice(window.innerWidth < 768);
+  }, []);
+
+  // Initialize Lenis smooth scroll (desktop only)
   useEffect(() => {
     if (!loadingComplete) return;
+    if (window.innerWidth < 768) return; // Skip custom scroll listeners on mobile to utilize native momentum scrolling
 
     const lenis = new Lenis({
       duration: 1.4,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
+      syncTouch: false, // Ensure touch scrolling is fully handled by hardware threading
     });
 
     const handleScroll = () => {
@@ -156,19 +165,25 @@ export default function Home() {
       {loadingComplete && (
         <div className="relative min-h-screen text-white selection:bg-white/10 selection:text-white overflow-x-hidden font-sans">
           
-          {/* Continuous Fixed Background Parallax (Desktop Only) */}
+          {/* Continuous Fixed Background Parallax (Desktop Only, Optimized with next/image WebP compression) */}
           <div className="fixed inset-0 w-full h-full z-0 pointer-events-none overflow-hidden bg-black hidden md:block">
-            <div 
+            <motion.div 
               style={{
-                backgroundImage: `url('/hero-bg-desktop.png')`,
-                transform: `translateY(-${scrollProgress * 12}%) scale(1.15)`,
-                transition: "transform 150ms cubic-bezier(0.1, 0.8, 0.2, 1)",
+                y: useTransform(useMotionValue(scrollProgress), [0, 1], ["0%", "-12%"]),
+                scale: 1.15
               }}
-              className="w-full h-[115%] absolute top-0 left-0 bg-cover bg-center bg-no-repeat"
-            />
+              className="w-full h-[115%] absolute top-0 left-0"
+            >
+              <Image
+                src="/hero-bg-desktop.png"
+                alt="Cinematic Space Background"
+                fill
+                priority
+                sizes="100vw"
+                className="object-cover object-center"
+              />
+            </motion.div>
           </div>
-
-
 
           {/* Header Brand */}
           <header className="absolute top-0 left-0 right-0 z-40 py-8 px-6 md:px-12 flex justify-between items-center max-w-7xl mx-auto">
@@ -201,18 +216,22 @@ export default function Home() {
               id="home"
               className="min-h-screen flex flex-col justify-center items-center md:items-start px-6 md:px-12 lg:px-16 text-center md:text-left relative z-10 max-w-7xl mx-auto w-full"
             >
-              {/* Mobile-only background (Static, 100vh, full bleed) */}
-              <div 
-                style={{ backgroundImage: `url('/hero-bg-mobile.png')` }}
-                className="absolute inset-0 w-screen h-screen bg-cover bg-center bg-no-repeat -z-10 block md:hidden left-1/2 -translate-x-1/2 pointer-events-none"
-              />
+              {/* Mobile-only background (Static, 100vh, full bleed, optimized with next/image WebP compression) */}
+              <div className="absolute inset-0 w-screen h-screen -z-10 block md:hidden left-1/2 -translate-x-1/2 pointer-events-none">
+                <Image
+                  src="/hero-bg-mobile.png"
+                  alt="Cinematic Space Background Mobile"
+                  fill
+                  priority
+                  sizes="100vw"
+                  className="object-cover object-center"
+                />
+              </div>
 
-
-
-              {/* main Editorial Heading with Staggered Entrance */}
+              {/* main Editorial Heading with Staggered Entrance (Bypassed on mobile to avoid layout shifts) */}
               <motion.h1 
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
+                initial={isMobileDevice ? {} : { opacity: 0, y: 30 }}
+                animate={isMobileDevice ? {} : { opacity: 1, y: 0 }}
                 transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
                 className="flex flex-col gap-2 md:gap-4 text-center md:text-left font-sans select-none tracking-[0.06em] md:tracking-[0.10em] max-w-4xl"
               >
@@ -228,8 +247,8 @@ export default function Home() {
 
               {/* Luxury cursive signature with subtle glow and opacity fade-in */}
               <motion.span 
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 0.85, y: 0 }}
+                initial={isMobileDevice ? {} : { opacity: 0, y: 15 }}
+                animate={isMobileDevice ? { opacity: 0.85 } : { opacity: 0.85, y: 0 }}
                 transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1], delay: 0.6 }}
                 className="mt-8 font-pinyon text-3xl md:text-5xl text-white tracking-wide heading-glow block"
               >
@@ -238,8 +257,8 @@ export default function Home() {
 
               {/* Centered Buttons matching original layout with staggered entry */}
               <motion.div 
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
+                initial={isMobileDevice ? {} : { opacity: 0, y: 15 }}
+                animate={isMobileDevice ? {} : { opacity: 1, y: 0 }}
                 transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1], delay: 0.9 }}
                 className="flex flex-row items-center justify-center md:justify-start gap-4 mt-10 w-full"
               >
@@ -257,7 +276,12 @@ export default function Home() {
                 </button>
               </motion.div>
 
-
+              <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 pointer-events-none select-none hidden md:flex">
+                <span className="text-[8px] uppercase tracking-[0.25em] text-white/20 font-mono">
+                  Scroll to travel
+                </span>
+                <div className="w-[1px] h-10 bg-gradient-to-b from-white/20 to-transparent" />
+              </div>
             </section>
 
             {/* PAGE 2: WHAT I BUILD (LUXURY DIGITAL SHOWCASE) */}
@@ -265,8 +289,8 @@ export default function Home() {
               id="services"
               className="py-36 px-6 md:px-12 max-w-5xl mx-auto w-full flex flex-col justify-center min-h-screen relative"
             >
-              {/* Local space dust/twinkle particles */}
-              <div className="absolute inset-0 pointer-events-none overflow-hidden select-none -z-10">
+              {/* Local space dust/twinkle particles (Hidden on mobile to optimize CPU/GPU cycles) */}
+              <div className="absolute inset-0 pointer-events-none overflow-hidden select-none -z-10 hidden md:block">
                 <div className="twinkle-star top-1/4 left-10" style={{ animationDelay: "1s" }} />
                 <div className="twinkle-star top-1/3 right-12" style={{ animationDelay: "3s" }} />
                 <div className="twinkle-star top-2/3 left-1/3" style={{ animationDelay: "0s" }} />
@@ -286,16 +310,16 @@ export default function Home() {
                 {SERVICES.map((service, idx) => (
                   <motion.div
                     key={service.title}
-                    initial={{ opacity: 0, x: idx % 2 === 0 ? -45 : 45, y: 15 }}
-                    whileInView={{ opacity: 1, x: 0, y: 0 }}
-                    viewport={{ once: false, margin: "-12%" }}
+                    initial={isMobileDevice ? {} : { opacity: 0, x: idx % 2 === 0 ? -45 : 45, y: 15 }}
+                    whileInView={isMobileDevice ? {} : { opacity: 1, x: 0, y: 0 }}
+                    viewport={{ once: true, margin: "-12%" }}
                     transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
                     className={`flex flex-col relative py-12 w-full ${
                       idx % 2 === 0 ? "items-center md:items-start text-center md:text-left md:mr-auto md:max-w-xl" : "items-center md:items-end text-center md:text-right md:ml-auto md:max-w-xl"
                     }`}
                   >
-                    {/* Floating Glass Lens Backdrop - No rectangular borders */}
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 md:w-80 md:h-80 rounded-full bg-white/[0.012] backdrop-blur-2xl blur-[12px] shadow-[inset_0_1px_30px_rgba(255,255,255,0.06),0_20px_50px_rgba(0,0,0,0.8)] pointer-events-none -z-10" />
+                    {/* Floating Glass Lens Backdrop - No rectangular borders (Hidden on mobile for 60 FPS performance) */}
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 md:w-80 md:h-80 rounded-full bg-white/[0.012] backdrop-blur-2xl blur-[12px] shadow-[inset_0_1px_30px_rgba(255,255,255,0.06),0_20px_50px_rgba(0,0,0,0.8)] pointer-events-none -z-10 hidden md:block" />
 
                     {/* Luxury Serif Index Number */}
                     <span className="font-serif italic text-3xl md:text-5xl text-white/20 tracking-wider mb-4 block">
@@ -323,9 +347,9 @@ export default function Home() {
             >
               {/* Main Content Floating Typography */}
               <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: false }}
+                initial={isMobileDevice ? {} : { opacity: 0, y: 20 }}
+                whileInView={isMobileDevice ? {} : { opacity: 1, y: 0 }}
+                viewport={{ once: true }}
                 transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
                 className="flex flex-col items-center w-full"
               >
@@ -344,9 +368,9 @@ export default function Home() {
 
               {/* Direct Contact Links - Centered Column on Mobile, Horizontal Row on Desktop */}
               <motion.div 
-                initial={{ opacity: 0, y: 15 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: false }}
+                initial={isMobileDevice ? {} : { opacity: 0, y: 15 }}
+                whileInView={isMobileDevice ? {} : { opacity: 1, y: 0 }}
+                viewport={{ once: true }}
                 transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
                 className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-16 pointer-events-auto w-full"
               >
@@ -372,9 +396,9 @@ export default function Home() {
 
               {/* Bottom Copyright Footer */}
               <motion.div 
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                viewport={{ once: false }}
+                initial={isMobileDevice ? {} : { opacity: 0 }}
+                whileInView={isMobileDevice ? {} : { opacity: 1 }}
+                viewport={{ once: true }}
                 transition={{ duration: 1.4, delay: 0.4 }}
                 className="pb-4 mt-8 pointer-events-auto"
               >
