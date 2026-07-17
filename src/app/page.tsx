@@ -260,30 +260,58 @@ export default function Home() {
 
             </section>
 
-            {/* PAGE 2: WHAT I BUILD */}
+            {/* PAGE 2: WHAT I BUILD (LUXURY DIGITAL SHOWCASE) */}
             <section
               id="services"
-              className="py-36 px-6 md:px-12 max-w-5xl mx-auto w-full flex flex-col justify-center min-h-screen"
+              className="py-36 px-6 md:px-12 max-w-5xl mx-auto w-full flex flex-col justify-center min-h-screen relative"
             >
+              {/* Local space dust/twinkle particles */}
+              <div className="absolute inset-0 pointer-events-none overflow-hidden select-none -z-10">
+                <div className="twinkle-star top-1/4 left-10" style={{ animationDelay: "1s" }} />
+                <div className="twinkle-star top-1/3 right-12" style={{ animationDelay: "3s" }} />
+                <div className="twinkle-star top-2/3 left-1/3" style={{ animationDelay: "0s" }} />
+                <div className="twinkle-star top-3/4 right-1/4" style={{ animationDelay: "4s" }} />
+                <div className="twinkle-star top-[90%] left-8" style={{ animationDelay: "2.5s" }} />
+                <div className="twinkle-star top-[15%] right-[40%]" style={{ animationDelay: "1.8s" }} />
+              </div>
+
               <div className="w-full text-center mb-24 select-none">
                 <h2 className="text-3xl md:text-5xl font-black uppercase tracking-premium text-white leading-none heading-glow">
                   WHAT I BUILD
                 </h2>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-20 w-full select-none">
+              {/* Alternating Showcase Items */}
+              <div className="flex flex-col gap-24 md:gap-36 w-full select-none relative z-10">
                 {SERVICES.map((service, idx) => (
-                  <div 
-                    key={service.title} 
-                    className={`flex flex-col text-left border-b border-white/10 pb-10 float-card-${idx}`}
+                  <motion.div
+                    key={service.title}
+                    initial={{ opacity: 0, x: idx % 2 === 0 ? -45 : 45, y: 15 }}
+                    whileInView={{ opacity: 1, x: 0, y: 0 }}
+                    viewport={{ once: false, margin: "-12%" }}
+                    transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
+                    className={`flex flex-col relative py-12 w-full ${
+                      idx % 2 === 0 ? "items-center md:items-start text-center md:text-left md:mr-auto md:max-w-xl" : "items-center md:items-end text-center md:text-right md:ml-auto md:max-w-xl"
+                    }`}
                   >
-                    <h3 className="text-2xl md:text-3xl font-black uppercase tracking-wider text-white heading-glow">
+                    {/* Floating Glass Lens Backdrop - No rectangular borders */}
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 md:w-80 md:h-80 rounded-full bg-white/[0.012] backdrop-blur-2xl blur-[12px] shadow-[inset_0_1px_30px_rgba(255,255,255,0.06),0_20px_50px_rgba(0,0,0,0.8)] pointer-events-none -z-10" />
+
+                    {/* Luxury Serif Index Number */}
+                    <span className="font-serif italic text-3xl md:text-5xl text-white/20 tracking-wider mb-4 block">
+                      0{idx + 1}
+                    </span>
+
+                    {/* Bold Glossy Title */}
+                    <h3 className="text-3xl sm:text-4xl md:text-6xl font-black uppercase text-luxury-gloss leading-none tracking-wider heading-glow-strong">
                       {service.title}
                     </h3>
-                    <p className="text-xs md:text-sm text-white/40 tracking-[0.16em] leading-relaxed font-mono uppercase mt-4">
+
+                    {/* Minimal Description */}
+                    <p className="text-[10px] md:text-xs text-white/40 tracking-[0.2em] leading-relaxed font-mono uppercase mt-6 max-w-sm">
                       {service.description}
                     </p>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
             </section>
@@ -291,50 +319,65 @@ export default function Home() {
             {/* PAGE 3: LET'S BUILD SOMETHING UNFORGETTABLE */}
             <section
               id="contact"
-              className="py-36 px-6 md:px-12 max-w-5xl mx-auto w-full flex flex-col items-center justify-between min-h-screen relative z-10"
+              className="py-24 md:py-36 px-6 md:px-12 max-w-4xl mx-auto w-full flex flex-col items-center justify-center min-h-[90vh] md:min-h-screen relative z-10 gap-8 md:gap-12 text-center select-none"
             >
-              {/* Empty top padding */}
-              <div className="h-4" />
-
               {/* Main Content Floating Typography */}
-              <div className="flex flex-col items-center text-center max-w-3xl w-full float-card-0 py-8 select-none">
-                <span className="font-pinyon text-3xl md:text-5xl text-white/80 lowercase tracking-normal block mb-6 heading-glow">
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: false }}
+                transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
+                className="flex flex-col items-center w-full"
+              >
+                <span className="font-pinyon text-3xl md:text-5xl text-white/80 lowercase tracking-normal block mb-4 heading-glow">
                   let's build something unforgettable.
                 </span>
                 
-                <h2 className="text-5xl md:text-8xl font-black uppercase tracking-premium leading-none text-white font-sans mt-2 heading-glow">
+                <h2 className="text-5xl md:text-8xl font-black uppercase tracking-premium leading-none text-white font-sans mt-2 heading-glow-strong">
                   CHRISBUILDS
                 </h2>
                 
                 <p className="text-[10px] md:text-xs text-white/45 uppercase tracking-[0.35em] font-mono mt-6">
                   Luxury Digital Experiences.
                 </p>
+              </motion.div>
 
-                {/* Direct Contact Links - Horizontal Row */}
-                <div className="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-16 mt-16 pointer-events-auto w-full">
-                  {contactLinks.map((item) => (
-                    <a
-                      key={item.label}
-                      href={item.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="group flex flex-col items-center justify-center transition-all duration-300 relative py-2 px-1"
-                    >
-                      <span className="text-[9px] text-white/35 uppercase tracking-[0.25em] font-mono group-hover:text-white/80 group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)] transition-all">
-                        {item.label}
-                      </span>
-                      <span className="text-[11px] text-white/60 tracking-[0.08em] font-light mt-1.5 group-hover:text-white group-hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.7)] transition-all font-mono">
-                        {item.value}
-                      </span>
-                      {/* Underline animation */}
-                      <span className="absolute bottom-0 left-0 w-full h-[1px] bg-white/30 scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300" />
-                    </a>
-                  ))}
-                </div>
-              </div>
+              {/* Direct Contact Links - Centered Column on Mobile, Horizontal Row on Desktop */}
+              <motion.div 
+                initial={{ opacity: 0, y: 15 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: false }}
+                transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+                className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-16 pointer-events-auto w-full"
+              >
+                {contactLinks.map((item) => (
+                  <a
+                    key={item.label}
+                    href={item.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group flex flex-col items-center justify-center transition-all duration-300 relative py-2 px-1"
+                  >
+                    <span className="text-[9px] text-white/35 uppercase tracking-[0.25em] font-mono group-hover:text-white/80 group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)] transition-all">
+                      {item.label}
+                    </span>
+                    <span className="text-[11px] text-white/60 tracking-[0.08em] font-light mt-1.5 group-hover:text-white group-hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.7)] transition-all font-mono">
+                      {item.value}
+                    </span>
+                    {/* Underline animation */}
+                    <span className="absolute bottom-0 left-0 w-full h-[1px] bg-white/30 scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300" />
+                  </a>
+                ))}
+              </motion.div>
 
               {/* Bottom Copyright Footer */}
-              <div className="pb-4 mt-16 pointer-events-auto">
+              <motion.div 
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: false }}
+                transition={{ duration: 1.4, delay: 0.4 }}
+                className="pb-4 mt-8 pointer-events-auto"
+              >
                 <a
                   href="https://chrisbuilds.dev"
                   target="_blank"
@@ -343,7 +386,7 @@ export default function Home() {
                 >
                   Designed & Developed by ChrisBuilds
                 </a>
-              </div>
+              </motion.div>
             </section>
 
           </div>
