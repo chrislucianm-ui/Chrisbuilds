@@ -156,23 +156,15 @@ export default function Home() {
       {loadingComplete && (
         <div className="relative min-h-screen text-white selection:bg-white/10 selection:text-white overflow-x-hidden font-sans">
           
-          {/* Continuous Fixed Background Parallax (Stacked at z-0 above body black but below z-10 content) */}
-          <div className="fixed inset-0 w-full h-full z-0 pointer-events-none overflow-hidden bg-black">
-            {/* Mobile portrait background (Static) */}
-            <div 
-              style={{
-                backgroundImage: `url('/hero-bg-mobile.png')`,
-              }}
-              className="w-full h-full absolute inset-0 bg-cover bg-center bg-no-repeat block md:hidden"
-            />
-            {/* Desktop landscape background */}
+          {/* Continuous Fixed Background Parallax (Desktop Only) */}
+          <div className="fixed inset-0 w-full h-full z-0 pointer-events-none overflow-hidden bg-black hidden md:block">
             <div 
               style={{
                 backgroundImage: `url('/hero-bg-desktop.png')`,
                 transform: `translateY(-${scrollProgress * 12}%) scale(1.15)`,
                 transition: "transform 150ms cubic-bezier(0.1, 0.8, 0.2, 1)",
               }}
-              className="w-full h-[115%] absolute top-0 left-0 bg-cover bg-center bg-no-repeat hidden md:block"
+              className="w-full h-[115%] absolute top-0 left-0 bg-cover bg-center bg-no-repeat"
             />
           </div>
 
@@ -226,6 +218,12 @@ export default function Home() {
               id="home"
               className="min-h-screen flex flex-col justify-center items-center md:items-start px-6 md:px-12 lg:px-16 text-center md:text-left relative z-10 max-w-7xl mx-auto w-full"
             >
+              {/* Mobile-only background (Static, 100vh, full bleed) */}
+              <div 
+                style={{ backgroundImage: `url('/hero-bg-mobile.png')` }}
+                className="absolute inset-0 w-screen h-screen bg-cover bg-center bg-no-repeat -z-10 block md:hidden left-1/2 -translate-x-1/2 pointer-events-none"
+              />
+
               <span className="text-[10px] text-white/30 uppercase tracking-[0.35em] font-mono mb-6">
                 Arrival
               </span>
