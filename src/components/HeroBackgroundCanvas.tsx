@@ -26,7 +26,7 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
     const container = containerRef.current;
     const isMobile = window.innerWidth < 768;
 
-    // 1. Scene & Setup (Fog removed completely to keep visuals crisp and sharp)
+    // 1. Scene & Setup (Fog-free, pitch black base)
     const scene = new THREE.Scene();
 
     const camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 1000);
@@ -42,41 +42,18 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
     renderer.setPixelRatio(isMobile ? 1.0 : Math.min(window.devicePixelRatio, 1.5));
     renderer.setClearColor(0x000000, 1.0);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.0;
+    renderer.toneMappingExposure = 1.2;
 
-    // 2. Add Lighting (Volumetric direction lights for Earth grid specs)
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.35);
+    // 2. Add Lighting (Volumetric direction lights for Earth horizon specularity)
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.05);
     scene.add(ambientLight);
 
-    const mainLight = new THREE.DirectionalLight(0xffffff, 2.5);
-    mainLight.position.set(12, 8, 12);
-    scene.add(mainLight);
+    // Warm sun light positioned to shine from bottom-left corner
+    const sunLight = new THREE.DirectionalLight(0xfff4e0, 4.5);
+    sunLight.position.set(-18, -14, 5);
+    scene.add(sunLight);
 
-    // Skip adding secondary light on mobile to simplify shader computations
-    const secondaryLight = new THREE.DirectionalLight(0xffffff, 1.2);
-    secondaryLight.position.set(-12, -8, -6);
-    if (!isMobile) {
-      scene.add(secondaryLight);
-    }
-
-    // 3. Crisp 4K Space Backdrop Plane (Milky Way & Space Horizon)
-    const textureLoader = new THREE.TextureLoader();
-    const bgTexture = textureLoader.load(isMobile ? "/hero-bg-mobile.png" : "/hero-bg-desktop.png", (tex) => {
-      tex.generateMipmaps = false;
-      tex.minFilter = THREE.LinearFilter;
-    });
-
-    const bgGeom = new THREE.PlaneGeometry(320, 200);
-    const bgMat = new THREE.MeshBasicMaterial({
-      map: bgTexture,
-      depthWrite: false,
-      transparent: false,
-    });
-    const bgMesh = new THREE.Mesh(bgGeom, bgMat);
-    bgMesh.position.set(0, 0, -140);
-    scene.add(bgMesh);
-
-    // 4. Create a circular star texture dynamically
+    // 3. Dynamic star texture helper
     const createStarTexture = () => {
       const size = 16;
       const starCanvas = document.createElement("canvas");
@@ -96,33 +73,113 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
 
     const starTexture = createStarTexture();
 
-    // 5. Starfield setup (Sharp, High-Contrast; Reduced count on mobile)
-    const starCount = isMobile ? 600 : 1800;
-    const starGeom = new THREE.BufferGeometry();
-    const starPositions = new Float32Array(starCount * 3);
-    const starSpeeds = new Float32Array(starCount);
+    // 4. Multi-Layered Starfields at Varying Depths (True 3D depth parallax)
+    const starGroups: { points: THREE.Points; speeds: Float32Array; count: number }[] = [];
+    const layersConfig = [
+      { count: isMobile ? 300 : 900, minZ: -180, maxZ: -250, size: 0.12, speedMult: 0.05 },
+      { count: isMobile ? 200 : 600, minZ: -100, maxZ: -180, size: 0.15, speedMult: 0.10 },
+      { count: isMobile ? 100 : 250, minZ: -30, maxZ: -100, size: 0.20, speedMult: 0.18 },
+    ];
 
-    for (let i = 0; i < starCount; i++) {
-      starPositions[i * 3] = (Math.random() - 0.5) * 120;
-      starPositions[i * 3 + 1] = (Math.random() - 0.5) * 80;
-      starPositions[i * 3 + 2] = -Math.random() * 120;
-      starSpeeds[i] = 0.05 + Math.random() * 0.15;
+    layersConfig.forEach((config) => {
+      const geom = new THREE.BufferGeometry();
+      const pos = new Float32Array(config.count * 3);
+      const speeds = new Float32Array(config.count);
+
+      for (let i = 0; i < config.count; i++) {
+        // Star coordinates spread widely in a frustum shape
+        pos[i * 3] = (Math.random() - 0.5) * 160;
+        pos[i * 3 + 1] = (Math.random() - 0.5) * 100;
+        pos[i * 3 + 2] = config.minZ + Math.random() * (config.maxZ - config.minZ);
+        speeds[i] = (0.05 + Math.random() * 0.1) * config.speedMult;
+      }
+
+      geom.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+      const mat = new THREE.PointsMaterial({
+        size: config.size,
+        map: starTexture,
+        transparent: true,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        opacity: 0.85,
+      });
+
+      const points = new THREE.Points(geom, mat);
+      scene.add(points);
+      starGroups.push({ points, speeds, count: config.count });
+    });
+
+    // 5. Volumetric 3D Milky Way Dust Lanes (Constructed from soft warm/silver particle clouds)
+    const createDustTexture = () => {
+      const size = 64;
+      const dustCanvas = document.createElement("canvas");
+      dustCanvas.width = size;
+      dustCanvas.height = size;
+      const ctx = dustCanvas.getContext("2d");
+      if (ctx) {
+        const grad = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+        grad.addColorStop(0, "rgba(255, 255, 255, 0.08)");
+        grad.addColorStop(0.3, "rgba(255, 245, 235, 0.03)");
+        grad.addColorStop(1, "rgba(255, 255, 255, 0)");
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, size, size);
+      }
+      return new THREE.CanvasTexture(dustCanvas);
+    };
+
+    const dustTexture = createDustTexture();
+    const dustLanesGroup = new THREE.Group();
+    scene.add(dustLanesGroup);
+
+    const dustCount = isMobile ? 300 : 800;
+    const dustGeom = new THREE.BufferGeometry();
+    const dustPositions = new Float32Array(dustCount * 3);
+    const dustColors = new Float32Array(dustCount * 3);
+    const dustSizes = new Float32Array(dustCount);
+
+    for (let i = 0; i < dustCount; i++) {
+      // Scatter points along a diagonal plane (Y = X * 0.8) to map Interstellar's dust lanes
+      const progress = (Math.random() - 0.5) * 160;
+      const spreadX = (Math.random() - 0.5) * 22;
+      const spreadY = (Math.random() - 0.5) * 22;
+      const depthZ = -Math.random() * 150 - 50; // Spanned deeply from Z = -50 to -200
+
+      dustPositions[i * 3] = progress * 1.1 + spreadX;
+      dustPositions[i * 3 + 1] = progress * 0.7 + spreadY;
+      dustPositions[i * 3 + 2] = depthZ;
+
+      // Color palette: soft silver-blue and warm golden highlights
+      const isWarm = Math.random() < 0.35;
+      if (isWarm) {
+        dustColors[i * 3] = 1.0;     // R
+        dustColors[i * 3 + 1] = 0.90; // G
+        dustColors[i * 3 + 2] = 0.78; // B
+      } else {
+        dustColors[i * 3] = 0.82;     // R
+        dustColors[i * 3 + 1] = 0.88; // G
+        dustColors[i * 3 + 2] = 0.95; // B
+      }
+
+      dustSizes[i] = 1.5 + Math.random() * 5.0;
     }
-    starGeom.setAttribute("position", new THREE.BufferAttribute(starPositions, 3));
 
-    const starMat = new THREE.PointsMaterial({
-      size: 0.12,
-      map: starTexture,
+    dustGeom.setAttribute("position", new THREE.BufferAttribute(dustPositions, 3));
+    dustGeom.setAttribute("color", new THREE.BufferAttribute(dustColors, 3));
+
+    const dustMat = new THREE.PointsMaterial({
+      size: 4.5,
+      map: dustTexture,
+      vertexColors: true,
       transparent: true,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
-      opacity: 0.95,
+      opacity: 0.9,
     });
-    const starField = new THREE.Points(starGeom, starMat);
-    scene.add(starField);
+    const dustPointsMesh = new THREE.Points(dustGeom, dustMat);
+    dustLanesGroup.add(dustPointsMesh);
 
-    // 6. Foreground Particles (Reduced count on mobile)
-    const particleCount = isMobile ? 60 : 220;
+    // 6. Foreground Particles (Drifting dust specks)
+    const particleCount = isMobile ? 40 : 150;
     const particlesGeom = new THREE.BufferGeometry();
     const particlePositions = new Float32Array(particleCount * 3);
     const particleVelocities = new Float32Array(particleCount * 3);
@@ -130,27 +187,27 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
     for (let i = 0; i < particleCount; i++) {
       particlePositions[i * 3] = (Math.random() - 0.5) * 40;
       particlePositions[i * 3 + 1] = (Math.random() - 0.5) * 25;
-      particlePositions[i * 3 + 2] = (Math.random() - 0.5) * 60 - 20;
+      particlePositions[i * 3 + 2] = (Math.random() - 0.5) * 60 - 10;
 
-      particleVelocities[i * 3] = (Math.random() - 0.5) * 0.015;
-      particleVelocities[i * 3 + 1] = (Math.random() - 0.5) * 0.015;
-      particleVelocities[i * 3 + 2] = (Math.random() - 0.5) * 0.015;
+      particleVelocities[i * 3] = (Math.random() - 0.5) * 0.010;
+      particleVelocities[i * 3 + 1] = (Math.random() - 0.5) * 0.010;
+      particleVelocities[i * 3 + 2] = (Math.random() - 0.5) * 0.010;
     }
 
     particlesGeom.setAttribute("position", new THREE.BufferAttribute(particlePositions, 3));
     const particlesMat = new THREE.PointsMaterial({
-      size: 0.07,
+      size: 0.06,
       color: 0xffffff,
       transparent: true,
-      opacity: 0.85,
+      opacity: 0.7,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
     });
     const particlesMesh = new THREE.Points(particlesGeom, particlesMat);
     scene.add(particlesMesh);
 
-    // 7. Shooting Stars (Dynamic light streaks)
-    const shootingStarCount = isMobile ? 1 : 3;
+    // 7. Shooting Stars (Emissive streaks)
+    const shootingStarCount = isMobile ? 1 : 2;
     const shootingStars: {
       mesh: THREE.Line;
       vx: number;
@@ -186,19 +243,142 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
 
     const triggerShootingStar = (star: typeof shootingStars[0]) => {
       star.mesh.position.set(
-        (Math.random() - 0.3) * 45,
-        15 + Math.random() * 5,
-        -Math.random() * 80 - 20
+        (Math.random() - 0.3) * 40,
+        12 + Math.random() * 4,
+        -Math.random() * 70 - 20
       );
-      star.vx = -0.45 - Math.random() * 0.45;
-      star.vy = -0.32 - Math.random() * 0.32;
-      star.vz = 0.12 + Math.random() * 0.12;
+      star.vx = -0.42 - Math.random() * 0.42;
+      star.vy = -0.28 - Math.random() * 0.28;
+      star.vz = 0.10 + Math.random() * 0.10;
       star.life = 0;
-      star.maxLife = 35 + Math.floor(Math.random() * 45);
-      (star.mesh.material as THREE.LineBasicMaterial).opacity = 0.95;
+      star.maxLife = 35 + Math.floor(Math.random() * 40);
+      (star.mesh.material as THREE.LineBasicMaterial).opacity = 0.85;
     };
 
-    // 8. Interactive Mouse coordinates
+    // 8. Massive Dark Earth Horizon (Partially visible at bottom-left corner)
+    const earthCanvas = document.createElement("canvas");
+    earthCanvas.width = 1024;
+    earthCanvas.height = 512;
+    const earthCtx = earthCanvas.getContext("2d");
+    if (earthCtx) {
+      earthCtx.fillStyle = "#000000";
+      earthCtx.fillRect(0, 0, 1024, 512);
+
+      // Soft white land mass shapes to catch horizon light specularities
+      earthCtx.fillStyle = "#ffffff";
+      const landPoints = [
+        { x: 300, y: 220, r: 120 }, { x: 380, y: 250, r: 90 },
+        { x: 680, y: 190, r: 100 }, { x: 740, y: 230, r: 90 },
+        { x: 200, y: 380, r: 100 }, { x: 800, y: 390, r: 85 }
+      ];
+      landPoints.forEach(p => {
+        earthCtx.beginPath();
+        earthCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        earthCtx.fill();
+      });
+
+      // Digital dotted grid lines representing city light overlays
+      earthCtx.globalCompositeOperation = "destination-in";
+      earthCtx.strokeStyle = "#ffffff";
+      earthCtx.lineWidth = 1.0;
+      for (let y = 0; y < 512; y += 4) {
+        earthCtx.beginPath();
+        earthCtx.moveTo(0, y);
+        earthCtx.lineTo(1024, y);
+        earthCtx.stroke();
+      }
+      for (let x = 0; x < 1024; x += 4) {
+        earthCtx.beginPath();
+        earthCtx.moveTo(x, 0);
+        earthCtx.lineTo(x, 512);
+        earthCtx.stroke();
+      }
+      earthCtx.globalCompositeOperation = "source-over";
+    }
+
+    const earthTexture = new THREE.CanvasTexture(earthCanvas);
+    const earthGeom = new THREE.SphereGeometry(12.0, 64, 64);
+    const earthMat = new THREE.MeshStandardMaterial({
+      color: 0x020204, // Deep space dark black-blue base
+      roughness: 0.22,
+      metalness: 0.95,
+      bumpMap: earthTexture,
+      bumpScale: 0.04,
+    });
+    const earthMesh = new THREE.Mesh(earthGeom, earthMat);
+    // Position Earth massive in bottom-left corner
+    earthMesh.position.set(-9.5, -9.0, -2.0);
+    scene.add(earthMesh);
+
+    // Realistic Atmospheric Scattering Shell (Soft silver/blue rim glow)
+    const atmosGeom = new THREE.SphereGeometry(12.24, 64, 64);
+    const atmosMat = new THREE.ShaderMaterial({
+      vertexShader: `
+        varying vec3 vNormal;
+        varying vec3 vViewPos;
+        void main() {
+          vNormal = normalize(normalMatrix * normal);
+          vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+          vViewPos = -mvPosition.xyz;
+          gl_Position = projectionMatrix * mvPosition;
+        }
+      `,
+      fragmentShader: `
+        varying vec3 vNormal;
+        varying vec3 vViewPos;
+        void main() {
+          vec3 viewDir = normalize(vViewPos);
+          float intensity = pow(0.68 - dot(vNormal, viewDir), 3.5);
+          // Soft silver-blue atmosphere scattering color
+          vec3 color = vec3(0.68, 0.80, 0.95);
+          gl_FragColor = vec4(color, 1.0) * intensity * 0.42;
+        }
+      `,
+      blending: THREE.AdditiveBlending,
+      side: THREE.BackSide,
+      transparent: true,
+      depthWrite: false,
+    });
+    const atmosMesh = new THREE.Mesh(atmosGeom, atmosMat);
+    earthMesh.add(atmosMesh);
+
+    // 9. Volumetric Light Rays peeking out from horizon (Interstellar style)
+    const rayGroup = new THREE.Group();
+    const rayGeom = new THREE.PlaneGeometry(16, 0.8);
+    const rayMat = new THREE.MeshBasicMaterial({
+      map: starTexture, // Radial gradient
+      transparent: true,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+      opacity: 0.08,
+    });
+
+    const raysCount = 10;
+    const rays = Array.from({ length: raysCount }).map((_, i) => {
+      const mesh = new THREE.Mesh(rayGeom, rayMat);
+      mesh.rotation.z = (i / raysCount) * Math.PI * 2 + Math.random() * 0.15;
+      mesh.scale.set(1.4 + Math.random() * 1.4, 1.0, 1.0);
+      rayGroup.add(mesh);
+      return mesh;
+    });
+    // Align ray emitter behind the Earth rim sunrise coordinates
+    rayGroup.position.set(-2.8, -2.4, -4.0);
+    scene.add(rayGroup);
+
+    // Sunrise Glow Flare Plane
+    const sunriseGeom = new THREE.PlaneGeometry(24, 18);
+    const sunriseMat = new THREE.MeshBasicMaterial({
+      map: starTexture,
+      transparent: true,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+      opacity: 0.45,
+    });
+    const sunriseGlow = new THREE.Mesh(sunriseGeom, sunriseMat);
+    sunriseGlow.position.set(-2.8, -2.4, -4.2);
+    scene.add(sunriseGlow);
+
+    // 10. Interactive Mouse coordinates
     const mouse = new THREE.Vector2(0, 0);
     const targetCamera = { x: 0, y: 0 };
 
@@ -206,47 +386,24 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
       mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
       mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
       if (!isMobile) {
-        targetCamera.x = mouse.x * 0.45;
-        targetCamera.y = mouse.y * 0.3;
+        targetCamera.x = mouse.x * 0.40;
+        targetCamera.y = mouse.y * 0.25;
       }
     };
     window.addEventListener("mousemove", handleMouseMove);
 
-    // 9. Resize & WebGL Aspect-Correct Cover scale function
-    const updateBgScale = () => {
+    // 11. Resize logic
+    const handleResize = () => {
       if (!containerRef.current) return;
       const w = containerRef.current.clientWidth;
       const h = containerRef.current.clientHeight;
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
       renderer.setSize(w, h);
-
-      // Frustum viewport dimensions at Z = -140
-      const distance = 140;
-      const vFov = camera.fov * Math.PI / 180;
-      const visibleHeight = 2 * Math.tan(vFov / 2) * distance;
-      const visibleWidth = visibleHeight * camera.aspect;
-
-      // Image aspect ratios matching files exactly
-      const imageAspect = isMobile ? (1080 / 1920) : (3840 / 2160);
-
-      if (camera.aspect > imageAspect) {
-        // Fit width, adjust height scale
-        const scaleX = visibleWidth / 320;
-        const scaleY = (visibleWidth / imageAspect) / 200;
-        bgMesh.scale.set(scaleX, scaleY, 1);
-      } else {
-        // Fit height, adjust width scale
-        const scaleX = (visibleHeight * imageAspect) / 320;
-        const scaleY = visibleHeight / 200;
-        bgMesh.scale.set(scaleX, scaleY, 1);
-      }
     };
+    window.addEventListener("resize", handleResize);
 
-    updateBgScale();
-    window.addEventListener("resize", updateBgScale);
-
-    // 10. Animation Loop
+    // 12. Animation Loop
     let animationFrameId: number;
     let lerpedScroll = 0;
     const clock = new THREE.Clock();
@@ -262,7 +419,7 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
       const tVal = Math.max(0.0, Math.min(1.0, lerpedScroll));
 
       // Fixed camera positioning with Y-parallax scroll drift
-      camera.position.set(0, -tVal * 4.0, 10);
+      camera.position.set(0, -tVal * 3.5, 10);
 
       // Inject camera breathing animation
       camera.position.y += Math.sin(time * 0.45) * 0.05;
@@ -274,31 +431,45 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
         camera.position.y += targetCamera.y;
       }
       
-      camera.lookAt(0, -tVal * 4.0, 0);
+      camera.lookAt(0, -tVal * 3.5, 0);
 
-      // Parallax-offset the huge background backdrop plane to keep it centered and realistic
-      bgMesh.position.x = camera.position.x * 0.95;
-      bgMesh.position.y = camera.position.y * 0.95 - tVal * 2.0;
+      // Milky Way dust lanes slow rotation drift
+      dustLanesGroup.rotation.z = time * 0.0002;
 
-      // Milky Way shifting & slow background rotation
-      bgMesh.rotation.z = time * 0.0003;
+      // Rotate light rays slowly
+      rayGroup.rotation.z = time * 0.004;
+
+      // Volumetric atmospheric shell rotation
+      atmosMesh.rotation.y = -time * 0.003;
+      atmosMesh.rotation.z = time * 0.001;
+
+      // Pulsating sunrise glow flare
+      const pulseFactor = 0.85 + Math.sin(time * 0.45) * 0.08;
+      sunriseMat.opacity = 0.42 * pulseFactor;
+
+      // Rotate Earth slowly
+      earthMesh.rotation.y = time * 0.008;
 
       // ----------------------------------------------------
       // STARFIELD TWINKLE & TRAVEL SPEED ANIMATION
       // ----------------------------------------------------
-      const posArr = starGeom.attributes.position.array as Float32Array;
-      for (let i = 0; i < starCount; i++) {
-        posArr[i * 3 + 2] += starSpeeds[i] * 0.8;
-        if (posArr[i * 3 + 2] > 15) {
-          posArr[i * 3 + 2] = -120;
-          posArr[i * 3] = (Math.random() - 0.5) * 120;
-          posArr[i * 3 + 1] = (Math.random() - 0.5) * 80;
+      starGroups.forEach((group) => {
+        const posArr = group.points.geometry.attributes.position.array as Float32Array;
+        for (let i = 0; i < group.count; i++) {
+          posArr[i * 3 + 2] += group.speeds[i] * 0.5;
+          if (posArr[i * 3 + 2] > 15) {
+            posArr[i * 3 + 2] = -120;
+            posArr[i * 3] = (Math.random() - 0.5) * 160;
+            posArr[i * 3 + 1] = (Math.random() - 0.5) * 100;
+          }
         }
-      }
-      starGeom.attributes.position.needsUpdate = true;
+        group.points.geometry.attributes.position.needsUpdate = true;
+      });
 
-      // Twinkle star glow
-      starMat.opacity = 0.75 + Math.sin(time * 0.5) * 0.2;
+      // Twinkle star fields
+      starGroups.forEach((group, idx) => {
+        (group.points.material as THREE.PointsMaterial).opacity = 0.70 + Math.sin(time * 0.6 + idx) * 0.25;
+      });
 
       // ----------------------------------------------------
       // FOREGROUND PARTICLES DRIFT (Desktop Only coordinates)
@@ -322,7 +493,7 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
       particlesGeom.attributes.position.needsUpdate = true;
 
       // ----------------------------------------------------
-      // UPDATE SHOOTING STARS (Rare occurrence factor 0.003)
+      // UPDATE SHOOTING STARS (Rare occurrence factor 0.002)
       // ----------------------------------------------------
       shootingStars.forEach(star => {
         if (star.life < star.maxLife) {
@@ -335,7 +506,7 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
             (star.mesh.material as THREE.LineBasicMaterial).opacity = (star.maxLife - star.life) / 10;
           }
         } else {
-          if (Math.random() < 0.003) {
+          if (Math.random() < 0.002) {
             triggerShootingStar(star);
           }
         }
@@ -349,12 +520,17 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
     return () => {
       cancelAnimationFrame(animationFrameId);
       window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("resize", updateBgScale);
+      window.removeEventListener("resize", handleResize);
       renderer.dispose();
 
-      starGeom.dispose();
-      starMat.dispose();
+      starGroups.forEach((group) => {
+        group.points.geometry.dispose();
+        (group.points.material as THREE.Material).dispose();
+      });
       starTexture.dispose();
+      dustGeom.dispose();
+      dustMat.dispose();
+      dustTexture.dispose();
       particlesGeom.dispose();
       particlesMat.dispose();
       shootingStars.forEach(s => {
@@ -365,9 +541,15 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
           s.mesh.material.dispose();
         }
       });
-      bgGeom.dispose();
-      bgMat.dispose();
-      bgTexture.dispose();
+      earthGeom.dispose();
+      earthMat.dispose();
+      earthTexture.dispose();
+      atmosGeom.dispose();
+      atmosMat.dispose();
+      rayGeom.dispose();
+      rayMat.dispose();
+      sunriseGeom.dispose();
+      sunriseMat.dispose();
     };
   }, []);
 
