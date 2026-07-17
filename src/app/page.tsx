@@ -140,7 +140,7 @@ export default function Home() {
               className="w-full h-[115%] absolute top-0 left-0"
             >
               <Image
-                src="/hero-bg-desktop.png"
+                src="/images/continuous-space.png"
                 alt="Cinematic Space Background Desktop"
                 fill
                 priority
@@ -154,7 +154,7 @@ export default function Home() {
           <div className="fixed inset-0 w-full h-full z-0 pointer-events-none overflow-hidden bg-black block md:hidden">
             <div className="w-full h-full absolute top-0 left-0">
               <Image
-                src="/hero-bg-mobile.png"
+                src="/images/continuous-space.png"
                 alt="Cinematic Space Background Mobile"
                 fill
                 priority
