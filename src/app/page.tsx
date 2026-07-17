@@ -15,19 +15,19 @@ interface ServiceCard {
 const SERVICES: ServiceCard[] = [
   {
     title: "Premium Websites",
-    description: "Crafted to leave a lasting impression."
+    description: "Crafted to leave a lasting impression. Bespoke digital experiences that tell your brand's story."
   },
   {
     title: "Web Applications",
-    description: "Powerful systems. Beautifully experienced."
+    description: "Powerful cloud systems and custom dashboards. Scalable, secure, and beautifully experienced."
   },
   {
     title: "Mobile Applications",
-    description: "Designed for every touch."
+    description: "Premium iOS and Android apps designed for every touch. Native fluid experiences."
   },
   {
     title: "AI Solutions",
-    description: "Intelligence, seamlessly integrated."
+    description: "Intelligence, seamlessly integrated. Cognitive systems and custom model tuning."
   }
 ];
 
@@ -73,6 +73,12 @@ export default function Home() {
   // Framer Motion native useScroll hook tracks progress on the GPU without triggering any React state changes or re-renders
   const { scrollYProgress } = useScroll();
   const yParallax = useTransform(scrollYProgress, [0, 1], ["0%", "-12%"]);
+
+  // Parallax offsets for planets (Desktop Only)
+  const yPlanet1 = useTransform(scrollYProgress, [0, 0.4], [0, -45]);
+  const yPlanet2 = useTransform(scrollYProgress, [0.1, 0.6], [45, -45]);
+  const yPlanet3 = useTransform(scrollYProgress, [0.3, 0.8], [45, -45]);
+  const yPlanet4 = useTransform(scrollYProgress, [0.5, 1.0], [45, 0]);
 
   // Detect mobile device layout on mount to optimize scroll and animations
   useEffect(() => {
@@ -277,61 +283,158 @@ export default function Home() {
               </div>
             </section>
 
-            {/* PAGE 2: WHAT I BUILD (LUXURY DIGITAL SHOWCASE) */}
-            <section
-              id="services"
-              className="py-36 px-6 md:px-12 max-w-5xl mx-auto w-full flex flex-col justify-center min-h-screen relative"
-            >
-              {/* Local space dust/twinkle particles (Hidden on mobile to optimize CPU/GPU cycles) */}
-              <div className="absolute inset-0 pointer-events-none overflow-hidden select-none -z-10 hidden md:block">
-                <div className="twinkle-star top-1/4 left-10" style={{ animationDelay: "1s" }} />
-                <div className="twinkle-star top-1/3 right-12" style={{ animationDelay: "3s" }} />
-                <div className="twinkle-star top-2/3 left-1/3" style={{ animationDelay: "0s" }} />
-                <div className="twinkle-star top-3/4 right-1/4" style={{ animationDelay: "4s" }} />
-                <div className="twinkle-star top-[90%] left-8" style={{ animationDelay: "2.5s" }} />
-                <div className="twinkle-star top-[15%] right-[40%]" style={{ animationDelay: "1.8s" }} />
-              </div>
+            {/* PAGE 2: WHAT I BUILD (LUXURY DIGITAL SHOWCASE - 4 FULL SCREEN CELESTIAL SECTIONS) */}
+            <div id="services" className="w-full relative z-10">
+              
+              {/* Capability 1: Premium Websites */}
+              <section className="min-h-screen w-full max-w-7xl mx-auto px-6 md:px-12 flex flex-col md:flex-row items-center justify-between relative overflow-hidden py-24">
+                {/* Local space dust/twinkle particles */}
+                <div className="absolute inset-0 pointer-events-none overflow-hidden select-none -z-10 hidden md:block">
+                  <div className="twinkle-star top-1/4 left-10" />
+                  <div className="twinkle-star top-3/4 right-12" style={{ animationDelay: "2s" }} />
+                </div>
+                
+                {/* Left Content */}
+                <motion.div 
+                  initial={isMobileDevice ? {} : { opacity: 0, x: -30 }}
+                  whileInView={isMobileDevice ? {} : { opacity: 1, x: 0 }}
+                  viewport={{ once: true, margin: "-12%" }}
+                  transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
+                  className="flex flex-col text-center md:text-left items-center md:items-start max-w-xl z-10 md:w-1/2"
+                >
+                  <span className="font-serif italic text-2xl md:text-4xl text-white/25 mb-4 block">01</span>
+                  <h3 className="text-4xl sm:text-5xl md:text-7xl font-black uppercase text-luxury-gloss leading-none tracking-wider heading-glow-strong">
+                    PREMIUM<br />WEBSITES
+                  </h3>
+                  <p className="text-[10px] md:text-xs text-white/40 tracking-[0.2em] leading-relaxed font-mono uppercase mt-6 max-w-sm">
+                    {SERVICES[0].description}
+                  </p>
+                </motion.div>
 
-              <div className="w-full text-center mb-24 select-none">
-                <h2 className="text-3xl md:text-5xl font-black uppercase tracking-premium text-white leading-none heading-glow">
-                  WHAT I BUILD
-                </h2>
-              </div>
+                {/* Right Planet: Large cinematic planet partially visible on the right side */}
+                <motion.div 
+                  style={isMobileDevice ? {} : { y: yPlanet1 }}
+                  className="relative w-72 h-72 sm:w-96 sm:h-96 md:w-[480px] md:h-[480px] flex items-center justify-center mt-12 md:mt-0 md:w-1/2 select-none pointer-events-none"
+                >
+                  {/* Planet sphere */}
+                  <div className="w-64 h-64 sm:w-80 sm:h-80 md:w-[400px] md:h-[400px] rounded-full bg-[#030304] relative shadow-[inset_-25px_-25px_60px_rgba(0,0,0,0.9),0_10px_40px_rgba(0,0,0,0.8)] border border-white/5 overflow-hidden">
+                    {/* Sunrise atmosphere glow edge on left side of planet */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/[0.08] via-transparent to-transparent" />
+                    {/* Shadow crescent */}
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_left,transparent_35%,#000000_75%)]" />
+                  </div>
+                  {/* Outer atmospheric soft sunrise halo */}
+                  <div className="absolute -inset-4 rounded-full bg-transparent shadow-[-20px_0_60px_rgba(255,255,255,0.06),-5px_0_15px_rgba(255,255,255,0.12)] -z-10" />
+                </motion.div>
+              </section>
 
-              {/* Alternating Showcase Items */}
-              <div className="flex flex-col gap-24 md:gap-36 w-full select-none relative z-10">
-                {SERVICES.map((service, idx) => (
-                  <motion.div
-                    key={service.title}
-                    initial={isMobileDevice ? {} : { opacity: 0, x: idx % 2 === 0 ? -45 : 45, y: 15 }}
-                    whileInView={isMobileDevice ? {} : { opacity: 1, x: 0, y: 0 }}
-                    viewport={{ once: true, margin: "-12%" }}
-                    transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
-                    className={`flex flex-col relative py-12 w-full ${
-                      idx % 2 === 0 ? "items-center md:items-start text-center md:text-left md:mr-auto md:max-w-xl" : "items-center md:items-end text-center md:text-right md:ml-auto md:max-w-xl"
-                    }`}
-                  >
-                    {/* Floating Glass Lens Backdrop - No rectangular borders (Hidden on mobile for 60 FPS performance) */}
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 md:w-80 md:h-80 rounded-full bg-white/[0.012] backdrop-blur-2xl blur-[12px] shadow-[inset_0_1px_30px_rgba(255,255,255,0.06),0_20px_50px_rgba(0,0,0,0.8)] pointer-events-none -z-10 hidden md:block" />
+              {/* Capability 2: Web Applications */}
+              <section className="min-h-screen w-full max-w-7xl mx-auto px-6 md:px-12 flex flex-col md:flex-row-reverse items-center justify-between relative overflow-hidden py-24">
+                {/* Right Content */}
+                <motion.div 
+                  initial={isMobileDevice ? {} : { opacity: 0, x: 30 }}
+                  whileInView={isMobileDevice ? {} : { opacity: 1, x: 0 }}
+                  viewport={{ once: true, margin: "-12%" }}
+                  transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
+                  className="flex flex-col text-center md:text-right items-center md:items-end max-w-xl z-10 md:w-1/2"
+                >
+                  <span className="font-serif italic text-2xl md:text-4xl text-white/25 mb-4 block">02</span>
+                  <h3 className="text-4xl sm:text-5xl md:text-7xl font-black uppercase text-luxury-gloss leading-none tracking-wider heading-glow-strong">
+                    WEB<br />APPLICATIONS
+                  </h3>
+                  <p className="text-[10px] md:text-xs text-white/40 tracking-[0.2em] leading-relaxed font-mono uppercase mt-6 max-w-sm">
+                    {SERVICES[1].description}
+                  </p>
+                </motion.div>
 
-                    {/* Luxury Serif Index Number */}
-                    <span className="font-serif italic text-3xl md:text-5xl text-white/20 tracking-wider mb-4 block">
-                      0{idx + 1}
-                    </span>
+                {/* Left Planet: Metallic futuristic planet with orbital rings */}
+                <motion.div 
+                  style={isMobileDevice ? {} : { y: yPlanet2 }}
+                  className="relative w-72 h-72 sm:w-80 sm:h-80 md:w-[420px] md:h-[420px] flex items-center justify-center mt-12 md:mt-0 md:w-1/2 select-none pointer-events-none"
+                >
+                  {/* Planet sphere with metallic sheen */}
+                  <div className="w-48 h-48 sm:w-56 sm:h-56 md:w-[260px] md:h-[260px] rounded-full bg-gradient-to-br from-[#16161a] via-[#050507] to-[#010102] relative shadow-[inset_-15px_-15px_40px_rgba(0,0,0,0.9),0_8px_30px_rgba(0,0,0,0.8)] border border-white/10 overflow-hidden">
+                    {/* Metallic specular shine overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.02] to-transparent" />
+                  </div>
+                  {/* Planetary orbital rings */}
+                  <div className="absolute w-[140%] h-[30px] sm:h-[40px] border border-white/15 rounded-full rotate-[-15deg] shadow-[0_0_15px_rgba(255,255,255,0.02)] pointer-events-none z-10" />
+                  <div className="absolute w-[138%] h-[28px] sm:h-[38px] border border-white/5 rounded-full rotate-[-15deg] pointer-events-none -z-10" />
+                </motion.div>
+              </section>
 
-                    {/* Bold Glossy Title */}
-                    <h3 className="text-3xl sm:text-4xl md:text-6xl font-black uppercase text-luxury-gloss leading-none tracking-wider heading-glow-strong">
-                      {service.title}
-                    </h3>
+              {/* Capability 3: Mobile Applications */}
+              <section className="min-h-screen w-full max-w-7xl mx-auto px-6 md:px-12 flex flex-col md:flex-row items-center justify-between relative overflow-hidden py-24">
+                {/* Left Content */}
+                <motion.div 
+                  initial={isMobileDevice ? {} : { opacity: 0, x: -30 }}
+                  whileInView={isMobileDevice ? {} : { opacity: 1, x: 0 }}
+                  viewport={{ once: true, margin: "-12%" }}
+                  transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
+                  className="flex flex-col text-center md:text-left items-center md:items-start max-w-xl z-10 md:w-1/2"
+                >
+                  <span className="font-serif italic text-2xl md:text-4xl text-white/25 mb-4 block">03</span>
+                  <h3 className="text-4xl sm:text-5xl md:text-7xl font-black uppercase text-luxury-gloss leading-none tracking-wider heading-glow-strong">
+                    MOBILE<br />APPLICATIONS
+                  </h3>
+                  <p className="text-[10px] md:text-xs text-white/40 tracking-[0.2em] leading-relaxed font-mono uppercase mt-6 max-w-sm">
+                    {SERVICES[2].description}
+                  </p>
+                </motion.div>
 
-                    {/* Minimal Description */}
-                    <p className="text-[10px] md:text-xs text-white/40 tracking-[0.2em] leading-relaxed font-mono uppercase mt-6 max-w-sm">
-                      {service.description}
-                    </p>
-                  </motion.div>
-                ))}
-              </div>
-            </section>
+                {/* Right Planet: Elegant illuminated planet with subtle glowing particles */}
+                <motion.div 
+                  style={isMobileDevice ? {} : { y: yPlanet3 }}
+                  className="relative w-72 h-72 sm:w-80 sm:h-80 md:w-[420px] md:h-[420px] flex items-center justify-center mt-12 md:mt-0 md:w-1/2 select-none pointer-events-none"
+                >
+                  {/* Planet sphere with soft white-silver glow */}
+                  <div className="w-48 h-48 sm:w-56 sm:h-56 md:w-[260px] md:h-[260px] rounded-full bg-[#020204] relative shadow-[inset_-10px_-10px_30px_rgba(0,0,0,0.9),0_0_40px_rgba(255,255,255,0.04)] border border-white/10 overflow-hidden">
+                    {/* Glowing surface points representing mobile cities */}
+                    <div className="absolute top-1/4 left-1/3 w-1.5 h-1.5 rounded-full bg-white/45 blur-[1px]" />
+                    <div className="absolute top-1/2 left-2/3 w-1 h-1 rounded-full bg-white/35" />
+                    <div className="absolute top-2/3 left-1/4 w-1 h-1 rounded-full bg-white/25" />
+                  </div>
+                  {/* Glowing particle ring around the planet */}
+                  <div className="absolute -inset-6 rounded-full border border-white/[0.02] -z-10 animate-spin" style={{ animationDuration: "25s" }}>
+                    <div className="absolute top-10 left-10 w-1 h-1 rounded-full bg-white/60 blur-[0.5px]" />
+                    <div className="absolute bottom-12 right-12 w-0.5 h-0.5 rounded-full bg-white/40" />
+                  </div>
+                </motion.div>
+              </section>
+
+              {/* Capability 4: AI Solutions */}
+              <section className="min-h-screen w-full max-w-7xl mx-auto px-6 md:px-12 flex flex-col md:flex-row-reverse items-center justify-between relative overflow-hidden py-24">
+                {/* Right Content */}
+                <motion.div 
+                  initial={isMobileDevice ? {} : { opacity: 0, x: 30 }}
+                  whileInView={isMobileDevice ? {} : { opacity: 1, x: 0 }}
+                  viewport={{ once: true, margin: "-12%" }}
+                  transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
+                  className="flex flex-col text-center md:text-right items-center md:items-end max-w-xl z-10 md:w-1/2"
+                >
+                  <span className="font-serif italic text-2xl md:text-4xl text-white/25 mb-4 block">04</span>
+                  <h3 className="text-4xl sm:text-5xl md:text-7xl font-black uppercase text-luxury-gloss leading-none tracking-wider heading-glow-strong">
+                    AI<br />SOLUTIONS
+                  </h3>
+                  <p className="text-[10px] md:text-xs text-white/40 tracking-[0.2em] leading-relaxed font-mono uppercase mt-6 max-w-sm">
+                    {SERVICES[3].description}
+                  </p>
+                </motion.div>
+
+                {/* Left Planet: Futuristic cosmic sphere with elegant rotating light rings */}
+                <motion.div 
+                  style={isMobileDevice ? {} : { y: yPlanet4 }}
+                  className="relative w-72 h-72 sm:w-80 sm:h-80 md:w-[420px] md:h-[420px] flex items-center justify-center mt-12 md:mt-0 md:w-1/2 select-none pointer-events-none"
+                >
+                  {/* Dark core sphere */}
+                  <div className="w-48 h-48 sm:w-56 sm:h-56 md:w-[260px] md:h-[260px] rounded-full bg-black relative shadow-[inset_0_0_50px_rgba(255,255,255,0.03),0_0_20px_rgba(0,0,0,0.9)] border border-white/5 overflow-hidden" />
+                  
+                  {/* Rotating elegant light rings (slow 3D spinning styling) */}
+                  <div className="absolute w-[125%] h-[125%] border border-white/[0.04] rounded-full rotate-[35deg] animate-[spin_15s_linear_infinite]" />
+                  <div className="absolute w-[120%] h-[120%] border border-white/[0.02] rounded-full rotate-[-45deg] animate-[spin_20s_linear_infinite]" />
+                </motion.div>
+              </section>
+            </div>
 
             {/* PAGE 3: LET'S BUILD SOMETHING UNFORGETTABLE */}
             <section
