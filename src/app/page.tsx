@@ -216,7 +216,7 @@ export default function Home() {
               <span className="text-[10px] text-white/30 uppercase tracking-[0.35em] font-mono mb-6">
                 Arrival
               </span>
-              <h1 className="text-5xl md:text-8xl font-black uppercase tracking-premium leading-[0.9] text-white max-w-4xl font-sans">
+              <h1 className="text-5xl md:text-8xl font-black uppercase tracking-premium leading-[0.9] text-white max-w-4xl font-sans heading-glow">
                 WE BUILD DIGITAL<br />
                 <span className="logo-shine-text">EXPERIENCES.</span>
               </h1>
@@ -257,7 +257,7 @@ export default function Home() {
                 <span className="text-[10px] text-white/30 uppercase tracking-[0.35em] font-mono mb-4 block">
                   Capabilities
                 </span>
-                <h2 className="text-3xl md:text-5xl font-black uppercase tracking-premium text-white leading-none">
+                <h2 className="text-3xl md:text-5xl font-black uppercase tracking-premium text-white leading-none heading-glow">
                   WHAT I BUILD
                 </h2>
                 <div className="silver-divider max-w-[80px] mx-auto mt-4" />

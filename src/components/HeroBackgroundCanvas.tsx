@@ -318,7 +318,7 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
     earthMesh.position.set(-18.0, -18.0, -10.0);
     scene.add(earthMesh);
 
-    // Atmospheric Scattering Shell (Clamped base value to avoid NaN compile errors)
+    // Atmospheric Scattering Shell (Silver-white scattering color matching reference photo)
     const atmosGeom = new THREE.SphereGeometry(24.48, 64, 64);
     const atmosMat = new THREE.ShaderMaterial({
       vertexShader: `
@@ -333,7 +333,8 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
         void main() {
           // Clamp dot product inside max(0.0, ...) to prevent NaN context crashes
           float intensity = pow(max(0.0, 0.68 - dot(vNormal, vec3(0, 0, 1.0))), 3.5);
-          vec3 color = vec3(0.68, 0.80, 0.95);
+          // Silver-white atmosphere scattering color
+          vec3 color = vec3(0.85, 0.88, 0.95);
           gl_FragColor = vec4(color, 1.0) * intensity * 0.42;
         }
       `,
@@ -345,6 +346,17 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
     const atmosMesh = new THREE.Mesh(atmosGeom, atmosMat);
     earthMesh.add(atmosMesh);
 
+    // 8b. Crescent Moon (Upper-left, lit as a crescent by bottom-left sunLight matching reference)
+    const moonGeom = new THREE.SphereGeometry(0.8, 32, 32);
+    const moonMat = new THREE.MeshStandardMaterial({
+      color: 0x18181c,
+      roughness: 0.9,
+      metalness: 0.05,
+    });
+    const moonMesh = new THREE.Mesh(moonGeom, moonMat);
+    moonMesh.position.set(-11.5, 6.5, -20.0);
+    scene.add(moonMesh);
+
     // 9. Volumetric Light Rays peeking out from horizon (Interstellar style)
     const rayGroup = new THREE.Group();
     const rayGeom = new THREE.PlaneGeometry(16, 0.8);
@@ -354,6 +366,7 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
       blending: THREE.AdditiveBlending,
       depthWrite: false,
       opacity: 0.08,
+      color: new THREE.Color(0xfffaf0), // Warm silver white
     });
 
     const raysCount = 10;
@@ -376,6 +389,7 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
       blending: THREE.AdditiveBlending,
       depthWrite: false,
       opacity: 0.45,
+      color: new THREE.Color(0xfff5e6), // Warm gold white
     });
     const sunriseGlow = new THREE.Mesh(sunriseGeom, sunriseMat);
     sunriseGlow.position.set(-2.8, -2.4, -4.2);
@@ -548,6 +562,8 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
       earthTexture.dispose();
       atmosGeom.dispose();
       atmosMat.dispose();
+      moonGeom.dispose();
+      moonMat.dispose();
       rayGeom.dispose();
       rayMat.dispose();
       sunriseGeom.dispose();
