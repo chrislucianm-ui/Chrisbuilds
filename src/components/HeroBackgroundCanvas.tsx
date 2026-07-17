@@ -318,9 +318,12 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
     earthMesh.position.set(-18.0, -18.0, -10.0);
     scene.add(earthMesh);
 
-    // Atmospheric Scattering Shell (Silver-white scattering color matching reference photo)
+    // Atmospheric Scattering Shell (Equipped with dynamic intensity uniform)
     const atmosGeom = new THREE.SphereGeometry(24.48, 64, 64);
     const atmosMat = new THREE.ShaderMaterial({
+      uniforms: {
+        uIntensity: { value: 0.42 }
+      },
       vertexShader: `
         varying vec3 vNormal;
         void main() {
@@ -330,12 +333,13 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
       `,
       fragmentShader: `
         varying vec3 vNormal;
+        uniform float uIntensity;
         void main() {
           // Clamp dot product inside max(0.0, ...) to prevent NaN context crashes
           float intensity = pow(max(0.0, 0.68 - dot(vNormal, vec3(0, 0, 1.0))), 3.5);
           // Silver-white atmosphere scattering color
           vec3 color = vec3(0.85, 0.88, 0.95);
-          gl_FragColor = vec4(color, 1.0) * intensity * 0.42;
+          gl_FragColor = vec4(color, 1.0) * intensity * uIntensity;
         }
       `,
       blending: THREE.AdditiveBlending,
@@ -459,9 +463,17 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
       atmosMesh.rotation.y = -time * 0.003;
       atmosMesh.rotation.z = time * 0.001;
 
-      // Pulsating sunrise glow flare
+      // Calculate scroll intensities for Page 3 credits section (peaks at tVal >= 0.66)
+      const finalBrightening = 1.0 + (tVal >= 0.66 ? ((tVal - 0.66) / 0.34) * 0.35 : 0);
+      const finalSunriseIntensity = 1.0 + (tVal >= 0.66 ? ((tVal - 0.66) / 0.34) * 0.40 : 0);
+      const finalAtmosIntensity = 0.42 + (tVal >= 0.66 ? ((tVal - 0.66) / 0.34) * 0.18 : 0);
+
+      // Update shader uniform
+      atmosMat.uniforms.uIntensity.value = finalAtmosIntensity;
+
+      // Pulsating sunrise glow flare + scroll intensity flare
       const pulseFactor = 0.85 + Math.sin(time * 0.45) * 0.08;
-      sunriseMat.opacity = 0.42 * pulseFactor;
+      sunriseMat.opacity = 0.45 * pulseFactor * finalSunriseIntensity;
 
       // Rotate Earth slowly
       earthMesh.rotation.y = time * 0.008;
@@ -482,9 +494,10 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
         group.points.geometry.attributes.position.needsUpdate = true;
       });
 
-      // Twinkle star fields
+      // Twinkle star fields & scroll brightening
       starGroups.forEach((group, idx) => {
-        (group.points.material as THREE.PointsMaterial).opacity = 0.70 + Math.sin(time * 0.6 + idx) * 0.25;
+        (group.points.material as THREE.PointsMaterial).opacity = 
+          (0.70 + Math.sin(time * 0.6 + idx) * 0.25) * finalBrightening;
       });
 
       // ----------------------------------------------------

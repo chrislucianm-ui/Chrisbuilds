@@ -289,53 +289,50 @@ export default function Home() {
             {/* PAGE 3: LET'S BUILD SOMETHING UNFORGETTABLE */}
             <section
               id="contact"
-              className="py-36 px-6 md:px-12 max-w-4xl mx-auto w-full flex flex-col items-center justify-between min-h-screen"
+              className="py-36 px-6 md:px-12 max-w-5xl mx-auto w-full flex flex-col items-center justify-between min-h-screen relative z-10"
             >
               {/* Empty top padding */}
               <div className="h-4" />
 
-              {/* Main Content Card - Floating Glass Panel */}
-              <div className="glass-card p-10 md:p-16 rounded-[36px] flex flex-col items-center text-center max-w-2xl w-full border border-white/5 shadow-2xl relative group float-card-0">
-                <div className="absolute inset-0 shimmer-line opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
-                
-                <span className="font-pinyon text-3xl md:text-5xl text-white/80 lowercase tracking-normal block mb-6">
+              {/* Main Content Floating Typography */}
+              <div className="flex flex-col items-center text-center max-w-3xl w-full float-card-0 py-8 select-none">
+                <span className="font-pinyon text-3xl md:text-5xl text-white/80 lowercase tracking-normal block mb-6 heading-glow">
                   let's build something unforgettable.
                 </span>
                 
-                <h2 className="text-4xl md:text-6xl font-black uppercase tracking-premium leading-none text-white font-sans mt-2">
+                <h2 className="text-5xl md:text-8xl font-black uppercase tracking-premium leading-none text-white font-sans mt-2 heading-glow">
                   CHRISBUILDS
                 </h2>
                 
-                <p className="text-[10px] md:text-xs text-white/45 uppercase tracking-[0.3em] font-mono mt-4">
+                <p className="text-[10px] md:text-xs text-white/45 uppercase tracking-[0.35em] font-mono mt-6">
                   Luxury Digital Experiences.
                 </p>
 
-                {/* Direct Contact Links */}
-                <div className="grid grid-cols-2 gap-4 mt-12 w-full">
+                {/* Direct Contact Links - Horizontal Row */}
+                <div className="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-16 mt-16 pointer-events-auto w-full">
                   {contactLinks.map((item) => (
-                    <TiltCard key={item.label}>
-                      <a
-                        href={item.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="glass-card p-6 rounded-2xl border border-white/5 hover:border-white/20 hover:bg-white/[0.04] transition-all flex items-center gap-3 w-full h-full group relative overflow-hidden"
-                      >
-                        <div className="absolute inset-0 shimmer-line opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
-                        <div className="p-1.5 bg-white/5 rounded-lg border border-white/10">
-                          {item.icon}
-                        </div>
-                        <div className="flex flex-col text-left font-mono">
-                          <span className="text-[7px] text-white/35 uppercase tracking-widest">{item.label}</span>
-                          <span className="text-[9px] text-white/60 tracking-wider font-light mt-0.5 truncate max-w-[120px]">{item.value}</span>
-                        </div>
-                      </a>
-                    </TiltCard>
+                    <a
+                      key={item.label}
+                      href={item.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group flex flex-col items-center justify-center transition-all duration-300 relative py-2 px-1"
+                    >
+                      <span className="text-[9px] text-white/35 uppercase tracking-[0.25em] font-mono group-hover:text-white/80 group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)] transition-all">
+                        {item.label}
+                      </span>
+                      <span className="text-[11px] text-white/60 tracking-[0.08em] font-light mt-1.5 group-hover:text-white group-hover:drop-shadow-[0_0_10px_rgba(255,255,255,0.7)] transition-all font-mono">
+                        {item.value}
+                      </span>
+                      {/* Underline animation */}
+                      <span className="absolute bottom-0 left-0 w-full h-[1px] bg-white/30 scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300" />
+                    </a>
                   ))}
                 </div>
               </div>
 
               {/* Bottom Copyright Footer */}
-              <div className="pb-4 mt-16">
+              <div className="pb-4 mt-16 pointer-events-auto">
                 <a
                   href="https://chrisbuilds.dev"
                   target="_blank"
