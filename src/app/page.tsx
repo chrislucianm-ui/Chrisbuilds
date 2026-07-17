@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
+import { motion, useMotionValue, useSpring, useTransform, useScroll } from "framer-motion";
 import { Mail, MessageSquare } from "lucide-react";
 import LoadingScreen from "@/components/LoadingScreen";
 import Lenis from "lenis";
@@ -68,15 +68,18 @@ function TiltCard({ children, className }: { children: React.ReactNode; classNam
 
 export default function Home() {
   const [loadingComplete, setLoadingComplete] = useState(false);
-  const [scrollProgress, setScrollProgress] = useState(0);
   const [isMobileDevice, setIsMobileDevice] = useState(false);
+
+  // Framer Motion native useScroll hook tracks progress on the GPU without triggering any React state changes or re-renders
+  const { scrollYProgress } = useScroll();
+  const yParallax = useTransform(scrollYProgress, [0, 1], ["0%", "-12%"]);
 
   // Detect mobile device layout on mount to optimize scroll and animations
   useEffect(() => {
     setIsMobileDevice(window.innerWidth < 768);
   }, []);
 
-  // Initialize Lenis smooth scroll (desktop only)
+  // Initialize Lenis smooth scroll (desktop only, with strict animation frame cleanups)
   useEffect(() => {
     if (!loadingComplete) return;
     if (window.innerWidth < 768) return; // Skip custom scroll listeners on mobile to utilize native momentum scrolling
@@ -88,24 +91,16 @@ export default function Home() {
       syncTouch: false, // Ensure touch scrolling is fully handled by hardware threading
     });
 
-    const handleScroll = () => {
-      const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
-      if (totalHeight <= 0) return;
-      const progress = window.scrollY / totalHeight;
-      setScrollProgress(progress);
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-
+    let rafId: number;
     function raf(time: number) {
       lenis.raf(time);
-      requestAnimationFrame(raf);
+      rafId = requestAnimationFrame(raf);
     }
-    requestAnimationFrame(raf);
+    rafId = requestAnimationFrame(raf);
 
     return () => {
       lenis.destroy();
-      window.removeEventListener("scroll", handleScroll);
+      cancelAnimationFrame(rafId); // Explicitly cancel the animation loop to prevent memory leaks and tab crashes
     };
   }, [loadingComplete]);
 
@@ -127,8 +122,6 @@ export default function Home() {
       el.scrollIntoView({ behavior: "smooth" });
     }
   };
-
-  const activeSceneIndex = scrollProgress < 0.35 ? 0 : scrollProgress < 0.70 ? 1 : 2;
 
   const contactLinks = [
     { label: "Email", value: "chrisbuilds.dev@gmail.com", href: "mailto:chrisbuilds.dev@gmail.com?subject=Project Inquiry", icon: <Mail className="w-4 h-4 text-white/40" strokeWidth={1} /> },
@@ -165,11 +158,11 @@ export default function Home() {
       {loadingComplete && (
         <div className="relative min-h-screen text-white selection:bg-white/10 selection:text-white overflow-x-hidden font-sans">
           
-          {/* Continuous Fixed Background Parallax (Desktop Only, Optimized with next/image WebP compression) */}
+          {/* Continuous Fixed Background Parallax (Desktop Only, Optimized with next/image WebP compression and GPU values) */}
           <div className="fixed inset-0 w-full h-full z-0 pointer-events-none overflow-hidden bg-black hidden md:block">
             <motion.div 
               style={{
-                y: useTransform(useMotionValue(scrollProgress), [0, 1], ["0%", "-12%"]),
+                y: yParallax,
                 scale: 1.15
               }}
               className="w-full h-[115%] absolute top-0 left-0"
