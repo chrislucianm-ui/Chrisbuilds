@@ -168,16 +168,30 @@ export default function Home() {
                 initial={isMobileDevice ? {} : { opacity: 0, y: 30 }}
                 animate={isMobileDevice ? {} : { opacity: 1, y: 0 }}
                 transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
-                className="flex flex-col gap-2 md:gap-4 text-center md:text-left font-sans select-none tracking-[0.06em] md:tracking-[0.10em] max-w-4xl"
+                className="flex flex-col gap-2 md:gap-4 text-center md:text-left font-sans select-none max-w-4xl"
               >
-                {/* Line 1: Larger and extremely bold with luxurious glass-metallic vertical gradient */}
-                <span className="text-4xl sm:text-5xl md:text-8xl font-black uppercase text-luxury-gloss leading-none tracking-wider heading-glow-strong">
-                  WE BUILD DIGITAL
-                </span>
-                {/* Line 2: 15% smaller than Line 1, bold and impactful with sliding shine effect */}
-                <span className="text-[30px] sm:text-[42px] md:text-[80px] font-black uppercase logo-shine-text leading-none tracking-widest mt-1">
-                  EXPERIENCES.
-                </span>
+                {/* Desktop-only Editorial Layout (2 Lines) */}
+                <div className="hidden md:flex flex-col gap-4">
+                  <span className="text-8xl font-black uppercase text-luxury-gloss leading-none tracking-wider heading-glow-strong">
+                    WE BUILD DIGITAL
+                  </span>
+                  <span className="text-[80px] font-black uppercase logo-shine-text leading-none tracking-widest mt-1">
+                    EXPERIENCES.
+                  </span>
+                </div>
+
+                {/* Mobile-only Custom Layout (3 Lines, occupying 65-70% width, non-shrinking) */}
+                <div className="flex md:hidden flex-col gap-3 items-center w-full px-6 text-center">
+                  <span className="text-[38px] sm:text-5xl font-black uppercase text-luxury-gloss leading-none tracking-[0.06em] heading-glow-strong block">
+                    WE BUILD
+                  </span>
+                  <span className="text-[38px] sm:text-5xl font-black uppercase text-luxury-gloss leading-none tracking-[0.06em] heading-glow-strong block">
+                    DIGITAL
+                  </span>
+                  <span className="text-[34px] sm:text-4xl font-black uppercase logo-shine-text leading-none tracking-[0.08em] block mt-1">
+                    EXPERIENCES.
+                  </span>
+                </div>
               </motion.h1>
 
               {/* Luxury cursive signature with subtle glow and opacity fade-in */}
@@ -185,7 +199,7 @@ export default function Home() {
                 initial={isMobileDevice ? {} : { opacity: 0, y: 15 }}
                 animate={isMobileDevice ? { opacity: 0.85 } : { opacity: 0.85, y: 0 }}
                 transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1], delay: 0.6 }}
-                className="mt-8 font-pinyon text-3xl md:text-5xl text-white tracking-wide heading-glow block"
+                className="mt-10 md:mt-8 font-pinyon text-4xl md:text-5xl text-white tracking-wide heading-glow block"
               >
                 that people remember.
               </motion.span>
@@ -195,7 +209,7 @@ export default function Home() {
                 initial={isMobileDevice ? {} : { opacity: 0, y: 15 }}
                 animate={isMobileDevice ? {} : { opacity: 1, y: 0 }}
                 transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1], delay: 0.9 }}
-                className="flex flex-row items-center justify-center md:justify-start gap-4 mt-10 w-full"
+                className="flex flex-row items-center justify-center md:justify-start gap-4 mt-12 md:mt-10 w-full"
               >
                 <button
                   onClick={() => scrollToSection("#services")}
