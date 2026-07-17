@@ -311,20 +311,20 @@ export default function Home() {
                   </p>
                 </motion.div>
 
-                {/* Right Planet: Large cinematic planet partially visible on the right side */}
+                {/* Right Planet: Earth-like planet with sunrise glow */}
                 <motion.div 
                   style={isMobileDevice ? {} : { y: yPlanet1 }}
                   className="relative w-72 h-72 sm:w-96 sm:h-96 md:w-[480px] md:h-[480px] flex items-center justify-center mt-12 md:mt-0 md:w-1/2 select-none pointer-events-none"
                 >
-                  {/* Planet sphere */}
-                  <div className="w-64 h-64 sm:w-80 sm:h-80 md:w-[400px] md:h-[400px] rounded-full bg-[#030304] relative shadow-[inset_-25px_-25px_60px_rgba(0,0,0,0.9),0_10px_40px_rgba(0,0,0,0.8)] border border-white/5 overflow-hidden">
-                    {/* Sunrise atmosphere glow edge on left side of planet */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-white/[0.08] via-transparent to-transparent" />
-                    {/* Shadow crescent */}
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_left,transparent_35%,#000000_75%)]" />
+                  <div className="w-64 h-64 sm:w-80 sm:h-80 md:w-[400px] md:h-[400px] relative overflow-hidden">
+                    <Image
+                      src="/images/planet-websites.png"
+                      alt="Premium Websites Planet"
+                      fill
+                      sizes="(max-width: 768px) 256px, 400px"
+                      className="object-contain"
+                    />
                   </div>
-                  {/* Outer atmospheric soft sunrise halo */}
-                  <div className="absolute -inset-4 rounded-full bg-transparent shadow-[-20px_0_60px_rgba(255,255,255,0.06),-5px_0_15px_rgba(255,255,255,0.12)] -z-10" />
                 </motion.div>
               </section>
 
@@ -347,19 +347,20 @@ export default function Home() {
                   </p>
                 </motion.div>
 
-                {/* Left Planet: Metallic futuristic planet with orbital rings */}
+                {/* Left Planet: Saturn-inspired metallic ring planet with slow rotation */}
                 <motion.div 
                   style={isMobileDevice ? {} : { y: yPlanet2 }}
                   className="relative w-72 h-72 sm:w-80 sm:h-80 md:w-[420px] md:h-[420px] flex items-center justify-center mt-12 md:mt-0 md:w-1/2 select-none pointer-events-none"
                 >
-                  {/* Planet sphere with metallic sheen */}
-                  <div className="w-48 h-48 sm:w-56 sm:h-56 md:w-[260px] md:h-[260px] rounded-full bg-gradient-to-br from-[#16161a] via-[#050507] to-[#010102] relative shadow-[inset_-15px_-15px_40px_rgba(0,0,0,0.9),0_8px_30px_rgba(0,0,0,0.8)] border border-white/10 overflow-hidden">
-                    {/* Metallic specular shine overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.02] to-transparent" />
+                  <div className="w-64 h-64 sm:w-80 sm:h-80 md:w-[380px] md:h-[380px] relative overflow-hidden">
+                    <Image
+                      src="/images/planet-webapps.png"
+                      alt="Web Applications Planet"
+                      fill
+                      sizes="(max-width: 768px) 256px, 380px"
+                      className="object-contain animate-[spin_40s_linear_infinite]"
+                    />
                   </div>
-                  {/* Planetary orbital rings */}
-                  <div className="absolute w-[140%] h-[30px] sm:h-[40px] border border-white/15 rounded-full rotate-[-15deg] shadow-[0_0_15px_rgba(255,255,255,0.02)] pointer-events-none z-10" />
-                  <div className="absolute w-[138%] h-[28px] sm:h-[38px] border border-white/5 rounded-full rotate-[-15deg] pointer-events-none -z-10" />
                 </motion.div>
               </section>
 
@@ -382,22 +383,19 @@ export default function Home() {
                   </p>
                 </motion.div>
 
-                {/* Right Planet: Elegant illuminated planet with subtle glowing particles */}
+                {/* Right Planet: Illuminated planet with city lights */}
                 <motion.div 
                   style={isMobileDevice ? {} : { y: yPlanet3 }}
                   className="relative w-72 h-72 sm:w-80 sm:h-80 md:w-[420px] md:h-[420px] flex items-center justify-center mt-12 md:mt-0 md:w-1/2 select-none pointer-events-none"
                 >
-                  {/* Planet sphere with soft white-silver glow */}
-                  <div className="w-48 h-48 sm:w-56 sm:h-56 md:w-[260px] md:h-[260px] rounded-full bg-[#020204] relative shadow-[inset_-10px_-10px_30px_rgba(0,0,0,0.9),0_0_40px_rgba(255,255,255,0.04)] border border-white/10 overflow-hidden">
-                    {/* Glowing surface points representing mobile cities */}
-                    <div className="absolute top-1/4 left-1/3 w-1.5 h-1.5 rounded-full bg-white/45 blur-[1px]" />
-                    <div className="absolute top-1/2 left-2/3 w-1 h-1 rounded-full bg-white/35" />
-                    <div className="absolute top-2/3 left-1/4 w-1 h-1 rounded-full bg-white/25" />
-                  </div>
-                  {/* Glowing particle ring around the planet */}
-                  <div className="absolute -inset-6 rounded-full border border-white/[0.02] -z-10 animate-spin" style={{ animationDuration: "25s" }}>
-                    <div className="absolute top-10 left-10 w-1 h-1 rounded-full bg-white/60 blur-[0.5px]" />
-                    <div className="absolute bottom-12 right-12 w-0.5 h-0.5 rounded-full bg-white/40" />
+                  <div className="w-64 h-64 sm:w-80 sm:h-80 md:w-[380px] md:h-[380px] relative overflow-hidden">
+                    <Image
+                      src="/images/planet-mobile.png"
+                      alt="Mobile Applications Planet"
+                      fill
+                      sizes="(max-width: 768px) 256px, 380px"
+                      className="object-contain animate-[spin_55s_linear_infinite]"
+                    />
                   </div>
                 </motion.div>
               </section>
@@ -421,17 +419,20 @@ export default function Home() {
                   </p>
                 </motion.div>
 
-                {/* Left Planet: Futuristic cosmic sphere with elegant rotating light rings */}
+                {/* Left Planet: Chrome-black AI sphere */}
                 <motion.div 
                   style={isMobileDevice ? {} : { y: yPlanet4 }}
                   className="relative w-72 h-72 sm:w-80 sm:h-80 md:w-[420px] md:h-[420px] flex items-center justify-center mt-12 md:mt-0 md:w-1/2 select-none pointer-events-none"
                 >
-                  {/* Dark core sphere */}
-                  <div className="w-48 h-48 sm:w-56 sm:h-56 md:w-[260px] md:h-[260px] rounded-full bg-black relative shadow-[inset_0_0_50px_rgba(255,255,255,0.03),0_0_20px_rgba(0,0,0,0.9)] border border-white/5 overflow-hidden" />
-                  
-                  {/* Rotating elegant light rings (slow 3D spinning styling) */}
-                  <div className="absolute w-[125%] h-[125%] border border-white/[0.04] rounded-full rotate-[35deg] animate-[spin_15s_linear_infinite]" />
-                  <div className="absolute w-[120%] h-[120%] border border-white/[0.02] rounded-full rotate-[-45deg] animate-[spin_20s_linear_infinite]" />
+                  <div className="w-64 h-64 sm:w-80 sm:h-80 md:w-[380px] md:h-[380px] relative overflow-hidden">
+                    <Image
+                      src="/images/planet-ai.png"
+                      alt="AI Solutions Sphere"
+                      fill
+                      sizes="(max-width: 768px) 256px, 380px"
+                      className="object-contain"
+                    />
+                  </div>
                 </motion.div>
               </section>
             </div>
