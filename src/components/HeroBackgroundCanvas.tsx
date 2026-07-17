@@ -268,38 +268,40 @@ export default function HeroBackgroundCanvas({ scrollProgress, hoveredProjectInd
     earthCanvas.height = 512;
     const earthCtx = earthCanvas.getContext("2d");
     if (earthCtx) {
+      // 1. Clear background to ocean black
       earthCtx.fillStyle = "#000000";
       earthCtx.fillRect(0, 0, 1024, 512);
 
-      // Soft white land mass shapes to catch horizon light specularities
+      // 2. Draw organic landmasses (180 overlapping circles of random sizes)
       earthCtx.fillStyle = "#ffffff";
-      const landPoints = [
-        { x: 300, y: 220, r: 120 }, { x: 380, y: 250, r: 90 },
-        { x: 680, y: 190, r: 100 }, { x: 740, y: 230, r: 90 },
-        { x: 200, y: 380, r: 100 }, { x: 800, y: 390, r: 85 }
-      ];
-      landPoints.forEach(p => {
+      for (let i = 0; i < 180; i++) {
+        const x = Math.random() * 1024;
+        const y = 100 + Math.random() * 320;
+        const r = 10 + Math.random() * 50;
         earthCtx.beginPath();
-        earthCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        earthCtx.arc(x, y, r, 0, Math.PI * 2);
         earthCtx.fill();
-      });
+      }
 
-      // Digital dotted grid lines representing city light overlays
-      earthCtx.globalCompositeOperation = "destination-in";
-      earthCtx.strokeStyle = "#ffffff";
-      earthCtx.lineWidth = 1.0;
-      for (let y = 0; y < 512; y += 4) {
-        earthCtx.beginPath();
-        earthCtx.moveTo(0, y);
-        earthCtx.lineTo(1024, y);
-        earthCtx.stroke();
+      // 3. Render city light network strictly within the landmasses
+      earthCtx.globalCompositeOperation = "source-in";
+      
+      earthCtx.fillStyle = "#fff8f0";
+      for (let x = 0; x < 1024; x += 6) {
+        for (let y = 0; y < 512; y += 6) {
+          // Density noise clustering for organic city light layout
+          if (Math.random() < 0.32) {
+            earthCtx.fillRect(x, y, 1.5, 1.5);
+          }
+        }
       }
-      for (let x = 0; x < 1024; x += 4) {
-        earthCtx.beginPath();
-        earthCtx.moveTo(x, 0);
-        earthCtx.lineTo(x, 512);
-        earthCtx.stroke();
-      }
+
+      // 4. Fill base landmass color (charcoal) underneath the city lights
+      earthCtx.globalCompositeOperation = "destination-over";
+      earthCtx.fillStyle = "#030305";
+      earthCtx.fillRect(0, 0, 1024, 512);
+
+      // 5. Restore default composite operation
       earthCtx.globalCompositeOperation = "source-over";
     }
 
