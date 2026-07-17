@@ -168,24 +168,7 @@ export default function Home() {
             />
           </div>
 
-          {/* Fixed Scroll Navigation Dots */}
-          <div className="fixed top-1/2 right-8 -translate-y-1/2 z-50 hidden md:flex flex-col gap-5">
-            {[
-              { name: "home", href: "#home" },
-              { name: "services", href: "#services" },
-              { name: "contact", href: "#contact" }
-            ].map((section, i) => (
-              <button
-                key={section.name}
-                onClick={() => scrollToSection(section.href)}
-                className={`w-1.5 h-1.5 rounded-full transition-all duration-500 border cursor-pointer ${
-                  activeSceneIndex === i 
-                    ? "bg-white border-white scale-125 shadow-[0_0_10px_#fff]" 
-                    : "bg-transparent border-white/30 hover:border-white/80"
-                }`}
-              />
-            ))}
-          </div>
+
 
           {/* Header Brand */}
           <header className="absolute top-0 left-0 right-0 z-40 py-8 px-6 md:px-12 flex justify-between items-center max-w-7xl mx-auto">
@@ -224,14 +207,7 @@ export default function Home() {
                 className="absolute inset-0 w-screen h-screen bg-cover bg-center bg-no-repeat -z-10 block md:hidden left-1/2 -translate-x-1/2 pointer-events-none"
               />
 
-              <motion.span 
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 0.35, y: 0 }}
-                transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
-                className="text-[10px] text-white uppercase tracking-[0.4em] font-mono mb-6"
-              >
-                Arrival
-              </motion.span>
+
 
               {/* main Editorial Heading with Staggered Entrance */}
               <motion.h1 
@@ -281,12 +257,7 @@ export default function Home() {
                 </button>
               </motion.div>
 
-              <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 pointer-events-none select-none">
-                <span className="text-[8px] uppercase tracking-[0.25em] text-white/20 font-mono">
-                  Scroll to travel
-                </span>
-                <div className="w-[1px] h-10 bg-gradient-to-b from-white/20 to-transparent" />
-              </div>
+
             </section>
 
             {/* PAGE 2: WHAT I BUILD */}
@@ -294,35 +265,25 @@ export default function Home() {
               id="services"
               className="py-36 px-6 md:px-12 max-w-5xl mx-auto w-full flex flex-col justify-center min-h-screen"
             >
-              <div className="w-full text-center mb-16">
-                <span className="text-[10px] text-white/30 uppercase tracking-[0.35em] font-mono mb-4 block">
-                  Capabilities
-                </span>
+              <div className="w-full text-center mb-24 select-none">
                 <h2 className="text-3xl md:text-5xl font-black uppercase tracking-premium text-white leading-none heading-glow">
                   WHAT I BUILD
                 </h2>
-                <div className="silver-divider max-w-[80px] mx-auto mt-4" />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-20 w-full select-none">
                 {SERVICES.map((service, idx) => (
-                  <TiltCard key={service.title}>
-                    <div className={`glass-card p-10 rounded-3xl border border-white/5 hover:border-white/20 hover:bg-white/[0.03] transition-all duration-500 flex flex-col justify-between h-44 text-left relative group float-card-${idx}`}>
-                      <div className="absolute inset-0 shimmer-line opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
-                      
-                      <h3 className="text-xl md:text-2xl font-black uppercase tracking-wider text-white group-hover:logo-shine-text transition-colors">
-                        {service.title}
-                      </h3>
-                      
-                      <p className="text-[11px] text-white/40 tracking-[0.18em] leading-relaxed font-mono uppercase mt-4">
-                        {service.description}
-                      </p>
-
-                      <div className="border-t border-white/5 pt-4 text-[8px] text-white/20 font-mono uppercase tracking-[0.2em]">
-                        01 / Precision
-                      </div>
-                    </div>
-                  </TiltCard>
+                  <div 
+                    key={service.title} 
+                    className={`flex flex-col text-left border-b border-white/10 pb-10 float-card-${idx}`}
+                  >
+                    <h3 className="text-2xl md:text-3xl font-black uppercase tracking-wider text-white heading-glow">
+                      {service.title}
+                    </h3>
+                    <p className="text-xs md:text-sm text-white/40 tracking-[0.16em] leading-relaxed font-mono uppercase mt-4">
+                      {service.description}
+                    </p>
+                  </div>
                 ))}
               </div>
             </section>
