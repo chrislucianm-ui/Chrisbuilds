@@ -156,14 +156,25 @@ export default function Home() {
       {loadingComplete && (
         <div className="relative min-h-screen text-white selection:bg-white/10 selection:text-white overflow-x-hidden font-sans">
           
-          {/* Continuous Fixed Background Parallax */}
-          <div className="fixed inset-0 w-full h-full -z-10 pointer-events-none overflow-hidden bg-black">
+          {/* Continuous Fixed Background Parallax (Stacked at z-0 above body black but below z-10 content) */}
+          <div className="fixed inset-0 w-full h-full z-0 pointer-events-none overflow-hidden bg-black">
+            {/* Mobile portrait background */}
             <div 
               style={{
+                backgroundImage: `url('/hero-bg-mobile.png')`,
                 transform: `translateY(-${scrollProgress * 12}%) scale(1.15)`,
                 transition: "transform 150ms cubic-bezier(0.1, 0.8, 0.2, 1)",
               }}
-              className="w-full h-[115%] absolute top-0 left-0 bg-[url('/hero-bg-mobile.png')] md:bg-[url('/hero-bg-desktop.png')] bg-cover bg-center bg-no-repeat"
+              className="w-full h-[115%] absolute top-0 left-0 bg-cover bg-center bg-no-repeat block md:hidden"
+            />
+            {/* Desktop landscape background */}
+            <div 
+              style={{
+                backgroundImage: `url('/hero-bg-desktop.png')`,
+                transform: `translateY(-${scrollProgress * 12}%) scale(1.15)`,
+                transition: "transform 150ms cubic-bezier(0.1, 0.8, 0.2, 1)",
+              }}
+              className="w-full h-[115%] absolute top-0 left-0 bg-cover bg-center bg-no-repeat hidden md:block"
             />
           </div>
 
