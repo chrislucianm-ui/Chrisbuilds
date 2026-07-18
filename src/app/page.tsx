@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, useInView, AnimatePresence } from "framer-motion";
-import { ArrowUpRight, Mail, Phone, MessageSquare, Send } from "lucide-react";
 import LoadingScreen from "@/components/LoadingScreen";
 import { gsap } from "gsap";
 import Image from "next/image";
@@ -350,13 +349,6 @@ export default function Home() {
 
       {/* 3. CONTACT SECTION */}
       <ContactSectionBlock />
-
-      {/* Footer */}
-      <footer className="py-12 px-6 text-center font-mono text-[9px] text-white/40 relative z-10">
-        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
-          <span>© 2026 CHRISBUILDS. ALL RIGHTS PRESERVED.</span>
-        </div>
-      </footer>
           </motion.div>
         )}
       </AnimatePresence>
@@ -422,97 +414,77 @@ function ContactSectionBlock() {
   const containerRef = useRef<HTMLDivElement>(null);
   const inView = useInView(containerRef, { once: true, margin: "-100px" });
 
-  const contactLinks = [
-    { label: "Email", value: "chrisbuilds.dev@gmail.com", href: "mailto:chrisbuilds.dev@gmail.com?subject=Project Inquiry", icon: <Mail className="w-4 h-4 text-white/40" strokeWidth={1} /> },
-    { label: "Phone", value: "+91 87388 82912", href: "tel:+918738882912", icon: <Phone className="w-4 h-4 text-white/40" strokeWidth={1} /> },
-    { label: "WhatsApp", value: "+91 87388 82912", href: "https://wa.me/918738882912", icon: <MessageSquare className="w-4 h-4 text-white/40" strokeWidth={1} /> },
-    { label: "Telegram", value: "@chrisbuilds", href: "https://t.me/chrisbuilds", icon: <Send className="w-4 h-4 text-white/40" strokeWidth={1} /> },
-    { 
-      label: "LinkedIn", 
-      value: "linkedin.com/in/chrisbuilds", 
-      href: "#", 
-      icon: (
-        <svg className="w-4 h-4 text-white/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
-          <rect width="4" height="12" x="2" y="9" />
-          <circle cx="4" cy="4" r="2" />
-        </svg>
-      )
-    },
-    { 
-      label: "GitHub", 
-      value: "github.com/chrislucianm-ui", 
-      href: "https://github.com/chrislucianm-ui", 
-      icon: (
-        <svg className="w-4 h-4 text-white/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" />
-          <path d="M9 18c-4.51 2-5-2-7-2" />
-        </svg>
-      )
-    }
-  ];
-
   return (
     <section
       id="contact"
       ref={containerRef}
-      className="py-36 px-6 md:px-12 relative z-10 border-t border-white/5"
+      className="min-h-screen flex flex-col justify-between py-24 px-6 md:px-12 relative z-10 border-t border-white/5 bg-black select-none text-center"
     >
-      <div className="max-w-4xl mx-auto">
-        
+      {/* Top spacer to push content down */}
+      <div className="flex-grow" />
+
+      {/* Center Content Block */}
+      <motion.div
+        initial={{ opacity: 0, y: 30, filter: "blur(10px)" }}
+        animate={inView ? { opacity: 1, y: 0, filter: "blur(0px)" } : {}}
+        transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+        className="max-w-4xl mx-auto w-full flex flex-col items-center justify-center gap-12 relative"
+      >
+        {/* Subtle radial white glow behind the main title */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] rounded-full bg-white/[0.03] blur-[80px] pointer-events-none" />
+
+        {/* Cursive Tagline */}
+        <span className="font-pinyon text-[#BFBFBF] text-2xl sm:text-3xl md:text-[2.75rem] font-normal lowercase tracking-normal block leading-none">
+          let's build something unforgettable.
+        </span>
+
         {/* Title */}
-        <div className="flex flex-col items-center mb-20 text-center">
-          <h2 className="text-3xl md:text-5xl font-black uppercase tracking-premium text-white">
-            GET IN TOUCH
-          </h2>
-          <div className="silver-divider max-w-[120px] mt-6" />
-        </div>
+        <h2 className="text-4xl sm:text-6xl md:text-[5.5rem] font-black uppercase tracking-[0.08em] text-white drop-shadow-[0_0_40px_rgba(255,255,255,0.12)] select-none">
+          CHRISBUILDS
+        </h2>
 
-        <motion.div
-          initial={{ opacity: 0, y: 25 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8 }}
-          className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto text-left"
-        >
-          {contactLinks.map((item) => (
+        {/* Description */}
+        <span className="text-[9px] md:text-[10px] text-white/40 uppercase tracking-[0.3em] font-mono block">
+          LUXURY DIGITAL EXPERIENCES.
+        </span>
+
+        {/* Spaced Contact Links */}
+        <div className="flex flex-col gap-10 mt-6 relative z-10">
+          {/* Email */}
+          <div className="flex flex-col items-center gap-2">
+            <span className="font-mono text-[8px] md:text-[9px] text-white/30 uppercase tracking-[0.25em] font-semibold">
+              EMAIL
+            </span>
             <a
-              key={item.label}
-              href={item.href}
-              className="glass-panel p-8 rounded-3xl flex items-center gap-4 group relative overflow-hidden border border-white/5 shadow-2xl hover:scale-[1.01] hover:border-white/20 transition-all duration-500"
+              href="mailto:chrisbuilds.dev@gmail.com"
+              className="text-xs sm:text-sm text-white/60 tracking-wider font-mono hover:text-white transition-colors duration-300"
             >
-              {/* Subtle metallic shimmer moving across the card on hover */}
-              <div className="absolute inset-0 shimmer-line opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
-
-              <div className="p-2 bg-white/5 border border-white/10 rounded-xl group-hover:scale-105 transition-transform duration-300 relative z-10">
-                {item.icon}
-              </div>
-              <div className="flex flex-col font-mono relative z-10">
-                <span className="text-[8px] text-white/30 uppercase tracking-[0.25em] font-medium">
-                  {item.label}
-                </span>
-                <span className="text-[11px] text-white/60 tracking-wide font-light break-all mt-1 group-hover:text-white transition-colors">
-                  {item.value}
-                </span>
-              </div>
+              chrisbuilds.dev@gmail.com
             </a>
-          ))}
-        </motion.div>
+          </div>
 
-        {/* Action Button */}
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="mt-12 flex justify-center"
-        >
-          <a
-            href="mailto:chrisbuilds.dev@gmail.com?subject=Project Collaboration Proposal"
-            className="btn-luxury px-10 py-4.5 rounded-full inline-flex items-center gap-2"
-          >
-            Start a Project <ArrowUpRight className="w-4 h-4 animate-pulse" />
-          </a>
-        </motion.div>
+          {/* WhatsApp */}
+          <div className="flex flex-col items-center gap-2">
+            <span className="font-mono text-[8px] md:text-[9px] text-white/30 uppercase tracking-[0.25em] font-semibold">
+              WHATSAPP
+            </span>
+            <a
+              href="https://wa.me/918738882912"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs sm:text-sm text-white/60 tracking-wider font-mono hover:text-white transition-colors duration-300"
+            >
+              +91 87388 82912
+            </a>
+          </div>
+        </div>
+      </motion.div>
 
+      {/* Bottom spacer / Footer */}
+      <div className="flex-grow flex flex-col justify-end pt-24 relative z-10">
+        <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-white/20 select-none">
+          © 2026 CHRISBUILDS. ALL RIGHTS RESERVED.
+        </span>
       </div>
     </section>
   );
