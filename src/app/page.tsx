@@ -299,7 +299,7 @@ export default function Home() {
                 <span className="text-[clamp(1.8rem,8.2vw,6.2rem)] font-black w-full block whitespace-nowrap drop-shadow-[0_2px_10px_rgba(0,0,0,0.3)]">
                   WE BUILD DIGITAL
                 </span>
-                <span className="text-[clamp(1.53rem,6.97vw,5.27rem)] bg-gradient-to-b from-white/80 via-white/95 to-white bg-clip-text text-transparent drop-shadow-[0_2px_10px_rgba(0,0,0,0.3)] block w-full text-center md:text-left whitespace-nowrap mt-1 md:mt-0">
+                <span className="text-[clamp(1.53rem,6.97vw,5.27rem)] font-black animate-text-shine block w-full text-center md:text-left whitespace-nowrap mt-1 md:mt-0">
                   EXPERIENCES.
                 </span>
                 <span className="font-pinyon text-[#BFBFBF]/88 text-3xl sm:text-4xl md:text-[2.75rem] font-normal lowercase tracking-[0.08em] normal-case mt-3 md:mt-2 drop-shadow-[0_0_6px_rgba(255,255,255,0.2)] block w-full text-center md:text-left">

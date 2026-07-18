@@ -300,3 +300,48 @@ html, body {
   pointer-events: none;
   z-index: -1;
 }
+
+@keyframes textShine {
+  0% {
+    background-position: 150% center;
+  }
+  15% {
+    background-position: -50% center;
+  }
+  100% {
+    background-position: -50% center;
+  }
+}
+
+@keyframes textGlow {
+  0% {
+    text-shadow: 0 0 0px rgba(255, 255, 255, 0);
+  }
+  5% {
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+  }
+  12% {
+    text-shadow: 0 0 0px rgba(255, 255, 255, 0);
+  }
+  100% {
+    text-shadow: 0 0 0px rgba(255, 255, 255, 0);
+  }
+}
+
+.animate-text-shine {
+  background: linear-gradient(
+    110deg,
+    #e2e2e2 35%,
+    #e2e2e2 42%,
+    #ffffff 48%,
+    #ffffff 50%,
+    #ffffff 52%,
+    #e2e2e2 58%,
+    #e2e2e2 65%
+  );
+  background-size: 250% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: textShine 6s cubic-bezier(0.16, 1, 0.3, 1) infinite, textGlow 6s ease-in-out infinite;
+}
