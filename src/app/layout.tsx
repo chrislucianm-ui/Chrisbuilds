@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Kanit } from "next/font/google";
 import "./globals.css";
 import { SmoothScrollProvider } from "@/app/providers";
@@ -9,9 +9,37 @@ const kanit = Kanit({
   variable: "--font-kanit",
 });
 
+export const viewport: Viewport = {
+  themeColor: "#000000",
+};
+
 export const metadata: Metadata = {
-  title: "Jack -- 3D Creator",
-  description: "A 3D creator driven by crafting striking and unforgettable projects.",
+  title: "Chris Builds | Premium Digital Experiences",
+  description:
+    "Chris Builds crafts immersive, luxury-inspired websites and digital experiences with premium animations and modern design.",
+  keywords: [
+    "Chris Builds",
+    "ChrisBuilds",
+    "Luxury Digital Experiences",
+    "Creative Systems",
+    "Next.js",
+    "Web Engineering",
+    "Awwwards Portfolio",
+  ],
+  authors: [{ name: "Chris" }],
+  openGraph: {
+    title: "Chris Builds | Premium Digital Experiences",
+    description: "Building immersive and premium digital experiences.",
+    url: "https://chrisbuilds.dev",
+    siteName: "Chris Builds",
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Chris Builds | Premium Digital Experiences",
+    description: "Building immersive and premium digital experiences.",
+  },
 };
 
 export default function RootLayout({

@@ -6,7 +6,7 @@ import { ContactButton } from "./ContactButton";
 
 export function AboutSection() {
   const paragraphText =
-    "With more than five years of experience in design, i focus on branding, web design, and user experience, i truly enjoy working with businesses that aim to stand out and present their best image. Let's build something incredible together!";
+    "At Chris Builds, with more than five years of experience in design and engineering, i focus on branding, web design, and user experience, i truly enjoy working with businesses that aim to stand out and present their best image. Let's build something incredible together!";
 
   return (
     <section

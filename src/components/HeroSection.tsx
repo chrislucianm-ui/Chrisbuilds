@@ -78,7 +78,7 @@ export function HeroSection() {
       <div className="flex justify-between items-end pb-7 sm:pb-8 md:pb-10 px-6 md:px-10 w-full z-40 relative">
         <FadeIn delay={0.35} y={20}>
           <p className="text-[#D7E2EA] font-light uppercase tracking-wide leading-snug max-w-[160px] sm:max-w-[220px] md:max-w-[260px] text-[clamp(0.75rem,1.4vw,1.5rem)]">
-            a 3d creator driven by crafting striking and unforgettable projects
+            crafting striking and unforgettable digital experiences
           </p>
         </FadeIn>
         <FadeIn delay={0.45} y={20}>
