@@ -18,64 +18,54 @@ const cubicEase = [0.76, 0, 0.24, 1] as const;
 
 export function Preloader() {
   const [index, setIndex] = useState(0);
-  const [dimension, setDimension] = useState({ width: 0, height: 0 });
   const [isLoading, setIsLoading] = useState(true);
+  const [isReady, setIsReady] = useState(false);
 
+  // Preload fonts & assets before initiating animation loop
   useEffect(() => {
-    setDimension({ width: window.innerWidth, height: window.innerHeight });
-
-    const handleResize = () => {
-      setDimension({ width: window.innerWidth, height: window.innerHeight });
-    };
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    if (typeof document !== "undefined" && "fonts" in document) {
+      document.fonts.ready.then(() => {
+        setIsReady(true);
+      });
+    } else {
+      setIsReady(true);
+    }
   }, []);
 
+  // Sequential word cycling without word skipping
   useEffect(() => {
-    if (index === words.length - 1) return;
-    const timeout = setTimeout(
-      () => {
-        setIndex((prevIndex) => prevIndex + 1);
-      },
-      index === 0 ? 1000 : 150
-    );
-    return () => clearTimeout(timeout);
-  }, [index]);
+    if (!isReady) return;
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 2200);
-    return () => clearTimeout(timer);
-  }, []);
+    if (index < words.length - 1) {
+      const delay = index === 0 ? 850 : 170;
+      const timer = setTimeout(() => {
+        setIndex((prev) => prev + 1);
+      }, delay);
+      return () => clearTimeout(timer);
+    } else {
+      // Final greeting reached -> hold for 400ms then initiate exit curtain
+      const exitTimer = setTimeout(() => {
+        setIsLoading(false);
+      }, 420);
+      return () => clearTimeout(exitTimer);
+    }
+  }, [index, isReady]);
 
-  const initialPath = `M0 0 L${dimension.width} 0 L${dimension.width} ${
-    dimension.height
-  } L0 ${dimension.height} Z`;
-
-  const targetPath = `M0 0 L${dimension.width} 0 L${
-    dimension.width
-  } ${dimension.height} Q${dimension.width / 2} ${
-    dimension.height + 300
-  } 0 ${dimension.height} Z`;
-
-  const curveVariants = {
-    initial: {
-      d: initialPath,
-      transition: { duration: 0.7, ease: cubicEase },
-    },
+  const slideUp = {
+    initial: { y: "0%" },
     exit: {
-      d: targetPath,
-      transition: { duration: 0.7, ease: cubicEase, delay: 0.3 },
+      y: "-100%",
+      transition: { duration: 0.85, ease: cubicEase, delay: 0.15 },
     },
   };
 
-  const slideUp = {
-    initial: { top: 0 },
+  const curveVariants = {
+    initial: {
+      d: "M0 0 L100 0 L100 100 L0 100 Z",
+    },
     exit: {
-      top: "-100vh",
-      transition: { duration: 0.8, ease: cubicEase, delay: 0.2 },
+      d: "M0 0 L100 0 L100 100 Q50 160 0 100 Z",
+      transition: { duration: 0.75, ease: cubicEase, delay: 0.25 },
     },
   };
 
@@ -86,31 +76,28 @@ export function Preloader() {
           variants={slideUp}
           initial="initial"
           exit="exit"
-          className="fixed inset-0 z-[99999] flex items-center justify-center bg-[#141519] text-white select-none pointer-events-none overflow-hidden"
+          className="fixed inset-0 z-[99999] flex items-center justify-center bg-[#000000] text-[#FFFFFF] select-none pointer-events-none overflow-hidden will-change-transform transform-gpu"
         >
-          {dimension.width > 0 && (
-            <>
-              {/* Multilingual Greetings Text */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
-                className="flex items-center gap-3 z-10 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-medium tracking-tight text-white select-none"
-              >
-                <span className="w-3.5 h-3.5 rounded-full bg-white inline-block animate-pulse" />
-                <span>{words[index]}</span>
-              </motion.div>
+          {/* Word Indicator Container */}
+          <div className="relative z-10 flex items-center gap-3.5 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-medium tracking-tight text-[#FFFFFF] select-none">
+            <span className="w-3.5 h-3.5 rounded-full bg-[#FFFFFF] inline-block animate-pulse shrink-0" />
+            <span className="min-w-[140px] sm:min-w-[180px] md:min-w-[220px] text-left inline-block">
+              {words[index]}
+            </span>
+          </div>
 
-              {/* Curved SVG Exit Mask */}
-              <svg className="absolute top-0 w-full h-[calc(100%+300px)] pointer-events-none fill-[#141519]">
-                <motion.path
-                  variants={curveVariants}
-                  initial="initial"
-                  exit="exit"
-                />
-              </svg>
-            </>
-          )}
+          {/* GPU Hardware Accelerated SVG Exit Curve Mask */}
+          <svg
+            className="absolute top-0 w-full h-[calc(100%+300px)] pointer-events-none fill-[#000000]"
+            viewBox="0 0 100 100"
+            preserveAspectRatio="none"
+          >
+            <motion.path
+              variants={curveVariants}
+              initial="initial"
+              exit="exit"
+            />
+          </svg>
         </motion.div>
       )}
     </AnimatePresence>
