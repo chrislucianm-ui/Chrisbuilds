@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import { motion } from "framer-motion";
 import { FadeIn } from "./FadeIn";
 import { ContactButton } from "./ContactButton";
 
@@ -36,7 +37,7 @@ export function HeroSection() {
         </nav>
       </FadeIn>
 
-      {/* 1. Background Layer (z-10): Hero Typography Pushed Upward (~50px higher) */}
+      {/* 1. Background Layer (z-10): Hero Typography */}
       <div className="w-full overflow-hidden text-center z-10 flex justify-center items-center pt-2 sm:pt-4 md:pt-6 pointer-events-none">
         <FadeIn delay={0.15} y={20} className="w-full">
           <h1 className="hero-heading font-black uppercase tracking-tight leading-none whitespace-nowrap w-full text-[14vw] sm:text-[15vw] md:text-[16vw] lg:text-[17.5vw] -mt-6 sm:-mt-10 md:-mt-16 lg:-mt-20 select-none">
@@ -45,26 +46,34 @@ export function HeroSection() {
         </FadeIn>
       </div>
 
-      {/* 2. Middle Layer (z-20): Soft Radial Rim Glow */}
-      <div className="absolute left-1/2 top-[45%] -translate-x-1/2 -translate-y-1/2 w-[340px] sm:w-[440px] h-[340px] sm:h-[440px] rounded-full bg-white/[0.035] blur-[80px] pointer-events-none z-20" />
+      {/* 2. Middle Layer (z-20): Soft Radial Glow Behind Head */}
+      <div className="absolute left-1/2 top-[42%] -translate-x-1/2 -translate-y-1/2 w-[340px] sm:w-[440px] h-[340px] sm:h-[440px] rounded-full bg-white/[0.035] blur-[80px] pointer-events-none z-20" />
 
-      {/* 3. Front Layer (z-30): Completely Static 3D Character (Reduced by 20%, Positioned Lower) */}
-      <div className="absolute left-1/2 -translate-x-1/2 z-30 w-[220px] sm:w-[280px] md:w-[350px] lg:w-[400px] bottom-0 sm:bottom-2 pointer-events-none">
+      {/* 3. Front Layer (z-30): Prominent 3D Mascot (+20% size, Gentle 2-3px Breathing Floating Animation, Seamless Blend) */}
+      <div className="absolute left-1/2 -translate-x-1/2 z-30 w-[270px] sm:w-[350px] md:w-[430px] lg:w-[490px] bottom-0 sm:bottom-2 pointer-events-none">
         <FadeIn delay={0.3} y={15}>
-          <div className="relative w-full flex flex-col items-center">
-            {/* Subtle lens glow accent */}
-            <div className="absolute inset-x-8 top-10 h-28 bg-gradient-to-r from-transparent via-white/[0.05] to-transparent blur-xl pointer-events-none rounded-full" />
+          <motion.div
+            animate={{ y: [0, -3, 0] }}
+            transition={{
+              repeat: Infinity,
+              duration: 4,
+              ease: "easeInOut",
+            }}
+            className="relative w-full flex flex-col items-center"
+          >
+            {/* Subtle hair highlight aura glow */}
+            <div className="absolute inset-x-10 top-8 h-32 bg-gradient-to-r from-transparent via-white/[0.05] to-transparent blur-xl pointer-events-none rounded-full" />
 
-            {/* 3D Character Portrait Image */}
+            {/* Seamless 3D Mascot Image Render */}
             <img
               src="/hero-character.png"
-              alt="Chris 3D Creator Portrait"
-              className="w-full h-auto object-contain select-none pointer-events-none drop-shadow-[0_25px_30px_rgba(0,0,0,0.95)]"
+              alt="Chris Builds 3D Mascot Render"
+              className="w-full h-auto object-contain select-none pointer-events-none drop-shadow-[0_20px_35px_rgba(0,0,0,0.95)]"
             />
 
-            {/* Grounded Depth Shadow Beneath Character */}
-            <div className="w-[75%] h-5 bg-black/80 blur-md rounded-[50%] -mt-4 pointer-events-none" />
-          </div>
+            {/* Grounded Depth Contact Shadow */}
+            <div className="w-[70%] h-4 bg-black/80 blur-md rounded-[50%] -mt-4 pointer-events-none" />
+          </motion.div>
         </FadeIn>
       </div>
 
