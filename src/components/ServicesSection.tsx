@@ -1,84 +1,79 @@
 "use client";
-import React, { useRef } from "react";
-import {
-  motion,
-  useMotionTemplate,
-  useScroll,
-  useTransform,
-} from "framer-motion";
+import React from "react";
 import { FadeIn } from "./FadeIn";
 
-const SERVICES_LIST = [
-  { number: "01", name: "WEB DESIGN" },
-  { number: "02", name: "BRANDING" },
-  { number: "03", name: "3D MODELING" },
-  { number: "04", name: "MOTION DESIGN" },
-  { number: "05", name: "RENDERING" },
+const SERVICES_DATA = [
+  {
+    number: "01",
+    name: "3D Modeling",
+    description:
+      "Creation of detailed objects, characters, or environments tailored to specific client needs, ideal for games, products, and visualizations.",
+  },
+  {
+    number: "02",
+    name: "Rendering",
+    description:
+      "High-quality, photorealistic renders that showcase designs with custom lighting, textures, and materials to bring concepts to life.",
+  },
+  {
+    number: "03",
+    name: "Motion Design",
+    description:
+      "Dynamic animations and motion graphics that add energy and storytelling to brands, products, and digital experiences.",
+  },
+  {
+    number: "04",
+    name: "Branding",
+    description:
+      "Crafting cohesive visual identities -- from logos to full brand systems -- that communicate a clear and memorable presence.",
+  },
+  {
+    number: "05",
+    name: "Web Design",
+    description:
+      "Designing clean, modern, and conversion-focused websites with attention to layout, typography, and user experience.",
+  },
 ];
 
 export function ServicesSection() {
-  const targetRef = useRef<HTMLDivElement | null>(null);
-  const { scrollYProgress } = useScroll({
-    target: targetRef,
-    offset: ["start end", "end start"],
-  });
-
-  const yMotionValue = useTransform(scrollYProgress, [0, 1], [300, -100]);
-  const rotateX = useTransform(scrollYProgress, [0, 0.5, 1], [28, 10, -6]);
-  const transform = useMotionTemplate`rotateX(${rotateX}deg) translateY(${yMotionValue}px) translateZ(10px)`;
-
   return (
     <section
       id="services"
-      ref={targetRef}
-      className="bg-[#0C0C0C] text-[#D7E2EA] rounded-t-[40px] sm:rounded-t-[50px] md:rounded-t-[60px] relative z-10 px-5 sm:px-8 md:px-10 py-24 sm:py-32 md:py-40 overflow-hidden select-none"
+      className="bg-white text-[#0C0C0C] rounded-t-[40px] sm:rounded-t-[50px] md:rounded-t-[60px] px-5 sm:px-8 md:px-10 py-20 sm:py-24 md:py-32 relative z-0"
     >
-      <div className="max-w-6xl mx-auto flex flex-col items-center justify-center">
-        {/* Section Heading (Kept Intact) */}
-        <FadeIn delay={0} y={40} className="w-full text-center mb-16 sm:mb-24">
-          <h2 className="hero-heading font-black uppercase text-center leading-none tracking-tight text-[clamp(3rem,12vw,160px)] select-none">
+      <div className="max-w-5xl mx-auto flex flex-col">
+        {/* Heading */}
+        <FadeIn delay={0} y={40} className="w-full text-center">
+          <h2 className="font-black uppercase text-center text-[#0C0C0C] leading-none tracking-tight text-[clamp(3rem,12vw,160px)] mb-16 sm:mb-20 md:mb-28 select-none">
             Services
           </h2>
-          <p className="text-[#D7E2EA]/50 uppercase tracking-[0.25em] text-xs sm:text-sm font-medium mt-5">
-            Crafting bespoke digital systems & 3D experiences
-          </p>
         </FadeIn>
 
-        {/* 3D Perspective Scroll Container */}
-        <div
-          className="w-full min-h-[75vh] sm:min-h-[90vh] flex items-center justify-center relative py-12"
-          style={{
-            transformStyle: "preserve-3d",
-            perspective: "400px",
-          }}
-        >
-          <motion.div
-            style={{
-              transformStyle: "preserve-3d",
-              transform,
-            }}
-            className="w-full max-w-4xl flex flex-col items-center justify-center gap-14 sm:gap-20 md:gap-24 text-center"
-          >
-            {SERVICES_LIST.map((service) => (
-              <div
-                key={service.number}
-                className="group flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-5 w-fit text-center cursor-pointer transition-transform duration-300 hover:scale-[1.02]"
-              >
-                {/* Subtle Italic Numbering */}
-                <span className="font-mono font-light italic text-[#D7E2EA]/35 text-[clamp(0.9rem,1.8vw,1.4rem)] tracking-wider">
-                  [{service.number}]
-                </span>
+        {/* Vertical List */}
+        <div className="flex flex-col border-t border-[rgba(12,12,12,0.15)]">
+          {SERVICES_DATA.map((service, i) => (
+            <FadeIn
+              key={service.number}
+              delay={i * 0.1}
+              y={30}
+              className="py-8 sm:py-10 md:py-12 border-b border-[rgba(12,12,12,0.15)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 sm:gap-12"
+            >
+              {/* Number */}
+              <span className="font-black text-[#0C0C0C] leading-none text-[clamp(3rem,10vw,140px)] select-none">
+                {service.number}
+              </span>
 
-                {/* Elegant Luxury Service Title with Underline Reveal & Glow */}
-                <span className="relative font-medium uppercase tracking-[0.18em] text-[clamp(1.4rem,3.8vw,3.2rem)] leading-none text-[#D7E2EA]/75 transition-all duration-500 group-hover:text-white group-hover:tracking-[0.24em] group-hover:drop-shadow-[0_0_22px_rgba(255,255,255,0.45)] pb-2 after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-0 after:h-[1px] after:bg-gradient-to-r after:from-transparent after:via-white after:to-transparent group-hover:after:w-full after:transition-all after:duration-500">
+              {/* Name & Description */}
+              <div className="flex flex-col sm:flex-1 max-w-2xl">
+                <h3 className="font-medium uppercase text-[#0C0C0C] text-[clamp(1rem,2.2vw,2.1rem)] mb-2 sm:mb-3">
                   {service.name}
-                </span>
+                </h3>
+                <p className="font-light leading-relaxed text-[#0C0C0C]/60 text-[clamp(0.85rem,1.6vw,1.25rem)]">
+                  {service.description}
+                </p>
               </div>
-            ))}
-          </motion.div>
-
-          {/* Bottom Mask */}
-          <div className="absolute bottom-0 left-0 h-[25vh] w-full bg-gradient-to-b from-transparent to-[#0C0C0C] pointer-events-none" />
+            </FadeIn>
+          ))}
         </div>
       </div>
     </section>
