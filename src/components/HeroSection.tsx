@@ -10,10 +10,10 @@ export function HeroSection() {
       {/* ========================================== */}
       {/* 📱 DEDICATED MOBILE HERO SECTION (md:hidden) */}
       {/* ========================================== */}
-      <section className="md:hidden min-h-[100dvh] flex flex-col justify-between items-center px-4 sm:px-6 pt-4 pb-6 bg-[#0C0C0C] select-none relative overflow-x-hidden text-center">
+      <section className="md:hidden min-h-[100dvh] flex flex-col justify-between items-center px-4 sm:px-6 pt-3 pb-5 bg-[#0C0C0C] select-none relative overflow-x-hidden text-center">
         {/* 1. Mobile Navbar */}
         <FadeIn delay={0} y={-10} className="w-full z-30">
-          <nav className="flex justify-between items-center w-full text-[#D7E2EA] font-medium uppercase tracking-wider text-xs sm:text-sm py-2">
+          <nav className="flex justify-between items-center w-full text-[#D7E2EA] font-medium uppercase tracking-wider text-xs sm:text-sm py-1">
             <a href="#about" className="hover:opacity-70 transition-opacity">
               About
             </a>
@@ -30,16 +30,16 @@ export function HeroSection() {
         </FadeIn>
 
         {/* 2. Mobile Typography ("HI, I'M CHRIS") */}
-        <FadeIn delay={0.12} y={15} className="w-full my-2">
+        <FadeIn delay={0.12} y={15} className="w-full my-1">
           <h1 className="hero-heading font-black uppercase tracking-tight leading-none whitespace-nowrap text-[clamp(2.4rem,11.5vw,4.5rem)] w-full select-none text-center">
             Hi, i&apos;m Chris
           </h1>
         </FadeIn>
 
-        {/* 3. Mobile 3D Character Model Container */}
-        <div className="relative w-full flex flex-col items-center justify-center my-2">
+        {/* 3. Mobile 3D Character Model Container (Scaled up 30% for Mobile) */}
+        <div className="relative w-full flex flex-col items-center justify-center my-1 sm:my-2">
           {/* Subtle Mobile Glow behind head */}
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[240px] sm:w-[300px] h-[240px] sm:h-[300px] rounded-full bg-white/[0.04] blur-[60px] pointer-events-none z-0" />
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[310px] sm:w-[390px] h-[310px] sm:h-[390px] rounded-full bg-white/[0.045] blur-[70px] pointer-events-none z-0" />
 
           <FadeIn delay={0.25} y={15} className="z-10 relative">
             <motion.div
@@ -50,14 +50,14 @@ export function HeroSection() {
               <img
                 src="/hero-character.png"
                 alt="Chris Builds 3D Mascot"
-                className="w-[220px] xs:w-[260px] sm:w-[310px] h-auto object-contain select-none pointer-events-none filter drop-shadow-[0_15px_25px_rgba(0,0,0,0.9)]"
+                className="w-[78vw] min-w-[280px] max-w-[410px] sm:w-[390px] h-auto object-contain select-none pointer-events-none filter drop-shadow-[0_18px_28px_rgba(0,0,0,0.92)]"
               />
             </motion.div>
           </FadeIn>
         </div>
 
         {/* 4. Short Introduction Text & 5. Contact Me Button */}
-        <div className="flex flex-col items-center gap-4 w-full my-2 z-20">
+        <div className="flex flex-col items-center gap-3.5 w-full my-1 sm:my-2 z-20">
           <FadeIn delay={0.35} y={15}>
             <p className="text-[#D7E2EA] font-light uppercase tracking-wide leading-snug text-[clamp(0.75rem,3.2vw,1.1rem)] max-w-[280px] sm:max-w-[340px] text-center">
               crafting striking and unforgettable digital experiences
@@ -70,14 +70,14 @@ export function HeroSection() {
         </div>
 
         {/* 6. Mobile Scroll Indicator */}
-        <FadeIn delay={0.55} y={10} className="mt-2 opacity-70">
+        <FadeIn delay={0.55} y={10} className="mt-1 opacity-70">
           <div className="flex flex-col items-center gap-1">
             <span className="text-[9px] font-mono uppercase tracking-[0.25em] text-[#D7E2EA]">
               SCROLL
             </span>
-            <div className="w-4 h-7 border border-[#D7E2EA]/30 rounded-full flex justify-center p-1">
+            <div className="w-4 h-6 border border-[#D7E2EA]/30 rounded-full flex justify-center p-1">
               <motion.div
-                animate={{ y: [0, 4, 0] }}
+                animate={{ y: [0, 3, 0] }}
                 transition={{ repeat: Infinity, duration: 1.8, ease: "easeInOut" }}
                 className="w-1 h-1 bg-[#D7E2EA] rounded-full"
               />
@@ -159,7 +159,7 @@ export function HeroSection() {
         {/* Foreground Layer: Bottom Bar & CTA Content */}
         <div className="flex justify-between items-end pb-7 sm:pb-8 md:pb-10 px-6 md:px-10 w-full z-40 relative">
           <FadeIn delay={0.35} y={20}>
-            <p className="text-[#D7E2EA] font-[#D7E2EA] font-light uppercase tracking-wide leading-snug max-w-[160px] sm:max-w-[220px] md:max-w-[260px] text-[clamp(0.75rem,1.4vw,1.5rem)]">
+            <p className="text-[#D7E2EA] font-light uppercase tracking-wide leading-snug max-w-[160px] sm:max-w-[220px] md:max-w-[260px] text-[clamp(0.75rem,1.4vw,1.5rem)]">
               crafting striking and unforgettable digital experiences
             </p>
           </FadeIn>
