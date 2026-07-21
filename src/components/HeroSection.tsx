@@ -3,6 +3,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { FadeIn } from "./FadeIn";
 import { ContactButton } from "./ContactButton";
+import { TextRoll } from "./TextRoll";
 
 export function HeroSection() {
   return (
@@ -29,14 +30,14 @@ export function HeroSection() {
           </nav>
         </FadeIn>
 
-        {/* 2. Mobile Typography ("HI, I'M CHRIS") */}
-        <FadeIn delay={0.12} y={15} className="w-full my-1">
-          <h1 className="hero-heading font-black uppercase tracking-tight leading-none whitespace-nowrap text-[clamp(2.4rem,11.5vw,4.5rem)] w-full select-none text-center">
-            Hi, i&apos;m Chris
+        {/* 2. Mobile Typography ("HI, I'M CHRIS") with Text Roll Hover */}
+        <FadeIn delay={0.12} y={15} className="w-full my-1 flex justify-center items-center">
+          <h1 className="hero-heading font-black uppercase tracking-tight leading-none whitespace-nowrap text-[clamp(2.4rem,11.5vw,4.5rem)] w-full select-none text-center flex justify-center">
+            <TextRoll center>Hi, i&apos;m Chris</TextRoll>
           </h1>
         </FadeIn>
 
-        {/* 3. Mobile 3D Character Model Container (Scaled up 30% for Mobile) */}
+        {/* 3. Mobile 3D Character Model Container */}
         <div className="relative w-full flex flex-col items-center justify-center my-1 sm:my-2">
           {/* Subtle Mobile Glow behind head */}
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[310px] sm:w-[390px] h-[310px] sm:h-[390px] rounded-full bg-white/[0.045] blur-[70px] pointer-events-none z-0" />
@@ -120,11 +121,11 @@ export function HeroSection() {
           </nav>
         </FadeIn>
 
-        {/* Background Layer: Hero Typography */}
-        <div className="w-full overflow-hidden text-center z-10 flex justify-center items-center pt-2 sm:pt-4 md:pt-6 pointer-events-none">
-          <FadeIn delay={0.15} y={20} className="w-full">
-            <h1 className="hero-heading font-black uppercase tracking-tight leading-none whitespace-nowrap w-full text-[14vw] sm:text-[15vw] md:text-[16vw] lg:text-[17.5vw] -mt-6 sm:-mt-10 md:-mt-16 lg:-mt-20 select-none">
-              Hi, i&apos;m Chris
+        {/* Background Layer: Hero Typography with Text Roll */}
+        <div className="w-full overflow-hidden text-center z-10 flex justify-center items-center pt-2 sm:pt-4 md:pt-6">
+          <FadeIn delay={0.15} y={20} className="w-full flex justify-center items-center">
+            <h1 className="hero-heading font-black uppercase tracking-tight leading-none whitespace-nowrap w-full text-[14vw] sm:text-[15vw] md:text-[16vw] lg:text-[17.5vw] -mt-6 sm:-mt-10 md:-mt-16 lg:-mt-20 select-none text-center flex justify-center">
+              <TextRoll center>Hi, i&apos;m Chris</TextRoll>
             </h1>
           </FadeIn>
         </div>
