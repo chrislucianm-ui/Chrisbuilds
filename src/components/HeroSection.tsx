@@ -13,7 +13,7 @@ export function HeroSection() {
       {/* ========================================== */}
       <section className="md:hidden min-h-[100dvh] flex flex-col justify-between items-center px-4 sm:px-6 pt-3 pb-5 bg-[#0C0C0C] select-none relative overflow-x-hidden text-center">
         {/* 1. Mobile Navbar */}
-        <FadeIn delay={0} y={-10} className="w-full z-30">
+        <FadeIn delay={0} y={-10} className="w-full z-40">
           <nav className="flex justify-between items-center w-full text-[#D7E2EA] font-medium uppercase tracking-wider text-xs sm:text-sm py-1">
             <a href="#about" className="hover:opacity-70 transition-opacity">
               About
@@ -31,14 +31,14 @@ export function HeroSection() {
         </FadeIn>
 
         {/* 2. Mobile Typography ("HI, I'M CHRIS") with Text Roll Hover */}
-        <FadeIn delay={0.12} y={15} className="w-full my-1 flex justify-center items-center">
-          <h1 className="hero-heading font-black uppercase tracking-tight leading-none whitespace-nowrap text-[clamp(2.4rem,11.5vw,4.5rem)] w-full select-none text-center flex justify-center">
+        <FadeIn delay={0.12} y={15} className="w-full my-1 flex justify-center items-center z-35">
+          <h1 className="font-black uppercase tracking-tight leading-none whitespace-nowrap text-[clamp(2.4rem,11.5vw,4.5rem)] w-full select-none text-center flex justify-center pointer-events-auto">
             <TextRoll center>Hi, i&apos;m Chris</TextRoll>
           </h1>
         </FadeIn>
 
         {/* 3. Mobile 3D Character Model Container */}
-        <div className="relative w-full flex flex-col items-center justify-center my-1 sm:my-2">
+        <div className="relative w-full flex flex-col items-center justify-center my-1 sm:my-2 z-10 pointer-events-none">
           {/* Subtle Mobile Glow behind head */}
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[310px] sm:w-[390px] h-[310px] sm:h-[390px] rounded-full bg-white/[0.045] blur-[70px] pointer-events-none z-0" />
 
@@ -58,7 +58,7 @@ export function HeroSection() {
         </div>
 
         {/* 4. Short Introduction Text & 5. Contact Me Button */}
-        <div className="flex flex-col items-center gap-3.5 w-full my-1 sm:my-2 z-20">
+        <div className="flex flex-col items-center gap-3.5 w-full my-1 sm:my-2 z-30">
           <FadeIn delay={0.35} y={15}>
             <p className="text-[#D7E2EA] font-light uppercase tracking-wide leading-snug text-[clamp(0.75rem,3.2vw,1.1rem)] max-w-[280px] sm:max-w-[340px] text-center">
               crafting striking and unforgettable digital experiences
@@ -122,9 +122,9 @@ export function HeroSection() {
         </FadeIn>
 
         {/* Background Layer: Hero Typography with Text Roll */}
-        <div className="w-full overflow-hidden text-center z-10 flex justify-center items-center pt-2 sm:pt-4 md:pt-6">
+        <div className="w-full overflow-hidden text-center z-35 flex justify-center items-center pt-2 sm:pt-4 md:pt-6 pointer-events-auto">
           <FadeIn delay={0.15} y={20} className="w-full flex justify-center items-center">
-            <h1 className="hero-heading font-black uppercase tracking-tight leading-none whitespace-nowrap w-full text-[14vw] sm:text-[15vw] md:text-[16vw] lg:text-[17.5vw] -mt-6 sm:-mt-10 md:-mt-16 lg:-mt-20 select-none text-center flex justify-center">
+            <h1 className="font-black uppercase tracking-tight leading-none whitespace-nowrap w-full text-[14vw] sm:text-[15vw] md:text-[16vw] lg:text-[17.5vw] -mt-6 sm:-mt-10 md:-mt-16 lg:-mt-20 select-none text-center flex justify-center pointer-events-auto">
               <TextRoll center>Hi, i&apos;m Chris</TextRoll>
             </h1>
           </FadeIn>

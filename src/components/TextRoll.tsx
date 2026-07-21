@@ -15,75 +15,75 @@ export interface TextRollProps {
 export const TextRoll: React.FC<TextRollProps> = ({
   children,
   className,
-  center = false,
+  center = true,
 }) => {
+  const letters = children.split("");
+
   return (
     <motion.span
       initial="initial"
       whileHover="hovered"
-      className={cn("relative inline-block overflow-hidden cursor-pointer select-none", className)}
-      style={{
-        lineHeight: 0.9,
-      }}
+      className={cn(
+        "relative inline-flex overflow-hidden cursor-pointer select-none pointer-events-auto leading-none py-1",
+        className
+      )}
     >
-      <div className="flex justify-center items-center">
-        {children.split("").map((l, i) => {
+      {/* Primary Row (Rolls Upward out of view) */}
+      <span className="flex justify-center items-center leading-none">
+        {letters.map((l, i) => {
           const delay = center
-            ? STAGGER * Math.abs(i - (children.length - 1) / 2)
+            ? STAGGER * Math.abs(i - (letters.length - 1) / 2)
             : STAGGER * i;
 
           return (
             <motion.span
+              key={i}
               variants={{
-                initial: {
-                  y: 0,
-                },
-                hovered: {
-                  y: "-100%",
-                },
+                initial: { y: "0%" },
+                hovered: { y: "-100%" },
               }}
               transition={{
                 duration: 0.35,
                 ease: [0.33, 1, 0.68, 1],
                 delay,
               }}
-              className="inline-block whitespace-pre"
-              key={i}
+              className="inline-block whitespace-pre hero-heading leading-none"
             >
               {l === " " ? "\u00A0" : l}
             </motion.span>
           );
         })}
-      </div>
-      <div className="absolute inset-0 flex justify-center items-center pointer-events-none">
-        {children.split("").map((l, i) => {
+      </span>
+
+      {/* Secondary Duplicate Row (Rolls Upward into view) */}
+      <span
+        aria-hidden="true"
+        className="absolute inset-0 flex justify-center items-center leading-none pointer-events-none"
+      >
+        {letters.map((l, i) => {
           const delay = center
-            ? STAGGER * Math.abs(i - (children.length - 1) / 2)
+            ? STAGGER * Math.abs(i - (letters.length - 1) / 2)
             : STAGGER * i;
 
           return (
             <motion.span
+              key={i}
               variants={{
-                initial: {
-                  y: "100%",
-                },
-                hovered: {
-                  y: 0,
-                },
+                initial: { y: "100%" },
+                hovered: { y: "0%" },
               }}
               transition={{
                 duration: 0.35,
                 ease: [0.33, 1, 0.68, 1],
                 delay,
               }}
-              className="inline-block whitespace-pre"
-              key={i}
+              className="inline-block whitespace-pre hero-heading leading-none"
             >
               {l === " " ? "\u00A0" : l}
             </motion.span>
           );
         })}
-      </div>
+      </span>
     </motion.span>
   );
 };
