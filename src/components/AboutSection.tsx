@@ -92,8 +92,8 @@ export function AboutSection() {
           enableBlur={true}
           baseRotation={2}
           blurStrength={8}
-          containerClassName="max-w-[620px] mx-auto text-center"
-          textClassName="text-[#D7E2EA] font-medium text-center leading-relaxed text-[clamp(1.1rem,2.2vw,1.6rem)]"
+          containerClassName="max-w-[580px] mx-auto text-center"
+          textClassName="text-[#D7E2EA] font-normal text-center leading-relaxed text-[clamp(0.95rem,1.8vw,1.25rem)]"
           rotationEnd="bottom bottom"
           wordAnimationEnd="bottom bottom"
         >
