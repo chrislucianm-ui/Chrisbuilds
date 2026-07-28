@@ -377,12 +377,12 @@ export function ContactSection() {
             WHATSAPP
           </span>
           <a
-            href="https://wa.me/918708882912?text=Hi%20Chris!%20I%20visited%20your%20portfolio%20website%20and%20would%20like%20to%20discuss%20a%20project%20with%20you."
+            href="https://wa.me/918738882912?text=Hi%20Chris!%20I%20visited%20your%20portfolio%20website%20and%20would%20like%20to%20discuss%20a%20project%20with%20you."
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm sm:text-base md:text-lg font-light tracking-wider hover:text-white transition-colors duration-300 pointer-events-auto"
           >
-            +91 87088 82912
+            +91 87388 82912
           </a>
         </FadeIn>
       </div>
