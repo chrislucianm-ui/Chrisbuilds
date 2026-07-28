@@ -88,12 +88,12 @@ export function AboutSection() {
 
         {/* Animated Paragraph with ScrollReveal */}
         <ScrollReveal
-          baseOpacity={0}
+          baseOpacity={0.05}
           enableBlur={true}
-          baseRotation={3}
-          blurStrength={10}
-          containerClassName="max-w-[820px] mx-auto text-center"
-          textClassName="text-[#D7E2EA] font-semibold text-center leading-relaxed text-[clamp(1.3rem,2.6vw,1.9rem)]"
+          baseRotation={4}
+          blurStrength={12}
+          containerClassName="max-w-4xl mx-auto text-center"
+          textClassName="text-[#D7E2EA] font-semibold text-center leading-relaxed text-[clamp(1.4rem,3.2vw,2.6rem)]"
           rotationEnd="bottom bottom"
           wordAnimationEnd="bottom bottom"
         >

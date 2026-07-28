@@ -40,7 +40,7 @@ export default function ScrollReveal({
     return text.split(/(\s+)/).map((word, index) => {
       if (word.match(/^\s+$/)) return word;
       return (
-        <span className="word animate-word" key={index}>
+        <span className="word" key={index}>
           {word}
         </span>
       );
@@ -56,7 +56,7 @@ export default function ScrollReveal({
     const ctx = gsap.context(() => {
       gsap.fromTo(
         el,
-        { transformOrigin: '50% 50%', rotate: baseRotation },
+        { transformOrigin: '0% 50%', rotate: baseRotation },
         {
           ease: 'none',
           rotate: 0,
@@ -70,7 +70,7 @@ export default function ScrollReveal({
         }
       );
 
-      const wordElements = el.querySelectorAll('.animate-word');
+      const wordElements = el.querySelectorAll('.word');
 
       gsap.fromTo(
         wordElements,
