@@ -3,6 +3,7 @@
 import { gsap } from "gsap";
 import React, { useEffect, useRef } from "react";
 import { FadeIn } from "./FadeIn";
+import BlurText from "./BlurText";
 
 interface CrowdCanvasProps {
   src: string;
@@ -296,17 +297,18 @@ export function ContactSection() {
 
       {/* Centerpiece Branding (Huge with subtle white glow) */}
       <div className="z-20 flex flex-col items-center justify-center my-auto py-8">
-        <FadeIn delay={0.25} y={30}>
-          <h2 
-            className="font-black tracking-[0.06em] leading-none uppercase select-none text-[12vw] sm:text-[11vw] md:text-[9.5vw] text-white"
-            style={{
-              textShadow: "0 0 70px rgba(255, 255, 255, 0.22), 0 0 35px rgba(255, 255, 255, 0.12)",
-            }}
-          >
-            CHRISBUILDS
-          </h2>
-        </FadeIn>
-        <FadeIn delay={0.35} y={20} className="mt-4 sm:mt-6">
+        <BlurText
+          text="CHRISBUILDS"
+          animateBy="letters"
+          delay={45}
+          direction="bottom"
+          stepDuration={0.35}
+          className="font-black tracking-[0.06em] leading-none uppercase select-none text-[12vw] sm:text-[11vw] md:text-[9.5vw] text-white flex justify-center w-full"
+          style={{
+            textShadow: "0 0 70px rgba(255, 255, 255, 0.22), 0 0 35px rgba(255, 255, 255, 0.12)",
+          }}
+        />
+        <FadeIn delay={0.45} y={20} className="mt-4 sm:mt-6">
           <p className="text-xs sm:text-sm md:text-base tracking-[0.38em] text-[#D7E2EA]/70 uppercase font-light">
             Luxury Digital Experiences.
           </p>
