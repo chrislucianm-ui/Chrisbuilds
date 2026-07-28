@@ -323,7 +323,7 @@ const CrowdCanvas = ({ src, rows = 15, cols = 7 }: CrowdCanvasProps) => {
 
 export function ContactSection() {
   return (
-    <section className="min-h-screen bg-[#0C0C0C] text-[#D7E2EA] flex flex-col justify-between items-center text-center relative overflow-hidden select-none px-4 sm:px-6 pt-20 pb-8">
+    <section id="contact" className="min-h-screen bg-[#0C0C0C] text-[#D7E2EA] flex flex-col justify-between items-center text-center relative overflow-hidden select-none px-4 sm:px-6 pt-20 pb-8">
       {/* Background soft ambient grid glow */}
       <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] sm:w-[600px] h-[350px] sm:h-[600px] rounded-full bg-white/[0.015] blur-[100px] pointer-events-none z-0" />
 

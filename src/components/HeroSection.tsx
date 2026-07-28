@@ -19,12 +19,9 @@ export function HeroSection() {
               About
             </a>
             <a href="#services" className="hover:opacity-70 transition-opacity">
-              Price
+              Services
             </a>
-            <a href="#projects" className="hover:opacity-70 transition-opacity">
-              Projects
-            </a>
-            <a href="#about" className="hover:opacity-70 transition-opacity">
+            <a href="#contact" className="hover:opacity-70 transition-opacity">
               Contact
             </a>
           </nav>
@@ -104,16 +101,10 @@ export function HeroSection() {
               href="#services"
               className="hover:opacity-70 transition-opacity duration-200"
             >
-              Price
+              Services
             </a>
             <a
-              href="#projects"
-              className="hover:opacity-70 transition-opacity duration-200"
-            >
-              Projects
-            </a>
-            <a
-              href="#about"
+              href="#contact"
               className="hover:opacity-70 transition-opacity duration-200"
             >
               Contact
