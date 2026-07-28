@@ -75,7 +75,7 @@ export function AboutSection() {
       </FadeIn>
 
       {/* Content Cluster */}
-      <div className="flex flex-col items-center z-20 max-w-4xl w-full">
+      <div className="flex flex-col items-center z-20 max-w-5xl w-full">
         {/* Heading */}
         <FadeIn delay={0} y={40} className="w-full text-center">
           <h2 className="hero-heading font-black uppercase leading-none tracking-tight text-center text-[clamp(3rem,12vw,160px)]">
@@ -88,12 +88,12 @@ export function AboutSection() {
 
         {/* Animated Paragraph with ScrollReveal */}
         <ScrollReveal
-          baseOpacity={0.05}
+          baseOpacity={0}
           enableBlur={true}
-          baseRotation={2}
-          blurStrength={8}
-          containerClassName="max-w-[580px] mx-auto text-center"
-          textClassName="text-[#D7E2EA] font-normal text-center leading-relaxed text-[clamp(0.95rem,1.8vw,1.25rem)]"
+          baseRotation={3}
+          blurStrength={10}
+          containerClassName="max-w-[820px] mx-auto text-center"
+          textClassName="text-[#D7E2EA] font-semibold text-center leading-relaxed text-[clamp(1.3rem,2.6vw,1.9rem)]"
           rotationEnd="bottom bottom"
           wordAnimationEnd="bottom bottom"
         >
@@ -101,7 +101,7 @@ export function AboutSection() {
         </ScrollReveal>
 
         {/* Gap between text and button: gap-16 sm:gap-20 md:gap-24 */}
-        <div className="h-16 sm:h-20 md:h-24" />
+        <div className="h-12 sm:h-16 md:h-20" />
 
         {/* Contact Button */}
         <FadeIn delay={0.2} y={20}>
