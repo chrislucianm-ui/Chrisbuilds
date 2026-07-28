@@ -227,31 +227,25 @@ export default function HeroBackgroundCanvas() {
     const targetCamera = { x: 0, y: 0 };
 
     const handleMouseMove = (e: MouseEvent) => {
+      if (isMobile) return;
       mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
       mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
 
       targetCamera.x = mouse.x * 0.45; // Very subtle, premium drift
       targetCamera.y = mouse.y * 0.3;
     };
-    window.addEventListener("mousemove", handleMouseMove);
+    if (!isMobile) {
+      window.addEventListener("mousemove", handleMouseMove);
+    }
 
     // 7. Scroll Intersection Observer
     let isVisible = true;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          isVisible = entry.isIntersecting;
-        });
-      },
-      { threshold: 0.05 }
-    );
-    observer.observe(canvas);
-
-    // 8. Animation Loop
     let animationFrameId: number;
     const clock = new THREE.Clock();
 
     const animate = () => {
+      if (!isVisible) return;
+
       if (prefersReducedMotion) {
         renderer.render(scene, camera);
         return;
@@ -259,73 +253,86 @@ export default function HeroBackgroundCanvas() {
 
       animationFrameId = requestAnimationFrame(animate);
 
-      if (isVisible) {
-        const time = clock.getElapsedTime();
+      const time = clock.getElapsedTime();
 
-        // 1. Slow Zoom (Scale 1.00 -> 1.02 over 40 seconds, looping smoothly)
-        const zoomTime = 40;
-        const loopCycle = time % (zoomTime * 2);
-        let zoomVal = 1.0;
-        if (loopCycle < zoomTime) {
-          zoomVal = 1.0 + (loopCycle / zoomTime) * 0.02;
-        } else {
-          zoomVal = 1.02 - ((loopCycle - zoomTime) / zoomTime) * 0.02;
-        }
-
-        const baseSX = bgMesh.userData.baseScaleX || 1.0;
-        const baseSY = bgMesh.userData.baseScaleY || 1.0;
-        bgMesh.scale.set(baseSX * zoomVal, baseSY * zoomVal, 1.0);
-
-        // 2. Gentle vertical drift
-        bgMesh.position.y = Math.sin(time * 0.04) * 0.12;
-
-        // 3. Stars Twinkling Opacity Modulation
-        farMat.opacity = 0.1 + Math.sin(time * 0.4) * 0.05;
-        midMat.opacity = 0.22 + Math.cos(time * 0.6) * 0.1;
-
-        // 4. Parallax star layer rotations
-        farStarsGroup.rotation.y = time * 0.0002;
-        midStarsGroup.rotation.y = -time * 0.0001;
-
-        // 5. Drift the cosmic dust points
-        const posArr = dustGeom.attributes.position.array as Float32Array;
-        for (let i = 0; i < dustCount; i++) {
-          posArr[i * 3 + 1] += dustSpeedsY[i] * 0.12;
-          posArr[i * 3] += Math.sin(time * 0.08 + i) * 0.0002;
-          
-          if (posArr[i * 3 + 1] > 10) {
-            posArr[i * 3 + 1] = -10;
-          }
-        }
-        dustGeom.attributes.position.needsUpdate = true;
-
-        // 6. Update Shooting Star position
-        if (streakActive) {
-          streakTime += 0.016;
-          if (streakTime >= streakDuration) {
-            streakActive = false;
-            shootingStarMat.opacity = 0;
-          } else {
-            shootingStar.position.x = streakStartPos.x + streakTime * streakSpeed.x;
-            shootingStar.position.y = streakStartPos.y + streakTime * streakSpeed.y;
-            
-            if (streakTime < streakDuration * 0.2) {
-              shootingStarMat.opacity = (streakTime / (streakDuration * 0.2)) * 0.4;
-            } else {
-              shootingStarMat.opacity = (1.0 - (streakTime - streakDuration * 0.2) / (streakDuration * 0.8)) * 0.4;
-            }
-          }
-        }
-
-        // 7. Smooth camera parallax interpolation (Lerping)
-        camera.position.x += (targetCamera.x - camera.position.x) * 0.04;
-        camera.position.y += (targetCamera.y - camera.position.y) * 0.04;
-        camera.lookAt(0, 0, 0);
-
-        renderer.render(scene, camera);
+      // 1. Slow Zoom (Scale 1.00 -> 1.02 over 40 seconds, looping smoothly)
+      const zoomTime = 40;
+      const loopCycle = time % (zoomTime * 2);
+      let zoomVal = 1.0;
+      if (loopCycle < zoomTime) {
+        zoomVal = 1.0 + (loopCycle / zoomTime) * 0.02;
+      } else {
+        zoomVal = 1.02 - ((loopCycle - zoomTime) / zoomTime) * 0.02;
       }
+
+      const baseSX = bgMesh.userData.baseScaleX || 1.0;
+      const baseSY = bgMesh.userData.baseScaleY || 1.0;
+      bgMesh.scale.set(baseSX * zoomVal, baseSY * zoomVal, 1.0);
+
+      // 2. Gentle vertical drift
+      bgMesh.position.y = Math.sin(time * 0.04) * 0.12;
+
+      // 3. Stars Twinkling Opacity Modulation
+      farMat.opacity = 0.1 + Math.sin(time * 0.4) * 0.05;
+      midMat.opacity = 0.22 + Math.cos(time * 0.6) * 0.1;
+
+      // 4. Parallax star layer rotations
+      farStarsGroup.rotation.y = time * 0.0002;
+      midStarsGroup.rotation.y = -time * 0.0001;
+
+      // 5. Drift the cosmic dust points
+      const posArr = dustGeom.attributes.position.array as Float32Array;
+      for (let i = 0; i < dustCount; i++) {
+        posArr[i * 3 + 1] += dustSpeedsY[i] * 0.12;
+        posArr[i * 3] += Math.sin(time * 0.08 + i) * 0.0002;
+        
+        if (posArr[i * 3 + 1] > 10) {
+          posArr[i * 3 + 1] = -10;
+        }
+      }
+      dustGeom.attributes.position.needsUpdate = true;
+
+      // 6. Update Shooting Star position
+      if (streakActive) {
+        streakTime += 0.016;
+        if (streakTime >= streakDuration) {
+          streakActive = false;
+          shootingStarMat.opacity = 0;
+        } else {
+          shootingStar.position.x = streakStartPos.x + streakTime * streakSpeed.x;
+          shootingStar.position.y = streakStartPos.y + streakTime * streakSpeed.y;
+          
+          if (streakTime < streakDuration * 0.2) {
+            shootingStarMat.opacity = (streakTime / (streakDuration * 0.2)) * 0.4;
+          } else {
+            shootingStarMat.opacity = (1.0 - (streakTime - streakDuration * 0.2) / (streakDuration * 0.8)) * 0.4;
+          }
+        }
+      }
+
+      // 7. Smooth camera parallax interpolation (Lerping)
+      camera.position.x += (targetCamera.x - camera.position.x) * 0.04;
+      camera.position.y += (targetCamera.y - camera.position.y) * 0.04;
+      camera.lookAt(0, 0, 0);
+
+      renderer.render(scene, camera);
     };
 
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const wasVisible = isVisible;
+          isVisible = entry.isIntersecting;
+          if (isVisible && !wasVisible) {
+            animate();
+          }
+        });
+      },
+      { threshold: 0.05 }
+    );
+    observer.observe(canvas);
+
+    // Initial loop execution
     animate();
 
     // 9. Resize handling (Calculates cover aspect ratio matching background-size: cover)
@@ -368,7 +375,9 @@ export default function HeroBackgroundCanvas() {
     return () => {
       clearInterval(shootingInterval);
       cancelAnimationFrame(animationFrameId);
-      window.removeEventListener("mousemove", handleMouseMove);
+      if (!isMobile) {
+        window.removeEventListener("mousemove", handleMouseMove);
+      }
       window.removeEventListener("resize", handleResize);
       observer.disconnect();
       renderer.dispose();

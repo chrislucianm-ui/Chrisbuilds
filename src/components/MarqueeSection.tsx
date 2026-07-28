@@ -1,5 +1,9 @@
 "use client";
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useEffect } from "react";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+gsap.registerPlugin(ScrollTrigger);
 
 const MARQUEE_IMAGES = [
   "https://motionsites.ai/assets/hero-space-voyage-preview-eECLH3Yc.gif",
@@ -27,7 +31,8 @@ const MARQUEE_IMAGES = [
 
 export function MarqueeSection() {
   const sectionRef = useRef<HTMLDivElement>(null);
-  const [offset, setOffset] = useState(0);
+  const row1Ref = useRef<HTMLDivElement>(null);
+  const row2Ref = useRef<HTMLDivElement>(null);
 
   const row1Raw = MARQUEE_IMAGES.slice(0, 11);
   const row2Raw = MARQUEE_IMAGES.slice(11);
@@ -36,17 +41,45 @@ export function MarqueeSection() {
   const row2 = [...row2Raw, ...row2Raw, ...row2Raw];
 
   useEffect(() => {
-    const handleScroll = () => {
-      if (!sectionRef.current) return;
-      const rect = sectionRef.current.getBoundingClientRect();
-      const sectionTop = window.scrollY + rect.top;
-      const calcOffset = (window.scrollY - sectionTop + window.innerHeight) * 0.3;
-      setOffset(calcOffset);
-    };
+    const r1 = row1Ref.current;
+    const r2 = row2Ref.current;
+    if (!r1 || !r2) return;
 
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
-    return () => window.removeEventListener("scroll", handleScroll);
+    const ctx = gsap.context(() => {
+      // Row 1 moves right
+      gsap.fromTo(
+        r1,
+        { x: -350 },
+        {
+          x: 50,
+          ease: "none",
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top bottom",
+            end: "bottom top",
+            scrub: true,
+          },
+        }
+      );
+
+      // Row 2 moves left
+      gsap.fromTo(
+        r2,
+        { x: 50 },
+        {
+          x: -350,
+          ease: "none",
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top bottom",
+            end: "bottom top",
+            scrub: true,
+          },
+        }
+      );
+    }, sectionRef);
+
+    return () => ctx.revert();
   }, []);
 
   return (
@@ -56,11 +89,8 @@ export function MarqueeSection() {
     >
       {/* Row 1: moves RIGHT */}
       <div
-        className="flex gap-3 whitespace-nowrap"
-        style={{
-          transform: `translateX(${offset - 200}px)`,
-          willChange: "transform",
-        }}
+        ref={row1Ref}
+        className="flex gap-3 whitespace-nowrap will-change-transform"
       >
         {row1.map((url, i) => (
           <img
@@ -75,11 +105,8 @@ export function MarqueeSection() {
 
       {/* Row 2: moves LEFT */}
       <div
-        className="flex gap-3 whitespace-nowrap"
-        style={{
-          transform: `translateX(${-(offset - 200)}px)`,
-          willChange: "transform",
-        }}
+        ref={row2Ref}
+        className="flex gap-3 whitespace-nowrap will-change-transform"
       >
         {row2.map((url, i) => (
           <img

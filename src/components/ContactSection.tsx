@@ -254,21 +254,62 @@ const CrowdCanvas = ({ src, rows = 15, cols = 7 }: CrowdCanvasProps) => {
       initCrowd();
     };
 
+    // Optimization: Suspend active walks and ticker loop when offscreen
+    let isVisible = false;
+    let tickerAdded = false;
+
+    const startTicker = () => {
+      if (!tickerAdded) {
+        gsap.ticker.add(render);
+        tickerAdded = true;
+      }
+      crowd.forEach((peep) => {
+        if (peep.walk) peep.walk.resume();
+      });
+    };
+
+    const stopTicker = () => {
+      if (tickerAdded) {
+        gsap.ticker.remove(render);
+        tickerAdded = false;
+      }
+      crowd.forEach((peep) => {
+        if (peep.walk) peep.walk.pause();
+      });
+    };
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          isVisible = entry.isIntersecting;
+          if (isVisible) {
+            startTicker();
+          } else {
+            stopTicker();
+          }
+        });
+      },
+      { threshold: 0.02 }
+    );
+
     const init = () => {
       createPeeps();
       resize();
-      gsap.ticker.add(render);
+      observer.observe(canvas);
     };
 
     img.onload = init;
     img.src = config.src;
 
-    const handleResize = () => resize();
+    const handleResize = () => {
+      if (isVisible) resize();
+    };
     window.addEventListener("resize", handleResize);
 
     return () => {
       window.removeEventListener("resize", handleResize);
-      gsap.ticker.remove(render);
+      observer.disconnect();
+      stopTicker();
       crowd.forEach((peep) => {
         if (peep.walk) peep.walk.kill();
       });
@@ -276,15 +317,15 @@ const CrowdCanvas = ({ src, rows = 15, cols = 7 }: CrowdCanvasProps) => {
   }, []);
 
   return (
-    <canvas ref={canvasRef} className="absolute bottom-0 left-0 w-full h-[32vh] sm:h-[35vh] md:h-[40vh] pointer-events-none z-0 opacity-75" />
+    <canvas ref={canvasRef} className="absolute bottom-0 left-0 w-full h-[22vh] sm:h-[24vh] md:h-[28vh] pointer-events-none z-0 opacity-70" />
   );
 };
 
 export function ContactSection() {
   return (
-    <section className="min-h-screen bg-[#0C0C0C] text-[#D7E2EA] flex flex-col justify-between items-center text-center relative overflow-hidden select-none px-6 pt-24 pb-8">
+    <section className="min-h-screen bg-[#0C0C0C] text-[#D7E2EA] flex flex-col justify-between items-center text-center relative overflow-hidden select-none px-4 sm:px-6 pt-20 pb-8">
       {/* Background soft ambient grid glow */}
-      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[450px] sm:w-[600px] h-[450px] sm:h-[600px] rounded-full bg-white/[0.015] blur-[110px] pointer-events-none z-0" />
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] sm:w-[600px] h-[350px] sm:h-[600px] rounded-full bg-white/[0.015] blur-[100px] pointer-events-none z-0" />
 
       {/* Top Header */}
       <div className="z-20 max-w-xl flex flex-col items-center gap-6 mt-4">
@@ -296,7 +337,7 @@ export function ContactSection() {
       </div>
 
       {/* Centerpiece Branding (Huge with subtle white glow) */}
-      <div className="z-20 flex flex-col items-center justify-center my-auto py-8">
+      <div className="z-20 flex flex-col items-center justify-center my-auto py-6">
         <BlurText
           text="CHRISBUILDS"
           animateBy="letters"
@@ -315,8 +356,8 @@ export function ContactSection() {
         </FadeIn>
       </div>
 
-      {/* Contact Channels (Only Email and WhatsApp) */}
-      <div className="relative z-20 flex flex-col sm:flex-row items-center justify-center gap-10 sm:gap-20 md:gap-32 w-full max-w-4xl mt-auto mb-24 px-4 pointer-events-auto">
+      {/* Contact Channels (Only Email and WhatsApp - Safe above crowd canvas) */}
+      <div className="relative z-20 flex flex-col sm:flex-row items-center justify-center gap-10 sm:gap-16 md:gap-24 w-full max-w-4xl mt-auto mb-32 sm:mb-36 md:mb-44 px-4 pointer-events-auto">
         {/* Email */}
         <FadeIn delay={0.45} y={20} className="flex flex-col items-center gap-2">
           <span className="text-[10px] sm:text-xs tracking-[0.3em] text-[#D7E2EA]/40 uppercase font-semibold">
@@ -324,7 +365,7 @@ export function ContactSection() {
           </span>
           <a
             href="mailto:chrisbuilds.dev@gmail.com"
-            className="text-sm sm:text-base md:text-lg font-light tracking-wider hover:text-white transition-colors duration-300"
+            className="text-sm sm:text-base md:text-lg font-light tracking-wider hover:text-white transition-colors duration-300 pointer-events-auto"
           >
             chrisbuilds.dev@gmail.com
           </a>
@@ -336,18 +377,18 @@ export function ContactSection() {
             WHATSAPP
           </span>
           <a
-            href="https://wa.me/918738882912?text=Hi%20Chris!%20I%20visited%20your%20portfolio%20website%20and%20would%20like%20to%20discuss%20a%20project%20with%20you."
+            href="https://wa.me/918708882912?text=Hi%20Chris!%20I%20visited%20your%20portfolio%20website%20and%20would%20like%20to%20discuss%20a%20project%20with%20you."
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm sm:text-base md:text-lg font-light tracking-wider hover:text-white transition-colors duration-300"
+            className="text-sm sm:text-base md:text-lg font-light tracking-wider hover:text-white transition-colors duration-300 pointer-events-auto"
           >
-            +91 87388 82912
+            +91 87088 82912
           </a>
         </FadeIn>
       </div>
 
-      {/* Animated Walking Crowd Canvas at bottom */}
-      <div className="absolute bottom-0 left-0 w-full h-full pointer-events-none z-10">
+      {/* Animated Walking Crowd Canvas at bottom (Background layer) */}
+      <div className="absolute bottom-0 left-0 w-full h-full pointer-events-none z-0">
         <CrowdCanvas src="/images/peeps/all-peeps.png" rows={15} cols={7} />
       </div>
 
