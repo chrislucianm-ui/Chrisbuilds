@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { FadeIn } from "./FadeIn";
-import { AnimatedText } from "./AnimatedText";
+import ScrollReveal from "./ScrollReveal";
 import { ContactButton } from "./ContactButton";
 
 export function AboutSection() {
@@ -86,11 +86,19 @@ export function AboutSection() {
         {/* Gap between heading and text: gap-10 sm:gap-14 md:gap-16 */}
         <div className="h-10 sm:h-14 md:h-16" />
 
-        {/* Animated Paragraph */}
-        <AnimatedText
-          text={paragraphText}
-          className="text-[#D7E2EA] font-medium text-center leading-relaxed max-w-[560px] text-[clamp(1rem,2vw,1.35rem)]"
-        />
+        {/* Animated Paragraph with ScrollReveal */}
+        <ScrollReveal
+          baseOpacity={0.05}
+          enableBlur={true}
+          baseRotation={2}
+          blurStrength={8}
+          containerClassName="max-w-[620px] mx-auto text-center"
+          textClassName="text-[#D7E2EA] font-medium text-center leading-relaxed text-[clamp(1.1rem,2.2vw,1.6rem)]"
+          rotationEnd="bottom bottom"
+          wordAnimationEnd="bottom bottom"
+        >
+          {paragraphText}
+        </ScrollReveal>
 
         {/* Gap between text and button: gap-16 sm:gap-20 md:gap-24 */}
         <div className="h-16 sm:h-20 md:h-24" />
