@@ -276,7 +276,7 @@ const CrowdCanvas = ({ src, rows = 15, cols = 7 }: CrowdCanvasProps) => {
   }, []);
 
   return (
-    <canvas ref={canvasRef} className="absolute bottom-0 left-0 w-full h-[32vh] sm:h-[35vh] md:h-[40vh] pointer-events-none z-10 opacity-75" />
+    <canvas ref={canvasRef} className="absolute bottom-0 left-0 w-full h-[32vh] sm:h-[35vh] md:h-[40vh] pointer-events-none z-0 opacity-75" />
   );
 };
 
@@ -316,7 +316,7 @@ export function ContactSection() {
       </div>
 
       {/* Contact Channels (Only Email and WhatsApp) */}
-      <div className="z-20 flex flex-col sm:flex-row items-center justify-center gap-10 sm:gap-20 md:gap-32 w-full max-w-4xl mt-auto mb-16 px-4">
+      <div className="relative z-20 flex flex-col sm:flex-row items-center justify-center gap-10 sm:gap-20 md:gap-32 w-full max-w-4xl mt-auto mb-24 px-4 pointer-events-auto">
         {/* Email */}
         <FadeIn delay={0.45} y={20} className="flex flex-col items-center gap-2">
           <span className="text-[10px] sm:text-xs tracking-[0.3em] text-[#D7E2EA]/40 uppercase font-semibold">
@@ -352,7 +352,7 @@ export function ContactSection() {
       </div>
 
       {/* Footer Info (All Rights Reserved) */}
-      <div className="z-20 w-full border-t border-white/[0.05] pt-6 pb-2">
+      <div className="relative z-30 w-full border-t border-white/[0.05] pt-6 pb-2 pointer-events-auto">
         <FadeIn delay={0.65} y={15}>
           <span className="text-[10px] sm:text-xs tracking-[0.25em] text-[#D7E2EA]/40 font-light uppercase">
             © 2026 CHRISBUILDS. ALL RIGHTS RESERVED.
