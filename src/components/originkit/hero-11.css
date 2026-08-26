@@ -621,7 +621,7 @@
   .ok-h11-hero {
     --character-size: min(94.75vw, 62.23vh);
     --character-top: 14.92vh;
-    height: max(100svh, calc(62.49svh + 350px));
+    height: 100svh;
     border-radius: 0;
   }
 
@@ -713,10 +713,10 @@
   }
 
   .ok-h11-copy {
-    top: 62.49vh;
+    top: 50vh;
     bottom: auto;
     left: 50%;
-    width: min(88vw, 455px);
+    width: min(90vw, 455px);
     align-items: center;
     gap: 16px;
     transform: translateX(-50%);
