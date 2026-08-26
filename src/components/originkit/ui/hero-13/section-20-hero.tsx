@@ -41,6 +41,7 @@ export const Section20Hero = () => {
 
   return (
     <section
+      id="hero-13"
       aria-label="Elevating portraits through perspective"
       className="relative isolate flex min-h-svh w-full items-center justify-center overflow-hidden bg-[#131313]"
     >

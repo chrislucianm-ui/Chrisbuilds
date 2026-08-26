@@ -149,7 +149,7 @@ export function LiquidDistortionHero({
   eyebrow = "Let’s build something Great",
   title = "Shaping the Future of Digital.",
   description = "We create modern websites with seamless user experiences.",
-  primaryCta = { label: "Get Started", href: "#get-started" },
+  primaryCta = { label: "Get Started", href: "#hero-13" },
   secondaryCta = { label: "Book Now", href: "#book-now" },
 }: LiquidDistortionHeroProps) {
   return (

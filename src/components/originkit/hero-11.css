@@ -689,11 +689,11 @@
   }
 
   .ok-h11-header {
-    top: 0;
+    top: env(safe-area-inset-top, 20px);
     left: 0;
     width: 100vw;
-    height: 8.48vh;
-    padding: 2.82vh 6.45vw;
+    height: auto;
+    padding: 12px 6.45vw;
   }
 
   .ok-h11-nav,
@@ -716,7 +716,7 @@
     top: 62.49vh;
     bottom: auto;
     left: 50%;
-    width: min(61.16vw, 455px);
+    width: min(88vw, 455px);
     align-items: center;
     gap: 16px;
     transform: translateX(-50%);
@@ -726,6 +726,7 @@
     align-items: center;
     gap: 24px;
     text-align: center;
+    width: 100%;
   }
 
   .ok-h11-copy > .ok-h11-button {
@@ -741,18 +742,20 @@
   }
 
   .ok-h11-title {
-    width: 389px;
-    font-size: 66px;
+    width: 100%;
+    max-width: 389px;
+    font-size: clamp(34px, 12vw, 66px);
     line-height: 1.1;
     letter-spacing: -1.98px;
     text-align: center;
   }
 
   .ok-h11-description {
-    width: 311px;
+    width: 100%;
+    max-width: 311px;
     margin-top: 0;
     font-family: var(--font-inter-origin), sans-serif;
-    font-size: 18px;
+    font-size: 16px;
     line-height: 1.4;
     letter-spacing: -0.36px;
     text-align: center;
