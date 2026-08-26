@@ -34,3 +34,10 @@
   --font-inter-tight: "Inter Tight", Inter, ui-sans-serif, sans-serif;
   --font-inter-origin: "Inter", ui-sans-serif, sans-serif;
 }
+
+/* originkit:hero-13 */
+/* src/components/originkit/hero-13.css */
+@theme {
+  --font-instrument-serif: "Instrument Serif", Georgia, serif;
+  --font-tight: "Inter Tight", Inter, ui-sans-serif, sans-serif;
+}
