@@ -3,6 +3,8 @@ import React from "react";
 import { FadeIn } from "./FadeIn";
 import ScrollReveal from "./ScrollReveal";
 import { Button } from "@/components/originkit/ui/hero-11/button";
+import { PredictiveArcCanvas } from "@designcodeio/threeui";
+import "@designcodeio/threeui/style.css";
 
 export function AboutSection() {
   const paragraphText =
@@ -23,6 +25,17 @@ export function AboutSection() {
       id="about"
       className="min-h-screen bg-[#0C0C0C] relative px-5 sm:px-8 md:px-10 py-20 flex flex-col items-center justify-center overflow-hidden"
     >
+      {/* ThreeUI Signal Particles Background */}
+      <div className="absolute inset-0 z-0 opacity-45 pointer-events-none">
+        <PredictiveArcCanvas
+          variant="signal-particles"
+          mode="dark"
+          speed={0.6}
+          hue={20}
+          saturation={1}
+          brightness={0.8}
+        />
+      </div>
       {/* Decorative Corner Images */}
       {/* Top-left: Moon */}
       <FadeIn
