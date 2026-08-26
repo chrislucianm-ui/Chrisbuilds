@@ -2,11 +2,21 @@
 import React from "react";
 import { FadeIn } from "./FadeIn";
 import ScrollReveal from "./ScrollReveal";
-import { ContactButton } from "./ContactButton";
+import { Button } from "@/components/originkit/ui/hero-11/button";
 
 export function AboutSection() {
   const paragraphText =
     "At Chris Builds, with more than five years of experience in design and engineering, i focus on branding, web design, and user experience, i truly enjoy working with businesses that aim to stand out and present their best image. Let's build something incredible together!";
+
+  const handleContactClick = () => {
+    const defaultMessage = encodeURIComponent(
+      "Hi Chris! I visited your portfolio website and would like to discuss a project with you."
+    );
+    const whatsappUrl = `https://wa.me/918738882912?text=${defaultMessage}`;
+    if (typeof window !== "undefined") {
+      window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+    }
+  };
 
   return (
     <section
@@ -78,13 +88,13 @@ export function AboutSection() {
       <div className="flex flex-col items-center z-20 max-w-5xl w-full">
         {/* Heading */}
         <FadeIn delay={0} y={40} className="w-full text-center">
-          <h2 className="hero-heading font-black uppercase leading-none tracking-tight text-center text-[clamp(3rem,12vw,160px)]">
+          <h2 className="font-instrument-serif font-normal italic text-center text-white tracking-tight text-[clamp(3.5rem,10vw,120px)] mb-2 select-none">
             About me
           </h2>
         </FadeIn>
 
-        {/* Gap between heading and text: gap-10 sm:gap-14 md:gap-16 */}
-        <div className="h-10 sm:h-14 md:h-16" />
+        {/* Gap between heading and text */}
+        <div className="h-10 sm:h-12" />
 
         {/* Animated Paragraph with ScrollReveal */}
         <ScrollReveal
@@ -93,19 +103,19 @@ export function AboutSection() {
           baseRotation={4}
           blurStrength={12}
           containerClassName="max-w-4xl mx-auto text-center"
-          textClassName="text-[#D7E2EA] font-semibold text-center leading-relaxed text-[clamp(1.4rem,3.2vw,2.6rem)]"
+          textClassName="text-[#D7E2EA] font-light font-sans text-center leading-relaxed text-[clamp(1.4rem,3.2vw,2.6rem)]"
           rotationEnd="bottom bottom"
           wordAnimationEnd="bottom bottom"
         >
           {paragraphText}
         </ScrollReveal>
 
-        {/* Gap between text and button: gap-16 sm:gap-20 md:gap-24 */}
-        <div className="h-12 sm:h-16 md:h-20" />
+        {/* Gap between text and button */}
+        <div className="h-12 sm:h-16" />
 
         {/* Contact Button */}
-        <FadeIn delay={0.2} y={20}>
-          <ContactButton />
+        <FadeIn delay={0.2} y={20} className="pointer-events-auto">
+          <Button onClick={handleContactClick}>Contact Me</Button>
         </FadeIn>
       </div>
     </section>

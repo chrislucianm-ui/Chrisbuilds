@@ -39,36 +39,36 @@ export function ServicesSection() {
   return (
     <section
       id="services"
-      className="bg-white text-[#0C0C0C] rounded-t-[40px] sm:rounded-t-[50px] md:rounded-t-[60px] px-5 sm:px-8 md:px-10 py-20 sm:py-24 md:py-32 relative z-0"
+      className="bg-[#0C0C0C] text-[#D7E2EA] rounded-t-[40px] sm:rounded-t-[50px] md:rounded-t-[60px] px-5 sm:px-8 md:px-10 py-20 sm:py-24 md:py-32 relative z-0"
     >
       <div className="max-w-5xl mx-auto flex flex-col">
         {/* Heading */}
         <FadeIn delay={0} y={40} className="w-full text-center">
-          <h2 className="font-black uppercase text-center text-[#0C0C0C] leading-none tracking-tight text-[clamp(3rem,12vw,160px)] mb-16 sm:mb-20 md:mb-28 select-none">
+          <h2 className="font-instrument-serif font-normal italic text-center text-white tracking-tight text-[clamp(3.5rem,10vw,120px)] mb-16 sm:mb-20 md:mb-28 select-none">
             Services
           </h2>
         </FadeIn>
 
         {/* Vertical List */}
-        <div className="flex flex-col border-t border-[rgba(12,12,12,0.15)]">
+        <div className="flex flex-col border-t border-[rgba(255,255,255,0.15)]">
           {SERVICES_DATA.map((service, i) => (
             <FadeIn
               key={service.number}
               delay={i * 0.1}
               y={30}
-              className="py-8 sm:py-10 md:py-12 border-b border-[rgba(12,12,12,0.15)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 sm:gap-12"
+              className="group py-8 sm:py-10 md:py-12 border-b border-[rgba(255,255,255,0.15)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 sm:gap-12 cursor-default transition-all duration-300"
             >
-              {/* Number */}
-              <span className="font-black text-[#0C0C0C] leading-none text-[clamp(3rem,10vw,140px)] select-none">
+              {/* Number with gradient */}
+              <span className="font-instrument-serif italic leading-none text-[clamp(3rem,10vw,140px)] select-none text-transparent bg-clip-text bg-gradient-to-r from-[#ff7b1a] to-[#ff9a50]">
                 {service.number}
               </span>
 
               {/* Name & Description */}
               <div className="flex flex-col sm:flex-1 max-w-2xl">
-                <h3 className="font-medium uppercase text-[#0C0C0C] text-[clamp(1rem,2.2vw,2.1rem)] mb-2 sm:mb-3">
+                <h3 className="font-medium uppercase text-white group-hover:text-[#ff9a50] transition-colors duration-300 text-[clamp(1.1rem,2.2vw,2.1rem)] mb-2 sm:mb-3">
                   {service.name}
                 </h3>
-                <p className="font-light leading-relaxed text-[#0C0C0C]/60 text-[clamp(0.85rem,1.6vw,1.25rem)]">
+                <p className="font-light leading-relaxed text-[#D7E2EA]/60 text-[clamp(0.85rem,1.6vw,1.25rem)]">
                   {service.description}
                 </p>
               </div>

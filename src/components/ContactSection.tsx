@@ -325,7 +325,7 @@ export function ContactSection() {
   return (
     <section id="contact" className="min-h-screen bg-[#0C0C0C] text-[#D7E2EA] flex flex-col justify-between items-center text-center relative overflow-hidden select-none px-4 sm:px-6 pt-20 pb-8">
       {/* Background soft ambient grid glow */}
-      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] sm:w-[600px] h-[350px] sm:h-[600px] rounded-full bg-white/[0.015] blur-[100px] pointer-events-none z-0" />
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] sm:w-[600px] h-[350px] sm:h-[600px] rounded-full bg-[#ff7b1a]/[0.015] blur-[100px] pointer-events-none z-0" />
 
       {/* Top Header */}
       <div className="z-20 max-w-xl flex flex-col items-center gap-6 mt-4">
@@ -336,7 +336,7 @@ export function ContactSection() {
         </FadeIn>
       </div>
 
-      {/* Centerpiece Branding (Huge with subtle white glow) */}
+      {/* Centerpiece Branding (Huge with subtle orange glow) */}
       <div className="z-20 flex flex-col items-center justify-center my-auto py-6">
         <BlurText
           text="CHRISBUILDS"
@@ -346,7 +346,7 @@ export function ContactSection() {
           stepDuration={0.35}
           className="font-black tracking-[0.06em] leading-none uppercase select-none text-[12vw] sm:text-[11vw] md:text-[9.5vw] text-white flex justify-center w-full"
           style={{
-            textShadow: "0 0 70px rgba(255, 255, 255, 0.22), 0 0 35px rgba(255, 255, 255, 0.12)",
+            textShadow: "0 0 70px rgba(255, 123, 26, 0.35), 0 0 35px rgba(255, 123, 26, 0.18)",
           }}
         />
         <FadeIn delay={0.45} y={20} className="mt-4 sm:mt-6">
@@ -365,7 +365,7 @@ export function ContactSection() {
           </span>
           <a
             href="mailto:chrisbuilds.dev@gmail.com"
-            className="text-sm sm:text-base md:text-lg font-light tracking-wider hover:text-white transition-colors duration-300 pointer-events-auto"
+            className="text-sm sm:text-base md:text-lg font-light tracking-wider hover:text-[#ff9a50] transition-colors duration-300 pointer-events-auto"
           >
             chrisbuilds.dev@gmail.com
           </a>
@@ -380,7 +380,7 @@ export function ContactSection() {
             href="https://wa.me/918738882912?text=Hi%20Chris!%20I%20visited%20your%20portfolio%20website%20and%20would%20like%20to%20discuss%20a%20project%20with%20you."
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm sm:text-base md:text-lg font-light tracking-wider hover:text-white transition-colors duration-300 pointer-events-auto"
+            className="text-sm sm:text-base md:text-lg font-light tracking-wider hover:text-[#ff9a50] transition-colors duration-300 pointer-events-auto"
           >
             +91 87388 82912
           </a>

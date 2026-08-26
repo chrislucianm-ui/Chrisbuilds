@@ -1,8 +1,11 @@
+@import url("https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&family=Kanit:wght@300;400;500;600;700&display=swap");
 @import "tailwindcss";
 
 @theme {
   --font-kanit: 'Kanit', sans-serif;
   --font-sans: 'Kanit', sans-serif;
+  --font-instrument-serif: "Instrument Serif", Georgia, serif;
+  --font-inter-tight: "Inter Tight", Inter, ui-sans-serif, sans-serif;
 }
 
 html, body, #root {
@@ -13,6 +16,7 @@ html, body, #root {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  scroll-behavior: smooth;
 }
 
 *, ::before, ::after {
