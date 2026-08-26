@@ -1,8 +1,8 @@
 "use client";
 
 import "./hero-11.css";
-import { Section18Hero } from "@/components/originkit/ui/hero-11/section-18-hero";
+import { LiquidDistortionHero } from "@/components/originkit/ui/hero-11/liquid-distortion-hero";
 
-const Hero11 = () => <Section18Hero />;
+const Hero11 = () => <LiquidDistortionHero />;
 
 export default Hero11;
