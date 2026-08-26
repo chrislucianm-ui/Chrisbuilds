@@ -76,6 +76,13 @@ export const Section20Hero = () => {
           />
         </div>
       </div>
+
+      {/* Footer Info (All Rights Reserved) */}
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 w-full text-center px-4 pointer-events-auto">
+        <span className="text-[10px] sm:text-xs tracking-[0.25em] text-[#D7E2EA]/45 font-light uppercase">
+          © 2026 CHRISBUILDS. ALL RIGHTS RESERVED.
+        </span>
+      </div>
     </section>
   );
 };

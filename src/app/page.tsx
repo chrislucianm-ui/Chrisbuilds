@@ -1,12 +1,10 @@
 "use client";
 
-import React from "react";
 import Hero11 from "@/components/originkit/hero-11";
 import Hero13 from "@/components/originkit/hero-13";
 import { MarqueeSection } from "@/components/MarqueeSection";
 import { AboutSection } from "@/components/AboutSection";
 import { ServicesSection } from "@/components/ServicesSection";
-import { ContactSection } from "@/components/ContactSection";
 
 export default function Home() {
   return (
@@ -15,7 +13,6 @@ export default function Home() {
       <MarqueeSection />
       <AboutSection />
       <ServicesSection />
-      <ContactSection />
       <Hero13 />
     </main>
   );

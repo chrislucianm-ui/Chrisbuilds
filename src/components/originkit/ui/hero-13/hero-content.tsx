@@ -47,6 +47,15 @@ export const HeroContent = ({
     <div className="relative z-20 flex w-full items-center justify-center py-4">
       <div className="relative z-10 flex w-full flex-col items-center gap-6 px-4 text-center ipad:gap-8">
         <div className="flex w-full flex-col items-center gap-4">
+          <motion.div
+            initial={{ opacity: 0, y: 15, filter: "blur(5px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            transition={{ duration: 0.5, ease: [0.215, 0.61, 0.355, 1], delay: 0.1 }}
+            className="font-black tracking-[0.08em] uppercase text-[7vw] sm:text-[5vw] md:text-[3.5vw] text-transparent bg-clip-text bg-gradient-to-r from-[#ff7b1a] to-[#ff9a50] mb-2 select-none drop-shadow-[0_0_25px_rgba(255,123,26,0.22)]"
+          >
+            Chris Builds
+          </motion.div>
+
           <FocusReveal
             as="h1"
             text="Elevating Digital Design Through Perspective"
