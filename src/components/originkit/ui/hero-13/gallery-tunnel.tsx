@@ -142,6 +142,10 @@ export default function ImageBox(props: Partial<ImageBoxProps>) {
         let colorIndex = 0;
         let populateIndex = 0;
         let scrollPos = 0;
+        let raf = 0;
+        let last = 0;
+        let pressed = false;
+        let alive = true;
 
         const hw = TUNNEL_WIDTH / 2;
         const hh = TUNNEL_HEIGHT / 2;
@@ -338,37 +342,21 @@ export default function ImageBox(props: Partial<ImageBoxProps>) {
         ro.observe(frame);
         resize();
 
-        const isMobile = typeof window !== "undefined" && (window.innerWidth < 768 || window.matchMedia("(pointer: coarse)").matches);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobile ? 1.0 : 1.25));
-
-        let alive = true;
-        let raf = 0;
-        let lastTime = 0;
-        let targetZ = 0;
-        let z = 0;
-        let pressed = false;
-        let isVisible = true;
-
         const animate = (now: number) => {
             if (!alive) return;
-            if (!isVisible) {
-                raf = 0;
-                return;
-            }
             raf = requestAnimationFrame(animate);
+            const dt = last ? Math.min((now - last) / 1000, 1 / 30) : 1 / 60;
+            last = now;
 
-            const dt = lastTime ? Math.min((now - lastTime) / 1000, 1 / 30) : 1 / 60;
-            lastTime = now;
+            const cfg = cfgRef.current;
+            scrollPos += pressed ? cfg.boost : cfg.speed;
 
-            const baseSpeed = cfgRef.current.speed * (pressed ? cfgRef.current.boost : 1);
-            targetZ -= baseSpeed * dt;
-            z += (targetZ - z) * CAMERA_CHASE;
-
-            camera.position.z = z;
+            const want = -SCROLL_TO_Z * scrollPos;
+            camera.position.z += CAMERA_CHASE * (want - camera.position.z);
 
             const span = NUM_SEGMENTS * SEGMENT_DEPTH;
-            for (let i = 0; i < segments.length; i++) {
-                const seg = segments[i];
+            const z = camera.position.z;
+            for (const seg of segments) {
                 if (seg.position.z > z + SEGMENT_DEPTH) {
                     let min = 0;
                     for (const s of segments) min = Math.min(min, s.position.z);
@@ -391,15 +379,21 @@ export default function ImageBox(props: Partial<ImageBoxProps>) {
             renderer.render(scene, camera);
         };
 
-        const io = new IntersectionObserver(([entry]) => {
-            isVisible = entry.isIntersecting;
-            if (isVisible && !raf) {
-                lastTime = 0;
-                raf = requestAnimationFrame(animate);
-            }
-        }, { threshold: 0 });
-        io.observe(frame);
-
+        let isVisible = true;
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                isVisible = entry.isIntersecting;
+                if (isVisible) {
+                    last = performance.now();
+                    cancelAnimationFrame(raf);
+                    raf = requestAnimationFrame(animate);
+                } else {
+                    cancelAnimationFrame(raf);
+                }
+            },
+            { threshold: 0.01 }
+        );
+        observer.observe(frame);
         raf = requestAnimationFrame(animate);
 
         const onMove = (e: PointerEvent) => {
@@ -434,16 +428,16 @@ export default function ImageBox(props: Partial<ImageBoxProps>) {
             if (el) el.style.transform = "translate(0%, -100%) scale(1)";
         };
 
-        frame.addEventListener("pointermove", onMove);
-        frame.addEventListener("pointerenter", onEnter);
-        frame.addEventListener("pointerleave", onLeave);
-        frame.addEventListener("pointerdown", onDown);
-        window.addEventListener("pointerup", onUp);
+        frame.addEventListener("pointermove", onMove, { passive: true });
+        frame.addEventListener("pointerenter", onEnter, { passive: true });
+        frame.addEventListener("pointerleave", onLeave, { passive: true });
+        frame.addEventListener("pointerdown", onDown, { passive: true });
+        window.addEventListener("pointerup", onUp, { passive: true });
 
         return () => {
             alive = false;
-            if (raf) cancelAnimationFrame(raf);
-            io.disconnect();
+            observer.disconnect();
+            cancelAnimationFrame(raf);
             ro.disconnect();
             frame.removeEventListener("pointermove", onMove);
             frame.removeEventListener("pointerenter", onEnter);

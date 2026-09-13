@@ -1,22 +1,21 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { FadeIn } from "./FadeIn";
 import ScrollReveal from "./ScrollReveal";
 import { Button } from "@/components/originkit/ui/hero-11/button";
-import { PredictiveArcCanvas } from "./PredictiveArcCanvas";
+import { PredictiveArcCanvas } from "@designcodeio/threeui";
+import "@designcodeio/threeui/style.css";
 
 export function AboutSection() {
-  const [mounted, setMounted] = useState(false);
-  const [inView, setInView] = useState(false);
+  const [isVisible, setIsVisible] = React.useState(false);
   const sectionRef = React.useRef<HTMLElement>(null);
 
-  useEffect(() => {
-    setMounted(true);
+  React.useEffect(() => {
     const el = sectionRef.current;
     if (!el) return;
     const observer = new IntersectionObserver(
       ([entry]) => {
-        setInView(entry.isIntersecting);
+        setIsVisible(entry.isIntersecting);
       },
       { rootMargin: "200px 0px" }
     );
@@ -39,13 +38,13 @@ export function AboutSection() {
 
   return (
     <section
-      id="about"
       ref={sectionRef}
+      id="about"
       className="min-h-screen bg-[#0C0C0C] relative px-5 sm:px-8 md:px-10 py-20 flex flex-col items-center justify-center overflow-hidden"
     >
-      {/* Signal Particles Background */}
+      {/* ThreeUI Signal Particles Background */}
       <div className="absolute inset-0 z-0 opacity-45 pointer-events-none">
-        {mounted && inView && (
+        {isVisible && (
           <PredictiveArcCanvas
             variant="signal-particles"
             mode="dark"
@@ -131,9 +130,10 @@ export function AboutSection() {
 
         {/* Animated Paragraph with ScrollReveal */}
         <ScrollReveal
-          baseOpacity={0.1}
-          enableBlur={false}
-          baseRotation={2}
+          baseOpacity={0.05}
+          enableBlur={true}
+          baseRotation={4}
+          blurStrength={12}
           containerClassName="max-w-4xl mx-auto text-center"
           textClassName="text-[#D7E2EA] font-light font-sans text-center leading-relaxed text-[clamp(1.4rem,3.2vw,2.6rem)]"
           rotationEnd="bottom bottom"

@@ -663,7 +663,8 @@ function __OriginkitBase_FluidSim(props: any) {
             const divLoc = gl!.getUniformLocation(pPressure, "u_divergence")!
             const presLoc = gl!.getUniformLocation(pPressure, "u_pressure")!
             gl!.uniform1i(divLoc, divergence.attach(0))
-            const iters = PRESSURE_ITERATIONS
+            const isMobile = typeof window !== "undefined" && window.innerWidth < 768
+            const iters = isMobile ? 8 : 12
             for (let i = 0; i < iters; i++) {
                 gl!.uniform1i(presLoc, pressure.read.attach(1))
                 blit(pressure.write)
@@ -755,9 +756,29 @@ function __OriginkitBase_FluidSim(props: any) {
             blit(null)
         }
 
+        let isVisible = true
         let raf = 0
         let lastTime = performance.now()
+
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                isVisible = entry.isIntersecting
+                if (isVisible) {
+                    lastTime = performance.now()
+                    cancelAnimationFrame(raf)
+                    raf = requestAnimationFrame(loop)
+                } else {
+                    cancelAnimationFrame(raf)
+                }
+            },
+            { threshold: 0.01 }
+        )
+        if (canvasElement) {
+            observer.observe(canvasElement)
+        }
+
         const loop = (now: number) => {
+            if (!isVisible) return
             const dt = Math.min(0.0166, (now - lastTime) / 1000)
             lastTime = now
             applyPointerInput()
@@ -768,6 +789,7 @@ function __OriginkitBase_FluidSim(props: any) {
         raf = requestAnimationFrame(loop)
 
         return () => {
+            observer.disconnect()
             cancelAnimationFrame(raf)
             ro.disconnect()
             window.removeEventListener("pointermove", onMove)
