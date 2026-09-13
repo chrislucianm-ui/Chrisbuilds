@@ -1,16 +1,45 @@
 "use client";
-import React from "react";
+import React, { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { FadeIn } from "./FadeIn";
 import ScrollReveal from "./ScrollReveal";
 import { Button } from "@/components/originkit/ui/hero-11/button";
-import { PredictiveArcCanvas } from "@designcodeio/threeui";
-import "@designcodeio/threeui/style.css";
+
+const PredictiveArcCanvas = dynamic(
+  () =>
+    import("@designcodeio/threeui/components/PredictiveArcCanvas")
+      .then((mod) => mod.PredictiveArcCanvas)
+      .catch(() => () => null),
+  { ssr: false }
+);
+
+class CanvasErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch(error: any) {
+    console.warn("ThreeUI Canvas render warning caught:", error);
+  }
+  render() {
+    if (this.state.hasError) return null;
+    return this.props.children;
+  }
+}
 
 export function AboutSection() {
-  const [inView, setInView] = React.useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [inView, setInView] = useState(false);
   const sectionRef = React.useRef<HTMLElement>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
+    setMounted(true);
     const el = sectionRef.current;
     if (!el) return;
     const observer = new IntersectionObserver(
@@ -42,17 +71,19 @@ export function AboutSection() {
       ref={sectionRef}
       className="min-h-screen bg-[#0C0C0C] relative px-5 sm:px-8 md:px-10 py-20 flex flex-col items-center justify-center overflow-hidden"
     >
-      {/* ThreeUI Signal Particles Background - Mounted only when in view */}
+      {/* ThreeUI Signal Particles Background - Mounted safely on client when in view */}
       <div className="absolute inset-0 z-0 opacity-45 pointer-events-none">
-        {inView && (
-          <PredictiveArcCanvas
-            variant="signal-particles"
-            mode="dark"
-            speed={0.6}
-            hue={20}
-            saturation={1}
-            brightness={0.8}
-          />
+        {mounted && inView && (
+          <CanvasErrorBoundary>
+            <PredictiveArcCanvas
+              variant="signal-particles"
+              mode="dark"
+              speed={0.6}
+              hue={20}
+              saturation={1}
+              brightness={0.8}
+            />
+          </CanvasErrorBoundary>
         )}
       </div>
       {/* Decorative Corner Images */}
