@@ -7,6 +7,22 @@ import { PredictiveArcCanvas } from "@designcodeio/threeui";
 import "@designcodeio/threeui/style.css";
 
 export function AboutSection() {
+  const [inView, setInView] = React.useState(false);
+  const sectionRef = React.useRef<HTMLElement>(null);
+
+  React.useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setInView(entry.isIntersecting);
+      },
+      { rootMargin: "200px 0px" }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   const paragraphText =
     "At Chris Builds, with more than five years of experience in design and engineering, i focus on branding, web design, and user experience, i truly enjoy working with businesses that aim to stand out and present their best image. Let's build something incredible together!";
 
@@ -23,18 +39,21 @@ export function AboutSection() {
   return (
     <section
       id="about"
+      ref={sectionRef}
       className="min-h-screen bg-[#0C0C0C] relative px-5 sm:px-8 md:px-10 py-20 flex flex-col items-center justify-center overflow-hidden"
     >
-      {/* ThreeUI Signal Particles Background */}
+      {/* ThreeUI Signal Particles Background - Mounted only when in view */}
       <div className="absolute inset-0 z-0 opacity-45 pointer-events-none">
-        <PredictiveArcCanvas
-          variant="signal-particles"
-          mode="dark"
-          speed={0.6}
-          hue={20}
-          saturation={1}
-          brightness={0.8}
-        />
+        {inView && (
+          <PredictiveArcCanvas
+            variant="signal-particles"
+            mode="dark"
+            speed={0.6}
+            hue={20}
+            saturation={1}
+            brightness={0.8}
+          />
+        )}
       </div>
       {/* Decorative Corner Images */}
       {/* Top-left: Moon */}
@@ -111,10 +130,9 @@ export function AboutSection() {
 
         {/* Animated Paragraph with ScrollReveal */}
         <ScrollReveal
-          baseOpacity={0.05}
-          enableBlur={true}
-          baseRotation={4}
-          blurStrength={12}
+          baseOpacity={0.1}
+          enableBlur={false}
+          baseRotation={2}
           containerClassName="max-w-4xl mx-auto text-center"
           textClassName="text-[#D7E2EA] font-light font-sans text-center leading-relaxed text-[clamp(1.4rem,3.2vw,2.6rem)]"
           rotationEnd="bottom bottom"

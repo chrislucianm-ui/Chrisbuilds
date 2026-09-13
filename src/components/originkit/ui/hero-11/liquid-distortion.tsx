@@ -485,10 +485,20 @@ void main () {
         resizeObserver.disconnect();
       };
     }
+    let isVisible = true;
+    const io = new IntersectionObserver(([entry]) => {
+      isVisible = entry.isIntersecting;
+      if (isVisible && !rafRef.current) {
+        rafRef.current = requestAnimationFrame(render);
+      }
+    }, { threshold: 0 });
+    io.observe(container!);
+
     function resizeCanvas() {
       const width = container!.clientWidth;
       const height = container!.clientHeight;
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const isMobile = typeof window !== "undefined" && (window.innerWidth < 768 || window.matchMedia("(pointer: coarse)").matches);
+      const dpr = Math.min(window.devicePixelRatio || 1, isMobile ? 1.0 : 1.25);
       canvas!.width = Math.max(2, Math.round(width * overscanFactor * dpr));
       canvas!.height = Math.max(2, Math.round(height * overscanFactor * dpr));
       const cssW = width * overscanFactor;
@@ -534,6 +544,10 @@ void main () {
       };
     }
     function render(_t: number) {
+      if (!isVisible) {
+        rafRef.current = null;
+        return;
+      }
       const dt = 1 / 60;
       if (pointer.moved) {
         if (!isPreview) pointer.moved = false;
@@ -690,6 +704,7 @@ void main () {
 
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      io.disconnect();
       if (typeof cleanupEvents === "function") cleanupEvents();
     };
   }, [imageSrc, resolution, cursorSize, intensity]);

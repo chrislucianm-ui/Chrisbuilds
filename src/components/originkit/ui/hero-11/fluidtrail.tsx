@@ -394,6 +394,11 @@ export default function FluidSim(props: any) {
         let divergence: ReturnType<typeof createFBO>
         let curl: ReturnType<typeof createFBO>
 
+        const isMobile = typeof window !== "undefined" && (window.innerWidth < 768 || window.matchMedia("(pointer: coarse)").matches)
+        const pressureIters = isMobile ? 6 : 12
+        const simResTarget = isMobile ? 64 : SIM_RESOLUTION
+        const dyeResTarget = isMobile ? 512 : DYE_RESOLUTION
+
         function getResolution(target: number) {
             const aspect = canvasElement.clientWidth / Math.max(1, canvasElement.clientHeight)
             const w = aspect >= 1 ? Math.round(target * aspect) : target
@@ -402,8 +407,8 @@ export default function FluidSim(props: any) {
         }
 
         function initFBOs() {
-            const sim = getResolution(SIM_RESOLUTION)
-            const dyeR = getResolution(DYE_RESOLUTION)
+            const sim = getResolution(simResTarget)
+            const dyeR = getResolution(dyeResTarget)
             const ext = gl as WebGL2RenderingContext
             velocity = createDoubleFBO(
                 ext,
@@ -464,7 +469,7 @@ export default function FluidSim(props: any) {
         }
 
         function resize() {
-            const dpr = Math.min(window.devicePixelRatio || 1, 1.5)
+            const dpr = Math.min(window.devicePixelRatio || 1, isMobile ? 1.0 : 1.25)
             const w = Math.max(1, Math.floor(canvasElement.clientWidth * dpr))
             const h = Math.max(1, Math.floor(canvasElement.clientHeight * dpr))
             if (canvasElement.width !== w || canvasElement.height !== h) {
@@ -526,11 +531,9 @@ export default function FluidSim(props: any) {
             color: [number, number, number]
         ) {
             const aspect = canvasElement.width / canvasElement.height
-            // Mouse radius slider → gaussian falloff size.
             const mr = Math.max(1, propsRef.current?.mouseRadius ?? 8)
             const radius = correctRadius((mr * 0.005) / 100, aspect)
 
-            // Velocity splat.
             gl!.useProgram(pSplat)
             gl!.uniform1i(
                 gl!.getUniformLocation(pSplat, "u_target")!,
@@ -544,7 +547,6 @@ export default function FluidSim(props: any) {
             blit(velocity.write)
             velocity.swap()
 
-            // Dye splat.
             gl!.useProgram(pSplat)
             gl!.uniform1i(
                 gl!.getUniformLocation(pSplat, "u_target")!,
@@ -570,7 +572,6 @@ export default function FluidSim(props: any) {
 
         function applyPointerInput() {
             if (!pointer.moved) return
-            // Trail colour from the Color control (scaled for additive dye).
             const c = parseColor(propsRef.current?.color ?? "#66aaff")
             const col: [number, number, number] = [
                 c[0] * 0.7,
@@ -588,7 +589,6 @@ export default function FluidSim(props: any) {
         }
 
         function step(dt: number) {
-            // Curl + vorticity confinement.
             gl!.useProgram(pCurl)
             gl!.uniform2f(
                 gl!.getUniformLocation(pCurl, "u_texel")!,
@@ -623,7 +623,6 @@ export default function FluidSim(props: any) {
             blit(velocity.write)
             velocity.swap()
 
-            // Divergence.
             gl!.useProgram(pDiv)
             gl!.uniform2f(
                 gl!.getUniformLocation(pDiv, "u_texel")!,
@@ -636,7 +635,6 @@ export default function FluidSim(props: any) {
             )
             blit(divergence)
 
-            // Clear pressure with decay.
             gl!.useProgram(pClear)
             gl!.uniform1i(
                 gl!.getUniformLocation(pClear, "u_tex")!,
@@ -646,7 +644,6 @@ export default function FluidSim(props: any) {
             blit(pressure.write)
             pressure.swap()
 
-            // Jacobi pressure iterations.
             gl!.useProgram(pPressure)
             gl!.uniform2f(
                 gl!.getUniformLocation(pPressure, "u_texel")!,
@@ -656,14 +653,13 @@ export default function FluidSim(props: any) {
             const divLoc = gl!.getUniformLocation(pPressure, "u_divergence")!
             const presLoc = gl!.getUniformLocation(pPressure, "u_pressure")!
             gl!.uniform1i(divLoc, divergence.attach(0))
-            const iters = PRESSURE_ITERATIONS
+            const iters = pressureIters
             for (let i = 0; i < iters; i++) {
                 gl!.uniform1i(presLoc, pressure.read.attach(1))
                 blit(pressure.write)
                 pressure.swap()
             }
 
-            // Subtract pressure gradient from velocity.
             gl!.useProgram(pGradSub)
             gl!.uniform2f(
                 gl!.getUniformLocation(pGradSub, "u_texel")!,
@@ -681,7 +677,6 @@ export default function FluidSim(props: any) {
             blit(velocity.write)
             velocity.swap()
 
-            // Advect velocity.
             gl!.useProgram(pAdvect)
             gl!.uniform2f(
                 gl!.getUniformLocation(pAdvect, "u_texel")!,
@@ -705,7 +700,6 @@ export default function FluidSim(props: any) {
             blit(velocity.write)
             velocity.swap()
 
-            // Advect dye using velocity field.
             gl!.useProgram(pAdvect)
             gl!.uniform2f(
                 gl!.getUniformLocation(pAdvect, "u_texel")!,
@@ -721,15 +715,12 @@ export default function FluidSim(props: any) {
                 dye.read.attach(1)
             )
             gl!.uniform1f(gl!.getUniformLocation(pAdvect, "u_dt")!, dt)
-            // Trail Duration in seconds → exponential dye fade (~95% gone after
-            // `dur` seconds): factor exp(-dyeDiss·t), dyeDiss = 3/dur.
             const dur = Math.max(0.1, propsRef.current?.trailDuration ?? 5)
             const dyeDiss = 3 / dur
             gl!.uniform1f(
                 gl!.getUniformLocation(pAdvect, "u_dissipation")!,
                 1 - dyeDiss * dt
             )
-            // Fade outside: drift dye outward from centre as it fades.
             const fadeOut = propsRef.current?.fade === "outside"
             gl!.uniform1f(
                 gl!.getUniformLocation(pAdvect, "u_outward")!,
@@ -750,7 +741,13 @@ export default function FluidSim(props: any) {
 
         let raf = 0
         let lastTime = performance.now()
+        let isVisible = true
+
         const loop = (now: number) => {
+            if (!isVisible) {
+                raf = 0
+                return
+            }
             const dt = Math.min(0.0166, (now - lastTime) / 1000)
             lastTime = now
             applyPointerInput()
@@ -758,10 +755,21 @@ export default function FluidSim(props: any) {
             render()
             raf = requestAnimationFrame(loop)
         }
+
+        const io = new IntersectionObserver(([entry]) => {
+            isVisible = entry.isIntersecting
+            if (isVisible && !raf) {
+                lastTime = performance.now()
+                raf = requestAnimationFrame(loop)
+            }
+        }, { threshold: 0 })
+        io.observe(canvasElement)
+
         raf = requestAnimationFrame(loop)
 
         return () => {
-            cancelAnimationFrame(raf)
+            if (raf) cancelAnimationFrame(raf)
+            io.disconnect()
             ro.disconnect()
             canvasElement.removeEventListener("pointermove", onMove)
             canvasElement.removeEventListener("pointerdown", onDown)
