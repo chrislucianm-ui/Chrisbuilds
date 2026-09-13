@@ -748,29 +748,9 @@ export default function FluidSim(props: any) {
             blit(null)
         }
 
-        let isVisible = true
         let raf = 0
         let lastTime = performance.now()
-
-        const observer = new IntersectionObserver(
-            ([entry]) => {
-                isVisible = entry.isIntersecting
-                if (isVisible) {
-                    lastTime = performance.now()
-                    cancelAnimationFrame(raf)
-                    raf = requestAnimationFrame(loop)
-                } else {
-                    cancelAnimationFrame(raf)
-                }
-            },
-            { threshold: 0.01 }
-        )
-        if (canvasElement) {
-            observer.observe(canvasElement)
-        }
-
         const loop = (now: number) => {
-            if (!isVisible) return
             const dt = Math.min(0.0166, (now - lastTime) / 1000)
             lastTime = now
             applyPointerInput()
@@ -781,7 +761,6 @@ export default function FluidSim(props: any) {
         raf = requestAnimationFrame(loop)
 
         return () => {
-            observer.disconnect()
             cancelAnimationFrame(raf)
             ro.disconnect()
             canvasElement.removeEventListener("pointermove", onMove)

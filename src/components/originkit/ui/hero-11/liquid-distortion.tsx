@@ -685,28 +685,10 @@ void main () {
       gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
       gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
-      if (isVisible) {
-        rafRef.current = requestAnimationFrame(render);
-      }
+      rafRef.current = requestAnimationFrame(render);
     }
 
-    let isVisible = true;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        isVisible = entry.isIntersecting;
-        if (isVisible) {
-          if (rafRef.current) cancelAnimationFrame(rafRef.current);
-          rafRef.current = requestAnimationFrame(render);
-        } else if (rafRef.current) {
-          cancelAnimationFrame(rafRef.current);
-        }
-      },
-      { threshold: 0.01 }
-    );
-    if (container) observer.observe(container);
-
     return () => {
-      observer.disconnect();
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       if (typeof cleanupEvents === "function") cleanupEvents();
     };

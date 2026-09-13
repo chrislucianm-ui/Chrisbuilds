@@ -7,22 +7,6 @@ import { PredictiveArcCanvas } from "@designcodeio/threeui";
 import "@designcodeio/threeui/style.css";
 
 export function AboutSection() {
-  const [isVisible, setIsVisible] = React.useState(false);
-  const sectionRef = React.useRef<HTMLElement>(null);
-
-  React.useEffect(() => {
-    const el = sectionRef.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setIsVisible(entry.isIntersecting);
-      },
-      { rootMargin: "200px 0px" }
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
-
   const paragraphText =
     "At Chris Builds, with more than five years of experience in design and engineering, i focus on branding, web design, and user experience, i truly enjoy working with businesses that aim to stand out and present their best image. Let's build something incredible together!";
 
@@ -38,22 +22,19 @@ export function AboutSection() {
 
   return (
     <section
-      ref={sectionRef}
       id="about"
       className="min-h-screen bg-[#0C0C0C] relative px-5 sm:px-8 md:px-10 py-20 flex flex-col items-center justify-center overflow-hidden"
     >
       {/* ThreeUI Signal Particles Background */}
       <div className="absolute inset-0 z-0 opacity-45 pointer-events-none">
-        {isVisible && (
-          <PredictiveArcCanvas
-            variant="signal-particles"
-            mode="dark"
-            speed={0.6}
-            hue={20}
-            saturation={1}
-            brightness={0.8}
-          />
-        )}
+        <PredictiveArcCanvas
+          variant="signal-particles"
+          mode="dark"
+          speed={0.6}
+          hue={20}
+          saturation={1}
+          brightness={0.8}
+        />
       </div>
       {/* Decorative Corner Images */}
       {/* Top-left: Moon */}

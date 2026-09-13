@@ -378,22 +378,6 @@ export default function ImageBox(props: Partial<ImageBoxProps>) {
 
             renderer.render(scene, camera);
         };
-
-        let isVisible = true;
-        const observer = new IntersectionObserver(
-            ([entry]) => {
-                isVisible = entry.isIntersecting;
-                if (isVisible) {
-                    last = performance.now();
-                    cancelAnimationFrame(raf);
-                    raf = requestAnimationFrame(animate);
-                } else {
-                    cancelAnimationFrame(raf);
-                }
-            },
-            { threshold: 0.01 }
-        );
-        observer.observe(frame);
         raf = requestAnimationFrame(animate);
 
         const onMove = (e: PointerEvent) => {
@@ -428,15 +412,14 @@ export default function ImageBox(props: Partial<ImageBoxProps>) {
             if (el) el.style.transform = "translate(0%, -100%) scale(1)";
         };
 
-        frame.addEventListener("pointermove", onMove, { passive: true });
-        frame.addEventListener("pointerenter", onEnter, { passive: true });
-        frame.addEventListener("pointerleave", onLeave, { passive: true });
-        frame.addEventListener("pointerdown", onDown, { passive: true });
-        window.addEventListener("pointerup", onUp, { passive: true });
+        frame.addEventListener("pointermove", onMove);
+        frame.addEventListener("pointerenter", onEnter);
+        frame.addEventListener("pointerleave", onLeave);
+        frame.addEventListener("pointerdown", onDown);
+        window.addEventListener("pointerup", onUp);
 
         return () => {
             alive = false;
-            observer.disconnect();
             cancelAnimationFrame(raf);
             ro.disconnect();
             frame.removeEventListener("pointermove", onMove);
